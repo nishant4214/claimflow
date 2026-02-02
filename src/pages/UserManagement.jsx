@@ -1,0 +1,319 @@
+import React, { useState, useEffect } from 'react';
+import { base44 } from '@/api/base44Client';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { 
+  UserPlus, Mail, Shield, Users, AlertCircle,
+  ArrowLeft, CheckCircle, Copy
+} from "lucide-react";
+import { toast } from 'sonner';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
+
+const DEMO_USERS = [
+  { email: 'employee@claimflow.demo', role: 'employee', portal_role: 'employee', full_name: 'John Employee' },
+  { email: 'junior.admin@claimflow.demo', role: 'user', portal_role: 'junior_admin', full_name: 'Sarah Admin' },
+  { email: 'manager@claimflow.demo', role: 'user', portal_role: 'manager', full_name: 'Mike Manager' },
+  { email: 'admin.head@claimflow.demo', role: 'user', portal_role: 'admin_head', full_name: 'Linda Head' },
+  { email: 'cro@claimflow.demo', role: 'user', portal_role: 'cro', full_name: 'Robert CRO' },
+  { email: 'cfo@claimflow.demo', role: 'user', portal_role: 'cfo', full_name: 'Patricia CFO' },
+  { email: 'finance@claimflow.demo', role: 'user', portal_role: 'finance', full_name: 'David Finance' },
+];
+
+export default function UserManagement() {
+  const [user, setUser] = useState(null);
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteRole, setInviteRole] = useState('user');
+  const [invitePortalRole, setInvitePortalRole] = useState('employee');
+  const [inviteName, setInviteName] = useState('');
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const loadUser = async () => {
+      const userData = await base44.auth.me();
+      setUser(userData);
+    };
+    loadUser();
+  }, []);
+
+  const { data: users = [], isLoading } = useQuery({
+    queryKey: ['all-users'],
+    queryFn: () => base44.entities.User.list(),
+  });
+
+  const inviteMutation = useMutation({
+    mutationFn: async ({ email, role, portal_role, full_name }) => {
+      await base44.users.inviteUser(email, role);
+      // Update user with portal_role and name after invitation
+      const userRecord = users.find(u => u.email === email);
+      if (userRecord) {
+        await base44.entities.User.update(userRecord.id, { portal_role, full_name });
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['all-users']);
+      toast.success('User invited successfully');
+      setInviteEmail('');
+      setInviteName('');
+    },
+    onError: (error) => {
+      toast.error('Failed to invite user');
+    }
+  });
+
+  const inviteDemoUsers = async () => {
+    for (const demoUser of DEMO_USERS) {
+      const exists = users.find(u => u.email === demoUser.email);
+      if (!exists) {
+        try {
+          await base44.users.inviteUser(demoUser.email, demoUser.role);
+          toast.success(`Invited ${demoUser.full_name}`);
+        } catch (e) {
+          toast.error(`Failed to invite ${demoUser.email}`);
+        }
+      }
+    }
+    queryClient.invalidateQueries(['all-users']);
+  };
+
+  const copyCredentials = () => {
+    const credentials = DEMO_USERS.map(u => `${u.full_name} (${u.portal_role}): ${u.email}`).join('\n');
+    navigator.clipboard.writeText(credentials);
+    toast.success('Demo credentials copied to clipboard');
+  };
+
+  const userRole = user?.role;
+  if (userRole !== 'admin') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50">
+        <div className="max-w-4xl mx-auto px-4 py-16 text-center">
+          <AlertCircle className="w-16 h-16 mx-auto text-amber-500 mb-4" />
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Access Restricted</h1>
+          <p className="text-gray-500">Only admins can manage users.</p>
+          <Link to={createPageUrl('Dashboard')}>
+            <Button className="mt-6" variant="outline">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Go to Dashboard
+            </Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
+          <p className="text-gray-500 mt-1">
+            Invite users and manage access to the portal
+          </p>
+        </div>
+
+        {/* Demo Users Setup */}
+        <Card className="mb-6 border-0 shadow-sm bg-gradient-to-br from-blue-50 to-indigo-50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="w-5 h-5 text-blue-600" />
+              Demo Users for Testing
+            </CardTitle>
+            <CardDescription>
+              Quick setup with pre-configured test users for each role
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid sm:grid-cols-2 gap-3">
+              {DEMO_USERS.map(demo => (
+                <div key={demo.email} className="p-3 bg-white rounded-lg border">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium text-sm">{demo.full_name}</p>
+                      <p className="text-xs text-gray-500">{demo.email}</p>
+                      <Badge className="mt-1 text-xs" variant="outline">
+                        {demo.portal_role.replace('_', ' ')}
+                      </Badge>
+                    </div>
+                    {users.find(u => u.email === demo.email) && (
+                      <CheckCircle className="w-5 h-5 text-green-600" />
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            <div className="flex gap-3 pt-4 border-t">
+              <Button 
+                onClick={inviteDemoUsers}
+                className="bg-blue-600 hover:bg-blue-700"
+                disabled={inviteMutation.isPending}
+              >
+                <UserPlus className="w-4 h-4 mr-2" />
+                Invite All Demo Users
+              </Button>
+              <Button 
+                variant="outline"
+                onClick={copyCredentials}
+              >
+                <Copy className="w-4 h-4 mr-2" />
+                Copy Credentials
+              </Button>
+            </div>
+
+            <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+              <div className="flex gap-2">
+                <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                <div className="text-sm">
+                  <p className="font-medium text-amber-900">Testing Note</p>
+                  <p className="text-amber-700 mt-1">
+                    After inviting users, they will receive invitation emails. 
+                    For testing in development, check your Base44 dashboard for magic login links.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Invite Single User */}
+        <Card className="mb-6 border-0 shadow-sm">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Mail className="w-5 h-5 text-indigo-600" />
+              Invite New User
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Email Address</Label>
+                <Input
+                  type="email"
+                  placeholder="user@example.com"
+                  value={inviteEmail}
+                  onChange={(e) => setInviteEmail(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Full Name</Label>
+                <Input
+                  placeholder="John Doe"
+                  value={inviteName}
+                  onChange={(e) => setInviteName(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>System Role</Label>
+                <Select value={inviteRole} onValueChange={setInviteRole}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="user">User</SelectItem>
+                    <SelectItem value="admin">Admin</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Portal Role</Label>
+                <Select value={invitePortalRole} onValueChange={setInvitePortalRole}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="employee">Employee</SelectItem>
+                    <SelectItem value="junior_admin">Junior Admin</SelectItem>
+                    <SelectItem value="manager">Manager/HOD</SelectItem>
+                    <SelectItem value="admin_head">Admin Head</SelectItem>
+                    <SelectItem value="cro">CRO</SelectItem>
+                    <SelectItem value="cfo">CFO</SelectItem>
+                    <SelectItem value="finance">Finance</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <Button 
+              className="mt-4 bg-indigo-600 hover:bg-indigo-700"
+              onClick={() => inviteMutation.mutate({
+                email: inviteEmail,
+                role: inviteRole,
+                portal_role: invitePortalRole,
+                full_name: inviteName
+              })}
+              disabled={!inviteEmail || !inviteName || inviteMutation.isPending}
+            >
+              <UserPlus className="w-4 h-4 mr-2" />
+              Send Invitation
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Current Users */}
+        <Card className="border-0 shadow-sm">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Shield className="w-5 h-5 text-green-600" />
+              Current Users
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {isLoading ? (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto" />
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-gray-50">
+                    <TableHead>Name</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>System Role</TableHead>
+                    <TableHead>Portal Role</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {users.map(user => (
+                    <TableRow key={user.id}>
+                      <TableCell className="font-medium">{user.full_name}</TableCell>
+                      <TableCell>{user.email}</TableCell>
+                      <TableCell>
+                        <Badge variant={user.role === 'admin' ? 'default' : 'secondary'}>
+                          {user.role}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline">
+                          {user.portal_role?.replace('_', ' ') || 'employee'}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}

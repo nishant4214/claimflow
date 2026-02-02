@@ -57,6 +57,8 @@ import AdminCategories from './pages/AdminCategories';
 import WorkflowConfig from './pages/WorkflowConfig';
 import Reports from './pages/Reports';
 import Notifications from './pages/Notifications';
+import UserManagement from './pages/UserManagement';
+import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
@@ -70,9 +72,11 @@ export const PAGES = {
     "WorkflowConfig": WorkflowConfig,
     "Reports": Reports,
     "Notifications": Notifications,
+    "UserManagement": UserManagement,
 }
 
 export const pagesConfig = {
     mainPage: "Dashboard",
     Pages: PAGES,
+    Layout: __Layout,
 };

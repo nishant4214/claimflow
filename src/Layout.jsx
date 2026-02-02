@@ -73,6 +73,7 @@ const roleMenuConfig = {
     { name: 'Categories', icon: Tag, page: 'AdminCategories' },
     { name: 'Workflow Config', icon: GitBranch, page: 'WorkflowConfig' },
     { name: 'Reports', icon: BarChart3, page: 'Reports' },
+    { name: 'User Management', icon: User, page: 'UserManagement' },
     { name: 'Notifications', icon: Bell, page: 'Notifications' },
   ],
 };
