@@ -145,17 +145,32 @@ export default function Layout({ children, currentPageName }) {
       {/* Desktop Sidebar */}
       <aside className="fixed left-0 top-0 z-40 h-screen w-64 bg-white border-r border-gray-200 hidden lg:block">
         <div className="flex flex-col h-full">
-          {/* Logo */}
+          {/* User Profile Header */}
           <div className="p-6 border-b">
-            <Link to={createPageUrl('Dashboard')} className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center">
-                <FileText className="w-6 h-6 text-white" />
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold text-lg">
+                {user?.full_name?.charAt(0) || 'U'}
               </div>
-              <div>
-                <h1 className="font-bold text-gray-900">ClaimFlow</h1>
-                <p className="text-xs text-gray-500">Reimbursement Portal</p>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-gray-900 truncate">{user?.full_name || 'User'}</p>
+                <p className="text-xs text-gray-500 capitalize truncate">{userRole.replace('_', ' ')}</p>
               </div>
-            </Link>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <ChevronRight className="w-4 h-4 text-gray-400" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem className="text-red-600" onClick={handleLogout}>
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
 
           {/* Navigation */}
@@ -164,44 +179,21 @@ export default function Layout({ children, currentPageName }) {
               <NavLink key={item.page} item={item} />
             ))}
           </nav>
-
-          {/* User Section */}
-          <div className="p-4 border-t">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-gray-100 transition-colors">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold">
-                    {user?.full_name?.charAt(0) || 'U'}
-                  </div>
-                  <div className="flex-1 text-left">
-                    <p className="font-medium text-gray-900 truncate">{user?.full_name || 'User'}</p>
-                    <p className="text-xs text-gray-500 capitalize">{userRole.replace('_', ' ')}</p>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-gray-400" />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-red-600" onClick={handleLogout}>
-                  <LogOut className="w-4 h-4 mr-2" />
-                  Logout
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
         </div>
       </aside>
 
       {/* Mobile Header */}
       <header className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 px-4 py-3">
         <div className="flex items-center justify-between">
-          <Link to={createPageUrl('Dashboard')} className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center">
-              <FileText className="w-4 h-4 text-white" />
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold">
+              {user?.full_name?.charAt(0) || 'U'}
             </div>
-            <span className="font-bold text-gray-900">ClaimFlow</span>
-          </Link>
+            <div>
+              <p className="font-semibold text-gray-900 text-sm">{user?.full_name || 'User'}</p>
+              <p className="text-xs text-gray-500 capitalize">{userRole.replace('_', ' ')}</p>
+            </div>
+          </div>
           
           <div className="flex items-center gap-2">
             <Link to={createPageUrl('Notifications')}>
@@ -223,22 +215,13 @@ export default function Layout({ children, currentPageName }) {
               </SheetTrigger>
               <SheetContent side="left" className="w-72 p-0">
                 <div className="flex flex-col h-full">
-                  <div className="p-4 border-b flex items-center justify-between">
-                    <span className="font-bold text-gray-900">Menu</span>
-                    <Button variant="ghost" size="icon" onClick={() => setMobileOpen(false)}>
-                      <X className="w-5 h-5" />
-                    </Button>
-                  </div>
-                  <nav className="flex-1 p-4 space-y-1">
-                    {menuItems.map((item) => (
-                      <NavLink 
-                        key={item.page} 
-                        item={item} 
-                        onClick={() => setMobileOpen(false)}
-                      />
-                    ))}
-                  </nav>
-                  <div className="p-4 border-t">
+                  <div className="p-4 border-b">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="font-bold text-gray-900">Menu</span>
+                      <Button variant="ghost" size="icon" onClick={() => setMobileOpen(false)}>
+                        <X className="w-5 h-5" />
+                      </Button>
+                    </div>
                     <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
                       <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold">
                         {user?.full_name?.charAt(0) || 'U'}
@@ -248,9 +231,20 @@ export default function Layout({ children, currentPageName }) {
                         <p className="text-xs text-gray-500 capitalize">{userRole.replace('_', ' ')}</p>
                       </div>
                     </div>
+                  </div>
+                  <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+                    {menuItems.map((item) => (
+                      <NavLink 
+                        key={item.page} 
+                        item={item} 
+                        onClick={() => setMobileOpen(false)}
+                      />
+                    ))}
+                  </nav>
+                  <div className="p-4 border-t">
                     <Button 
                       variant="outline" 
-                      className="w-full mt-3 text-red-600 border-red-200 hover:bg-red-50"
+                      className="w-full text-red-600 border-red-200 hover:bg-red-50"
                       onClick={handleLogout}
                     >
                       <LogOut className="w-4 h-4 mr-2" />

@@ -18,6 +18,7 @@ import ClaimCard from '../components/claims/ClaimCard';
 export default function Dashboard() {
   const [user, setUser] = useState(null);
   const [statusFilter, setStatusFilter] = useState('all');
+  const [viewMode, setViewMode] = useState('my_claims'); // 'my_claims' or 'pending_actions'
 
   useEffect(() => {
     const loadUser = async () => {
@@ -27,11 +28,35 @@ export default function Dashboard() {
     loadUser();
   }, []);
 
-  const { data: claims = [], isLoading } = useQuery({
+  const { data: myClaims = [], isLoading: myClaimsLoading } = useQuery({
     queryKey: ['my-claims', user?.email],
     queryFn: () => base44.entities.Claim.filter({ created_by: user?.email }, '-created_date'),
     enabled: !!user?.email,
   });
+
+  const userRole = user?.portal_role || user?.role || 'employee';
+  const canApprove = ['junior_admin', 'manager', 'admin_head', 'cro', 'cfo', 'finance', 'admin'].includes(userRole);
+
+  const { data: pendingClaims = [], isLoading: pendingLoading } = useQuery({
+    queryKey: ['pending-approvals', userRole],
+    queryFn: async () => {
+      const roleStatusMap = {
+        junior_admin: 'submitted',
+        manager: 'verified',
+        admin_head: 'manager_approved',
+        cro: 'admin_approved',
+        cfo: 'cro_approved',
+        finance: 'cfo_approved',
+      };
+      const targetStatus = roleStatusMap[userRole];
+      if (!targetStatus) return [];
+      return base44.entities.Claim.filter({ status: targetStatus }, '-created_date');
+    },
+    enabled: !!user && canApprove,
+  });
+
+  const claims = viewMode === 'my_claims' ? myClaims : pendingClaims;
+  const isLoading = viewMode === 'my_claims' ? myClaimsLoading : pendingLoading;
 
   const stats = {
     total: claims.length,
@@ -77,6 +102,29 @@ export default function Dashboard() {
           </Link>
         </div>
 
+        {/* View Toggle */}
+        {canApprove && (
+          <div className="mb-6">
+            <Tabs value={viewMode} onValueChange={setViewMode}>
+              <TabsList className="bg-white border shadow-sm">
+                <TabsTrigger value="my_claims" className="gap-2">
+                  <FileText className="w-4 h-4" />
+                  My Claims
+                </TabsTrigger>
+                <TabsTrigger value="pending_actions" className="gap-2">
+                  <CheckCircle className="w-4 h-4" />
+                  Pending Actions
+                  {pendingClaims.length > 0 && (
+                    <span className="ml-1 px-2 py-0.5 bg-red-500 text-white text-xs rounded-full">
+                      {pendingClaims.length}
+                    </span>
+                  )}
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
+        )}
+
         {/* Stats Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <StatsCard
@@ -114,7 +162,9 @@ export default function Dashboard() {
           <Card className="lg:col-span-2 border-0 shadow-sm">
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-lg font-semibold">Claims Overview</CardTitle>
+                <CardTitle className="text-lg font-semibold">
+                  {viewMode === 'my_claims' ? 'My Claims' : 'Pending My Action'}
+                </CardTitle>
                 <div className="flex items-center gap-2">
                   <Filter className="w-4 h-4 text-gray-400" />
                   <Tabs value={statusFilter} onValueChange={setStatusFilter}>

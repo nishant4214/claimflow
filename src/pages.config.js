@@ -57,9 +57,9 @@ import MyClaims from './pages/MyClaims';
 import Notifications from './pages/Notifications';
 import Reports from './pages/Reports';
 import SubmitClaim from './pages/SubmitClaim';
+import TestCredentials from './pages/TestCredentials';
 import UserManagement from './pages/UserManagement';
 import WorkflowConfig from './pages/WorkflowConfig';
-import TestCredentials from './pages/TestCredentials';
 import __Layout from './Layout.jsx';
 
 
@@ -74,9 +74,9 @@ export const PAGES = {
     "Notifications": Notifications,
     "Reports": Reports,
     "SubmitClaim": SubmitClaim,
+    "TestCredentials": TestCredentials,
     "UserManagement": UserManagement,
     "WorkflowConfig": WorkflowConfig,
-    "TestCredentials": TestCredentials,
 }
 
 export const pagesConfig = {
