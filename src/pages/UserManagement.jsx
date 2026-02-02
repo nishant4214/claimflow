@@ -180,14 +180,14 @@ export default function UserManagement() {
               </Button>
             </div>
 
-            <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
               <div className="flex gap-2">
-                <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
                 <div className="text-sm">
-                  <p className="font-medium text-amber-900">🔐 Passwordless Authentication</p>
-                  <p className="text-amber-700 mt-1">
-                    This app uses magic link login - no passwords needed! After inviting users, 
-                    check your Base44 dashboard for magic login links to access each test account.
+                  <p className="font-medium text-blue-900">Simple Setup</p>
+                  <p className="text-blue-700 mt-1">
+                    Create test users directly in Base44 dashboard (Settings → Users) and assign their portal_role. 
+                    Then login using standard Base44 authentication.
                   </p>
                 </div>
               </div>

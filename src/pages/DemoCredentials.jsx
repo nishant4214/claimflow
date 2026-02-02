@@ -130,20 +130,12 @@ export default function DemoCredentials() {
             <div className="flex items-start gap-3">
               <Info className="w-6 h-6 text-blue-600 mt-0.5 flex-shrink-0" />
               <div>
-                <h3 className="font-semibold text-gray-900 mb-3">🔐 Passwordless Login - No Password Required!</h3>
-                <div className="p-3 bg-white rounded-lg border border-blue-200 mb-3">
-                  <p className="text-sm font-medium text-blue-900 mb-1">This app uses magic link authentication (passwordless)</p>
-                  <p className="text-sm text-blue-700">You don't need a password - just enter the email and you'll receive a secure login link!</p>
-                </div>
-                <h4 className="font-medium text-gray-900 mb-2 text-sm">How to Login as Any Demo User:</h4>
+                <h3 className="font-semibold text-gray-900 mb-3">How to Test Different Roles</h3>
                 <ol className="list-decimal list-inside space-y-1.5 text-sm text-gray-700">
-                  <li>Click any email address below to copy it</li>
-                  <li>Logout from current session (click your profile → Logout)</li>
-                  <li>On the login page, paste the email and click "Continue with Email"</li>
-                  <li><strong>Important:</strong> Open your Base44 dashboard/admin panel to get the magic login link</li>
-                  <li>Click the magic link to login instantly - no password needed!</li>
-                  <li>Test the role-specific features for that user</li>
-                  <li>Repeat for other roles to test the complete workflow</li>
+                  <li>Create these test users in your Base44 dashboard (Settings → Users)</li>
+                  <li>Assign the portal_role as shown below for each user</li>
+                  <li>Login using Base44's standard authentication</li>
+                  <li>Test the workflow by logging in as different roles</li>
                 </ol>
               </div>
             </div>
