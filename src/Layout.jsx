@@ -68,13 +68,13 @@ const roleMenuConfig = {
   ],
   admin: [
     { name: 'Dashboard', icon: LayoutDashboard, page: 'Dashboard' },
+    { name: 'Test Credentials', icon: Users, page: 'TestCredentials' },
     { name: 'Approvals', icon: CheckSquare, page: 'Approvals' },
     { name: 'Finance', icon: Wallet, page: 'Finance' },
     { name: 'Categories', icon: Tag, page: 'AdminCategories' },
     { name: 'Workflow Config', icon: GitBranch, page: 'WorkflowConfig' },
     { name: 'Reports', icon: BarChart3, page: 'Reports' },
     { name: 'User Management', icon: User, page: 'UserManagement' },
-    { name: 'Demo Credentials', icon: Users, page: 'DemoCredentials' },
     { name: 'Notifications', icon: Bell, page: 'Notifications' },
   ],
 };
