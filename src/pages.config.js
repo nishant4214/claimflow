@@ -53,6 +53,10 @@ import MyClaims from './pages/MyClaims';
 import ClaimDetails from './pages/ClaimDetails';
 import Approvals from './pages/Approvals';
 import Finance from './pages/Finance';
+import AdminCategories from './pages/AdminCategories';
+import WorkflowConfig from './pages/WorkflowConfig';
+import Reports from './pages/Reports';
+import Notifications from './pages/Notifications';
 
 
 export const PAGES = {
@@ -62,6 +66,10 @@ export const PAGES = {
     "ClaimDetails": ClaimDetails,
     "Approvals": Approvals,
     "Finance": Finance,
+    "AdminCategories": AdminCategories,
+    "WorkflowConfig": WorkflowConfig,
+    "Reports": Reports,
+    "Notifications": Notifications,
 }
 
 export const pagesConfig = {
