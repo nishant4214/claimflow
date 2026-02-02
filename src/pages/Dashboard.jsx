@@ -18,12 +18,17 @@ import ClaimCard from '../components/claims/ClaimCard';
 export default function Dashboard() {
   const [user, setUser] = useState(null);
   const [statusFilter, setStatusFilter] = useState('all');
-  const [viewMode, setViewMode] = useState('my_claims'); // 'my_claims' or 'pending_actions'
+  const [viewMode, setViewMode] = useState(null); // Will be set based on user role
 
   useEffect(() => {
     const loadUser = async () => {
       const userData = await base44.auth.me();
       setUser(userData);
+      
+      // Set default view based on role
+      const role = userData?.portal_role || userData?.role || 'employee';
+      const isApprover = ['junior_admin', 'manager', 'admin_head', 'cro', 'cfo', 'finance', 'admin'].includes(role);
+      setViewMode(isApprover ? 'pending_actions' : 'my_claims');
     };
     loadUser();
   }, []);
@@ -107,18 +112,18 @@ export default function Dashboard() {
           <div className="mb-6">
             <Tabs value={viewMode} onValueChange={setViewMode}>
               <TabsList className="bg-white border shadow-sm">
-                <TabsTrigger value="my_claims" className="gap-2">
-                  <FileText className="w-4 h-4" />
-                  My Claims
-                </TabsTrigger>
                 <TabsTrigger value="pending_actions" className="gap-2">
                   <CheckCircle className="w-4 h-4" />
-                  Pending Actions
+                  Employee Claims
                   {pendingClaims.length > 0 && (
                     <span className="ml-1 px-2 py-0.5 bg-red-500 text-white text-xs rounded-full">
                       {pendingClaims.length}
                     </span>
                   )}
+                </TabsTrigger>
+                <TabsTrigger value="my_claims" className="gap-2">
+                  <FileText className="w-4 h-4" />
+                  My Own Claims
                 </TabsTrigger>
               </TabsList>
             </Tabs>
@@ -163,7 +168,7 @@ export default function Dashboard() {
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg font-semibold">
-                  {viewMode === 'my_claims' ? 'My Claims' : 'Pending My Action'}
+                  {viewMode === 'my_claims' ? 'My Own Claims' : 'Employee Claims - Pending My Action'}
                 </CardTitle>
                 <div className="flex items-center gap-2">
                   <Filter className="w-4 h-4 text-gray-400" />
