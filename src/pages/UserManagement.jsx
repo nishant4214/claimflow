@@ -55,9 +55,11 @@ export default function UserManagement() {
     loadUser();
   }, []);
 
-  const { data: users = [], isLoading } = useQuery({
+  const { data: users = [], isLoading, isError, error } = useQuery({
     queryKey: ['all-users'],
-    queryFn: () => base44.entities.User.list(),
+    queryFn: () => base44.entities.User.list('-created_date', 100),
+    retry: 1,
+    staleTime: 30000,
   });
 
   const inviteMutation = useMutation({
@@ -280,6 +282,18 @@ export default function UserManagement() {
             {isLoading ? (
               <div className="text-center py-8">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto" />
+              </div>
+            ) : isError ? (
+              <div className="text-center py-8">
+                <AlertCircle className="w-12 h-12 mx-auto text-red-500 mb-4" />
+                <p className="text-gray-600">Failed to load users</p>
+                <Button 
+                  variant="outline" 
+                  className="mt-4"
+                  onClick={() => queryClient.invalidateQueries(['all-users'])}
+                >
+                  Retry
+                </Button>
               </div>
             ) : (
               <Table>
