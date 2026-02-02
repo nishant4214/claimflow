@@ -23,7 +23,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { 
   UserPlus, Mail, Shield, Users, AlertCircle,
-  ArrowLeft, CheckCircle, Copy
+  ArrowLeft, CheckCircle, Copy, Info
 } from "lucide-react";
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
