@@ -58,6 +58,7 @@ import WorkflowConfig from './pages/WorkflowConfig';
 import Reports from './pages/Reports';
 import Notifications from './pages/Notifications';
 import UserManagement from './pages/UserManagement';
+import DemoCredentials from './pages/DemoCredentials';
 import __Layout from './Layout.jsx';
 
 
@@ -73,6 +74,7 @@ export const PAGES = {
     "Reports": Reports,
     "Notifications": Notifications,
     "UserManagement": UserManagement,
+    "DemoCredentials": DemoCredentials,
 }
 
 export const pagesConfig = {

@@ -74,6 +74,7 @@ const roleMenuConfig = {
     { name: 'Workflow Config', icon: GitBranch, page: 'WorkflowConfig' },
     { name: 'Reports', icon: BarChart3, page: 'Reports' },
     { name: 'User Management', icon: User, page: 'UserManagement' },
+    { name: 'Demo Credentials', icon: Users, page: 'DemoCredentials' },
     { name: 'Notifications', icon: Bell, page: 'Notifications' },
   ],
 };
@@ -110,7 +111,7 @@ export default function Layout({ children, currentPageName }) {
   const unreadCount = notifications.length;
 
   const handleLogout = () => {
-    base44.auth.logout();
+    base44.auth.logout(createPageUrl('Login'));
   };
 
   const NavLink = ({ item, onClick }) => {
