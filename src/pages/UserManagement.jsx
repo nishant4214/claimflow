@@ -184,10 +184,10 @@ export default function UserManagement() {
               <div className="flex gap-2">
                 <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
                 <div className="text-sm">
-                  <p className="font-medium text-amber-900">Testing Note</p>
+                  <p className="font-medium text-amber-900">🔐 Passwordless Authentication</p>
                   <p className="text-amber-700 mt-1">
-                    After inviting users, they will receive invitation emails. 
-                    For testing in development, check your Base44 dashboard for magic login links.
+                    This app uses magic link login - no passwords needed! After inviting users, 
+                    check your Base44 dashboard for magic login links to access each test account.
                   </p>
                 </div>
               </div>

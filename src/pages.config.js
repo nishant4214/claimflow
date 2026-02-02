@@ -47,34 +47,34 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
-import Dashboard from './pages/Dashboard';
-import SubmitClaim from './pages/SubmitClaim';
-import MyClaims from './pages/MyClaims';
-import ClaimDetails from './pages/ClaimDetails';
-import Approvals from './pages/Approvals';
-import Finance from './pages/Finance';
 import AdminCategories from './pages/AdminCategories';
-import WorkflowConfig from './pages/WorkflowConfig';
-import Reports from './pages/Reports';
-import Notifications from './pages/Notifications';
-import UserManagement from './pages/UserManagement';
+import Approvals from './pages/Approvals';
+import ClaimDetails from './pages/ClaimDetails';
+import Dashboard from './pages/Dashboard';
 import DemoCredentials from './pages/DemoCredentials';
+import Finance from './pages/Finance';
+import MyClaims from './pages/MyClaims';
+import Notifications from './pages/Notifications';
+import Reports from './pages/Reports';
+import SubmitClaim from './pages/SubmitClaim';
+import UserManagement from './pages/UserManagement';
+import WorkflowConfig from './pages/WorkflowConfig';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
-    "Dashboard": Dashboard,
-    "SubmitClaim": SubmitClaim,
-    "MyClaims": MyClaims,
-    "ClaimDetails": ClaimDetails,
-    "Approvals": Approvals,
-    "Finance": Finance,
     "AdminCategories": AdminCategories,
-    "WorkflowConfig": WorkflowConfig,
-    "Reports": Reports,
-    "Notifications": Notifications,
-    "UserManagement": UserManagement,
+    "Approvals": Approvals,
+    "ClaimDetails": ClaimDetails,
+    "Dashboard": Dashboard,
     "DemoCredentials": DemoCredentials,
+    "Finance": Finance,
+    "MyClaims": MyClaims,
+    "Notifications": Notifications,
+    "Reports": Reports,
+    "SubmitClaim": SubmitClaim,
+    "UserManagement": UserManagement,
+    "WorkflowConfig": WorkflowConfig,
 }
 
 export const pagesConfig = {

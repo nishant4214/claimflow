@@ -130,14 +130,20 @@ export default function DemoCredentials() {
             <div className="flex items-start gap-3">
               <Info className="w-6 h-6 text-blue-600 mt-0.5 flex-shrink-0" />
               <div>
-                <h3 className="font-semibold text-gray-900 mb-2">How to Test with Demo Users</h3>
-                <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
-                  <li>Click the email address to copy it</li>
-                  <li>Logout from your current session (if logged in)</li>
+                <h3 className="font-semibold text-gray-900 mb-3">🔐 Passwordless Login - No Password Required!</h3>
+                <div className="p-3 bg-white rounded-lg border border-blue-200 mb-3">
+                  <p className="text-sm font-medium text-blue-900 mb-1">This app uses magic link authentication (passwordless)</p>
+                  <p className="text-sm text-blue-700">You don't need a password - just enter the email and you'll receive a secure login link!</p>
+                </div>
+                <h4 className="font-medium text-gray-900 mb-2 text-sm">How to Login as Any Demo User:</h4>
+                <ol className="list-decimal list-inside space-y-1.5 text-sm text-gray-700">
+                  <li>Click any email address below to copy it</li>
+                  <li>Logout from current session (click your profile → Logout)</li>
                   <li>On the login page, paste the email and click "Continue with Email"</li>
-                  <li>Check your Base44 dashboard for the magic login link</li>
-                  <li>Login and test the role-specific features</li>
-                  <li>Repeat to test different roles and approval workflows</li>
+                  <li><strong>Important:</strong> Open your Base44 dashboard/admin panel to get the magic login link</li>
+                  <li>Click the magic link to login instantly - no password needed!</li>
+                  <li>Test the role-specific features for that user</li>
+                  <li>Repeat for other roles to test the complete workflow</li>
                 </ol>
               </div>
             </div>
