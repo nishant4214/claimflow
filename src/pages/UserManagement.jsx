@@ -45,6 +45,8 @@ export default function UserManagement() {
   const [inviteRole, setInviteRole] = useState('user');
   const [invitePortalRole, setInvitePortalRole] = useState('employee');
   const [inviteName, setInviteName] = useState('');
+  const [inviteDepartment, setInviteDepartment] = useState('');
+  const [inviteDesignation, setInviteDesignation] = useState('');
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -63,38 +65,64 @@ export default function UserManagement() {
   });
 
   const inviteMutation = useMutation({
-    mutationFn: async ({ email, role, portal_role, full_name }) => {
+    mutationFn: async ({ email, role, portal_role, full_name, department, designation }) => {
       await base44.users.inviteUser(email, role);
-      // Update user with portal_role and name after invitation
-      const userRecord = users.find(u => u.email === email);
-      if (userRecord) {
-        await base44.entities.User.update(userRecord.id, { portal_role, full_name });
+      
+      // Wait a moment for user to be created
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Fetch fresh user list to get the new user
+      const freshUsers = await base44.entities.User.list('-created_date', 200);
+      const newUser = freshUsers.find(u => u.email === email);
+      
+      if (newUser) {
+        await base44.entities.User.update(newUser.id, { 
+          portal_role, 
+          full_name,
+          department: department || 'General',
+          designation: designation || 'Employee'
+        });
       }
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['all-users']);
-      toast.success('User invited successfully');
+      toast.success('User invited successfully with portal role assigned');
       setInviteEmail('');
       setInviteName('');
     },
     onError: (error) => {
-      toast.error('Failed to invite user');
+      toast.error('Failed to invite user: ' + (error.message || 'Unknown error'));
     }
   });
 
   const inviteDemoUsers = async () => {
+    toast.info('Inviting demo users...');
     for (const demoUser of DEMO_USERS) {
       const exists = users.find(u => u.email === demoUser.email);
       if (!exists) {
         try {
           await base44.users.inviteUser(demoUser.email, demoUser.role);
-          toast.success(`Invited ${demoUser.full_name}`);
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
+          const freshUsers = await base44.entities.User.list('-created_date', 200);
+          const newUser = freshUsers.find(u => u.email === demoUser.email);
+          
+          if (newUser) {
+            await base44.entities.User.update(newUser.id, { 
+              portal_role: demoUser.portal_role,
+              full_name: demoUser.full_name,
+              department: 'Demo',
+              designation: demoUser.portal_role.replace('_', ' ')
+            });
+          }
+          toast.success(`✓ ${demoUser.full_name}`);
         } catch (e) {
-          toast.error(`Failed to invite ${demoUser.email}`);
+          toast.error(`✗ ${demoUser.email}`);
         }
       }
     }
     queryClient.invalidateQueries(['all-users']);
+    toast.success('All demo users setup complete!');
   };
 
   const copyCredentials = () => {
@@ -208,7 +236,7 @@ export default function UserManagement() {
           <CardContent>
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Email Address</Label>
+                <Label>Email Address *</Label>
                 <Input
                   type="email"
                   placeholder="user@example.com"
@@ -217,7 +245,7 @@ export default function UserManagement() {
                 />
               </div>
               <div className="space-y-2">
-                <Label>Full Name</Label>
+                <Label>Full Name *</Label>
                 <Input
                   placeholder="John Doe"
                   value={inviteName}
@@ -225,31 +253,47 @@ export default function UserManagement() {
                 />
               </div>
               <div className="space-y-2">
-                <Label>System Role</Label>
+                <Label>Department *</Label>
+                <Input
+                  placeholder="Sales, IT, HR, etc."
+                  value={inviteDepartment}
+                  onChange={(e) => setInviteDepartment(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Designation *</Label>
+                <Input
+                  placeholder="Manager, Executive, etc."
+                  value={inviteDesignation}
+                  onChange={(e) => setInviteDesignation(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Portal Role (Approval Level) *</Label>
+                <Select value={invitePortalRole} onValueChange={setInvitePortalRole}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="employee">Employee (Submit Claims)</SelectItem>
+                    <SelectItem value="junior_admin">Junior Admin (Verify)</SelectItem>
+                    <SelectItem value="manager">Manager/HOD (Approve)</SelectItem>
+                    <SelectItem value="admin_head">Admin Head (Approve)</SelectItem>
+                    <SelectItem value="cro">CRO (Approve)</SelectItem>
+                    <SelectItem value="cfo">CFO (Final Approve)</SelectItem>
+                    <SelectItem value="finance">Finance (Process Payment)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>System Access Level</Label>
                 <Select value={inviteRole} onValueChange={setInviteRole}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="user">User</SelectItem>
-                    <SelectItem value="admin">Admin</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Portal Role</Label>
-                <Select value={invitePortalRole} onValueChange={setInvitePortalRole}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="employee">Employee</SelectItem>
-                    <SelectItem value="junior_admin">Junior Admin</SelectItem>
-                    <SelectItem value="manager">Manager/HOD</SelectItem>
-                    <SelectItem value="admin_head">Admin Head</SelectItem>
-                    <SelectItem value="cro">CRO</SelectItem>
-                    <SelectItem value="cfo">CFO</SelectItem>
-                    <SelectItem value="finance">Finance</SelectItem>
+                    <SelectItem value="admin">Admin (Full Access)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -260,12 +304,14 @@ export default function UserManagement() {
                 email: inviteEmail,
                 role: inviteRole,
                 portal_role: invitePortalRole,
-                full_name: inviteName
+                full_name: inviteName,
+                department: inviteDepartment,
+                designation: inviteDesignation
               })}
-              disabled={!inviteEmail || !inviteName || inviteMutation.isPending}
+              disabled={!inviteEmail || !inviteName || !inviteDepartment || !inviteDesignation || inviteMutation.isPending}
             >
               <UserPlus className="w-4 h-4 mr-2" />
-              Send Invitation
+              {inviteMutation.isPending ? 'Inviting...' : 'Send Invitation'}
             </Button>
           </CardContent>
         </Card>
@@ -301,23 +347,34 @@ export default function UserManagement() {
                   <TableRow className="bg-gray-50">
                     <TableHead>Name</TableHead>
                     <TableHead>Email</TableHead>
-                    <TableHead>System Role</TableHead>
+                    <TableHead>Department</TableHead>
                     <TableHead>Portal Role</TableHead>
+                    <TableHead>System Access</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {users.map(user => (
                     <TableRow key={user.id}>
-                      <TableCell className="font-medium">{user.full_name}</TableCell>
+                      <TableCell>
+                        <div>
+                          <p className="font-medium">{user.full_name}</p>
+                          <p className="text-xs text-gray-500">{user.designation || '-'}</p>
+                        </div>
+                      </TableCell>
                       <TableCell>{user.email}</TableCell>
                       <TableCell>
-                        <Badge variant={user.role === 'admin' ? 'default' : 'secondary'}>
-                          {user.role}
+                        <Badge variant="secondary">
+                          {user.department || 'Not Set'}
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline">
-                          {user.portal_role?.replace('_', ' ') || 'employee'}
+                        <Badge className="bg-blue-100 text-blue-800 border-blue-200">
+                          {user.portal_role?.replace('_', ' ').toUpperCase() || 'EMPLOYEE'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={user.role === 'admin' ? 'default' : 'outline'}>
+                          {user.role}
                         </Badge>
                       </TableCell>
                     </TableRow>
