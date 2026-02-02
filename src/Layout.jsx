@@ -1,0 +1,271 @@
+import React, { useState, useEffect } from 'react';
+import { base44 } from '@/api/base44Client';
+import { useQuery } from '@tanstack/react-query';
+import { Link, useNavigate } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { 
+  LayoutDashboard, FileText, Plus, CheckSquare, 
+  Wallet, Settings, Tag, GitBranch, BarChart3, 
+  Bell, User, LogOut, Menu, ChevronRight, X
+} from "lucide-react";
+
+const roleMenuConfig = {
+  employee: [
+    { name: 'Dashboard', icon: LayoutDashboard, page: 'Dashboard' },
+    { name: 'Submit Claim', icon: Plus, page: 'SubmitClaim' },
+    { name: 'My Claims', icon: FileText, page: 'MyClaims' },
+    { name: 'Notifications', icon: Bell, page: 'Notifications' },
+  ],
+  junior_admin: [
+    { name: 'Dashboard', icon: LayoutDashboard, page: 'Dashboard' },
+    { name: 'Approvals', icon: CheckSquare, page: 'Approvals' },
+    { name: 'My Claims', icon: FileText, page: 'MyClaims' },
+    { name: 'Notifications', icon: Bell, page: 'Notifications' },
+  ],
+  manager: [
+    { name: 'Dashboard', icon: LayoutDashboard, page: 'Dashboard' },
+    { name: 'Approvals', icon: CheckSquare, page: 'Approvals' },
+    { name: 'My Claims', icon: FileText, page: 'MyClaims' },
+    { name: 'Notifications', icon: Bell, page: 'Notifications' },
+  ],
+  admin_head: [
+    { name: 'Dashboard', icon: LayoutDashboard, page: 'Dashboard' },
+    { name: 'Approvals', icon: CheckSquare, page: 'Approvals' },
+    { name: 'My Claims', icon: FileText, page: 'MyClaims' },
+    { name: 'Categories', icon: Tag, page: 'AdminCategories' },
+    { name: 'Workflow Config', icon: GitBranch, page: 'WorkflowConfig' },
+    { name: 'Reports', icon: BarChart3, page: 'Reports' },
+    { name: 'Notifications', icon: Bell, page: 'Notifications' },
+  ],
+  cro: [
+    { name: 'Dashboard', icon: LayoutDashboard, page: 'Dashboard' },
+    { name: 'Approvals', icon: CheckSquare, page: 'Approvals' },
+    { name: 'My Claims', icon: FileText, page: 'MyClaims' },
+    { name: 'Notifications', icon: Bell, page: 'Notifications' },
+  ],
+  cfo: [
+    { name: 'Dashboard', icon: LayoutDashboard, page: 'Dashboard' },
+    { name: 'Approvals', icon: CheckSquare, page: 'Approvals' },
+    { name: 'Reports', icon: BarChart3, page: 'Reports' },
+    { name: 'Notifications', icon: Bell, page: 'Notifications' },
+  ],
+  finance: [
+    { name: 'Dashboard', icon: LayoutDashboard, page: 'Dashboard' },
+    { name: 'Finance', icon: Wallet, page: 'Finance' },
+    { name: 'Reports', icon: BarChart3, page: 'Reports' },
+    { name: 'Notifications', icon: Bell, page: 'Notifications' },
+  ],
+  admin: [
+    { name: 'Dashboard', icon: LayoutDashboard, page: 'Dashboard' },
+    { name: 'Approvals', icon: CheckSquare, page: 'Approvals' },
+    { name: 'Finance', icon: Wallet, page: 'Finance' },
+    { name: 'Categories', icon: Tag, page: 'AdminCategories' },
+    { name: 'Workflow Config', icon: GitBranch, page: 'WorkflowConfig' },
+    { name: 'Reports', icon: BarChart3, page: 'Reports' },
+    { name: 'Notifications', icon: Bell, page: 'Notifications' },
+  ],
+};
+
+export default function Layout({ children, currentPageName }) {
+  const [user, setUser] = useState(null);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+        const userData = await base44.auth.me();
+        setUser(userData);
+      } catch (e) {
+        base44.auth.redirectToLogin();
+      }
+    };
+    loadUser();
+  }, []);
+
+  const { data: notifications = [] } = useQuery({
+    queryKey: ['notification-count', user?.email],
+    queryFn: () => base44.entities.Notification.filter({ 
+      recipient_email: user?.email, 
+      is_read: false 
+    }),
+    enabled: !!user?.email,
+    refetchInterval: 30000,
+  });
+
+  const userRole = user?.portal_role || user?.role || 'employee';
+  const menuItems = roleMenuConfig[userRole] || roleMenuConfig.employee;
+  const unreadCount = notifications.length;
+
+  const handleLogout = () => {
+    base44.auth.logout();
+  };
+
+  const NavLink = ({ item, onClick }) => {
+    const isActive = currentPageName === item.page;
+    const Icon = item.icon;
+    const isNotification = item.name === 'Notifications';
+
+    return (
+      <Link
+        to={createPageUrl(item.page)}
+        onClick={onClick}
+        className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-200 ${
+          isActive 
+            ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/25' 
+            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+        }`}
+      >
+        <Icon className="w-5 h-5" />
+        <span className="font-medium">{item.name}</span>
+        {isNotification && unreadCount > 0 && (
+          <Badge className="ml-auto bg-red-500 text-white text-xs px-2">
+            {unreadCount}
+          </Badge>
+        )}
+      </Link>
+    );
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Desktop Sidebar */}
+      <aside className="fixed left-0 top-0 z-40 h-screen w-64 bg-white border-r border-gray-200 hidden lg:block">
+        <div className="flex flex-col h-full">
+          {/* Logo */}
+          <div className="p-6 border-b">
+            <Link to={createPageUrl('Dashboard')} className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center">
+                <FileText className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="font-bold text-gray-900">ClaimFlow</h1>
+                <p className="text-xs text-gray-500">Reimbursement Portal</p>
+              </div>
+            </Link>
+          </div>
+
+          {/* Navigation */}
+          <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+            {menuItems.map((item) => (
+              <NavLink key={item.page} item={item} />
+            ))}
+          </nav>
+
+          {/* User Section */}
+          <div className="p-4 border-t">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-gray-100 transition-colors">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold">
+                    {user?.full_name?.charAt(0) || 'U'}
+                  </div>
+                  <div className="flex-1 text-left">
+                    <p className="font-medium text-gray-900 truncate">{user?.full_name || 'User'}</p>
+                    <p className="text-xs text-gray-500 capitalize">{userRole.replace('_', ' ')}</p>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-gray-400" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="text-red-600" onClick={handleLogout}>
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Logout
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
+      </aside>
+
+      {/* Mobile Header */}
+      <header className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 px-4 py-3">
+        <div className="flex items-center justify-between">
+          <Link to={createPageUrl('Dashboard')} className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center">
+              <FileText className="w-4 h-4 text-white" />
+            </div>
+            <span className="font-bold text-gray-900">ClaimFlow</span>
+          </Link>
+          
+          <div className="flex items-center gap-2">
+            <Link to={createPageUrl('Notifications')}>
+              <Button variant="ghost" size="icon" className="relative">
+                <Bell className="w-5 h-5" />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full text-white text-xs flex items-center justify-center">
+                    {unreadCount}
+                  </span>
+                )}
+              </Button>
+            </Link>
+            
+            <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <Menu className="w-5 h-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-72 p-0">
+                <div className="flex flex-col h-full">
+                  <div className="p-4 border-b flex items-center justify-between">
+                    <span className="font-bold text-gray-900">Menu</span>
+                    <Button variant="ghost" size="icon" onClick={() => setMobileOpen(false)}>
+                      <X className="w-5 h-5" />
+                    </Button>
+                  </div>
+                  <nav className="flex-1 p-4 space-y-1">
+                    {menuItems.map((item) => (
+                      <NavLink 
+                        key={item.page} 
+                        item={item} 
+                        onClick={() => setMobileOpen(false)}
+                      />
+                    ))}
+                  </nav>
+                  <div className="p-4 border-t">
+                    <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold">
+                        {user?.full_name?.charAt(0) || 'U'}
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium text-gray-900">{user?.full_name || 'User'}</p>
+                        <p className="text-xs text-gray-500 capitalize">{userRole.replace('_', ' ')}</p>
+                      </div>
+                    </div>
+                    <Button 
+                      variant="outline" 
+                      className="w-full mt-3 text-red-600 border-red-200 hover:bg-red-50"
+                      onClick={handleLogout}
+                    >
+                      <LogOut className="w-4 h-4 mr-2" />
+                      Logout
+                    </Button>
+                  </div>
+                </div>
+              </SheetContent>
+            </Sheet>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="lg:ml-64 min-h-screen pt-16 lg:pt-0">
+        {children}
+      </main>
+    </div>
+  );
+}
