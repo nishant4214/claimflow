@@ -50,12 +50,18 @@
 import Dashboard from './pages/Dashboard';
 import SubmitClaim from './pages/SubmitClaim';
 import MyClaims from './pages/MyClaims';
+import ClaimDetails from './pages/ClaimDetails';
+import Approvals from './pages/Approvals';
+import Finance from './pages/Finance';
 
 
 export const PAGES = {
     "Dashboard": Dashboard,
     "SubmitClaim": SubmitClaim,
     "MyClaims": MyClaims,
+    "ClaimDetails": ClaimDetails,
+    "Approvals": Approvals,
+    "Finance": Finance,
 }
 
 export const pagesConfig = {
