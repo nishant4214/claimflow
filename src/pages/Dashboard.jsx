@@ -48,8 +48,8 @@ export default function Dashboard() {
     enabled: !!user && canApprove,
   });
 
-  // Filter claims based on role and workflow (same logic as Approvals page)
-  const pendingClaims = allClaimsForApproval.filter(claim => {
+  // Filter pending claims based on role and workflow (same logic as Approvals page)
+  const pendingClaimsForApproval = allClaimsForApproval.filter(claim => {
     if (claim.claim_type === 'normal') {
       if (userRole === 'junior_admin' && claim.status === 'submitted') return true;
       if (userRole === 'manager' && claim.status === 'verified') return true;
@@ -65,13 +65,55 @@ export default function Dashboard() {
     return false;
   });
 
+  // Filter all claims this approver can see (pending + processed) for Employee Claims view
+  const allEmployeeClaims = allClaimsForApproval.filter(claim => {
+    // Show claims at current stage OR claims that have moved past this stage
+    if (claim.claim_type === 'normal') {
+      if (userRole === 'junior_admin') {
+        return ['submitted', 'verified', 'manager_approved', 'admin_approved', 'cfo_approved', 'paid', 'rejected'].includes(claim.status);
+      }
+      if (userRole === 'manager') {
+        return ['verified', 'manager_approved', 'admin_approved', 'cfo_approved', 'paid', 'rejected'].includes(claim.status);
+      }
+      if (userRole === 'admin_head') {
+        return ['manager_approved', 'admin_approved', 'cfo_approved', 'paid', 'rejected'].includes(claim.status);
+      }
+    }
+    
+    if (claim.claim_type === 'sales_promotion') {
+      if (userRole === 'manager') {
+        return ['submitted', 'manager_approved', 'cro_approved', 'cfo_approved', 'paid', 'rejected'].includes(claim.status);
+      }
+      if (userRole === 'cro') {
+        return ['manager_approved', 'cro_approved', 'cfo_approved', 'paid', 'rejected'].includes(claim.status);
+      }
+      if (userRole === 'cfo') {
+        return ['cro_approved', 'cfo_approved', 'paid', 'rejected'].includes(claim.status);
+      }
+    }
+    
+    return false;
+  });
+
+  const pendingClaims = viewMode === 'my_claims' ? myClaims : allEmployeeClaims;
+
   const claims = viewMode === 'my_claims' ? myClaims : pendingClaims;
   const isLoading = viewMode === 'my_claims' ? myClaimsLoading : pendingLoading;
 
-  const stats = {
+  const stats = viewMode === 'my_claims' ? {
     total: claims.length,
     submitted: claims.filter(c => c.status === 'submitted').length,
     pending: claims.filter(c => ['submitted', 'verified', 'manager_approved', 'cro_approved'].includes(c.status)).length,
+    approved: claims.filter(c => ['admin_approved', 'cfo_approved', 'paid'].includes(c.status)).length,
+    rejected: claims.filter(c => c.status === 'rejected').length,
+    paid: claims.filter(c => c.status === 'paid').length,
+    draft: claims.filter(c => c.status === 'draft').length,
+    totalAmount: claims.reduce((sum, c) => sum + (c.amount || 0), 0),
+    paidAmount: claims.filter(c => c.status === 'paid').reduce((sum, c) => sum + (c.amount || 0), 0),
+  } : {
+    total: claims.length,
+    submitted: claims.filter(c => c.status === 'submitted').length,
+    pending: pendingClaimsForApproval.length,
     approved: claims.filter(c => ['admin_approved', 'cfo_approved', 'paid'].includes(c.status)).length,
     rejected: claims.filter(c => c.status === 'rejected').length,
     paid: claims.filter(c => c.status === 'paid').length,
@@ -120,9 +162,9 @@ export default function Dashboard() {
                 <TabsTrigger value="pending_actions" className="gap-2">
                   <CheckCircle className="w-4 h-4" />
                   Employee Claims
-                  {pendingClaims.length > 0 && (
+                  {pendingClaimsForApproval.length > 0 && (
                     <span className="ml-1 px-2 py-0.5 bg-red-500 text-white text-xs rounded-full">
-                      {pendingClaims.length}
+                      {pendingClaimsForApproval.length}
                     </span>
                   )}
                 </TabsTrigger>
