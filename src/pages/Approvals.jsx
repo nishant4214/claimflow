@@ -104,6 +104,13 @@ export default function Approvals() {
            claim.purpose?.toLowerCase().includes(searchLower);
   });
 
+  // Stats based on current tab
+  const currentStats = {
+    total: displayedClaims.length,
+    urgent: displayedClaims.filter(c => getSLAStatus(c) === 'urgent').length,
+    totalAmount: displayedClaims.reduce((sum, c) => sum + (c.amount || 0), 0),
+  };
+
   const updateClaimMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Claim.update(id, data),
     onSuccess: () => {
@@ -245,8 +252,8 @@ export default function Approvals() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500">Pending</p>
-                  <p className="text-2xl font-bold text-amber-600">{pendingClaims.length}</p>
+                  <p className="text-sm text-gray-500">{tab === 'pending' ? 'Pending' : 'Processed'}</p>
+                  <p className="text-2xl font-bold text-amber-600">{currentStats.total}</p>
                 </div>
                 <Clock className="w-8 h-8 text-amber-200" />
               </div>
@@ -258,7 +265,7 @@ export default function Approvals() {
                 <div>
                   <p className="text-sm text-gray-500">Urgent (≤3 days)</p>
                   <p className="text-2xl font-bold text-red-600">
-                    {pendingClaims.filter(c => getSLAStatus(c) === 'urgent').length}
+                    {currentStats.urgent}
                   </p>
                 </div>
                 <AlertCircle className="w-8 h-8 text-red-200" />
@@ -271,7 +278,7 @@ export default function Approvals() {
                 <div>
                   <p className="text-sm text-gray-500">Total Amount</p>
                   <p className="text-2xl font-bold text-gray-900">
-                    ₹{pendingClaims.reduce((sum, c) => sum + (c.amount || 0), 0).toLocaleString('en-IN')}
+                    ₹{currentStats.totalAmount.toLocaleString('en-IN')}
                   </p>
                 </div>
                 <IndianRupee className="w-8 h-8 text-gray-200" />
