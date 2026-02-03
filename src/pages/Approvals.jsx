@@ -96,6 +96,14 @@ export default function Approvals() {
 
   const displayedClaims = tab === 'pending' ? pendingClaims : processedClaims;
 
+  const getSLAStatus = (claim) => {
+    if (!claim.sla_date || !claim.created_date) return 'normal';
+    const daysRemaining = differenceInDays(parseISO(claim.sla_date), new Date());
+    if (daysRemaining <= 3) return 'urgent';
+    if (daysRemaining <= 10) return 'warning';
+    return 'normal';
+  };
+
   const filteredClaims = displayedClaims.filter(claim => {
     if (!search) return true;
     const searchLower = search.toLowerCase();
@@ -207,14 +215,6 @@ export default function Approvals() {
 
     setSelectedClaim(null);
     setActionType(null);
-  };
-
-  const getSLAStatus = (claim) => {
-    if (!claim.sla_date || !claim.created_date) return 'normal';
-    const daysRemaining = differenceInDays(parseISO(claim.sla_date), new Date());
-    if (daysRemaining <= 3) return 'urgent';
-    if (daysRemaining <= 10) return 'warning';
-    return 'normal';
   };
 
   if (!roleConfig || userRole === 'employee') {
