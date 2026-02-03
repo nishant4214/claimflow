@@ -60,6 +60,7 @@ import SubmitClaim from './pages/SubmitClaim';
 import TestCredentials from './pages/TestCredentials';
 import UserManagement from './pages/UserManagement';
 import WorkflowConfig from './pages/WorkflowConfig';
+import ADIntegrationDocs from './pages/ADIntegrationDocs';
 import __Layout from './Layout.jsx';
 
 
@@ -77,6 +78,7 @@ export const PAGES = {
     "TestCredentials": TestCredentials,
     "UserManagement": UserManagement,
     "WorkflowConfig": WorkflowConfig,
+    "ADIntegrationDocs": ADIntegrationDocs,
 }
 
 export const pagesConfig = {
