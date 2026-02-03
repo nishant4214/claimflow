@@ -47,6 +47,7 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
+import ADIntegrationDocs from './pages/ADIntegrationDocs';
 import AdminCategories from './pages/AdminCategories';
 import Approvals from './pages/Approvals';
 import ClaimDetails from './pages/ClaimDetails';
@@ -60,11 +61,11 @@ import SubmitClaim from './pages/SubmitClaim';
 import TestCredentials from './pages/TestCredentials';
 import UserManagement from './pages/UserManagement';
 import WorkflowConfig from './pages/WorkflowConfig';
-import ADIntegrationDocs from './pages/ADIntegrationDocs';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
+    "ADIntegrationDocs": ADIntegrationDocs,
     "AdminCategories": AdminCategories,
     "Approvals": Approvals,
     "ClaimDetails": ClaimDetails,
@@ -78,7 +79,6 @@ export const PAGES = {
     "TestCredentials": TestCredentials,
     "UserManagement": UserManagement,
     "WorkflowConfig": WorkflowConfig,
-    "ADIntegrationDocs": ADIntegrationDocs,
 }
 
 export const pagesConfig = {

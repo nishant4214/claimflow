@@ -42,22 +42,27 @@ export default function Dashboard() {
   const userRole = user?.portal_role || user?.role || 'employee';
   const canApprove = ['junior_admin', 'manager', 'admin_head', 'cro', 'cfo', 'finance', 'admin'].includes(userRole);
 
-  const { data: pendingClaims = [], isLoading: pendingLoading } = useQuery({
+  const { data: allClaimsForApproval = [], isLoading: pendingLoading } = useQuery({
     queryKey: ['pending-approvals', userRole],
-    queryFn: async () => {
-      const roleStatusMap = {
-        junior_admin: 'submitted',
-        manager: 'verified',
-        admin_head: 'manager_approved',
-        cro: 'admin_approved',
-        cfo: 'cro_approved',
-        finance: 'cfo_approved',
-      };
-      const targetStatus = roleStatusMap[userRole];
-      if (!targetStatus) return [];
-      return base44.entities.Claim.filter({ status: targetStatus }, '-created_date');
-    },
+    queryFn: () => base44.entities.Claim.list('-created_date'),
     enabled: !!user && canApprove,
+  });
+
+  // Filter claims based on role and workflow (same logic as Approvals page)
+  const pendingClaims = allClaimsForApproval.filter(claim => {
+    if (claim.claim_type === 'normal') {
+      if (userRole === 'junior_admin' && claim.status === 'submitted') return true;
+      if (userRole === 'manager' && claim.status === 'verified') return true;
+      if (userRole === 'admin_head' && claim.status === 'manager_approved') return true;
+    }
+    
+    if (claim.claim_type === 'sales_promotion') {
+      if (userRole === 'manager' && claim.status === 'submitted') return true;
+      if (userRole === 'cro' && claim.status === 'manager_approved') return true;
+      if (userRole === 'cfo' && claim.status === 'cro_approved') return true;
+    }
+    
+    return false;
   });
 
   const claims = viewMode === 'my_claims' ? myClaims : pendingClaims;
