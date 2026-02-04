@@ -34,6 +34,7 @@ import ClaimStatusBadge from '../components/claims/ClaimStatusBadge';
 import SLAIndicator from '../components/claims/SLAIndicator';
 import ApprovalActionModal from '../components/approvals/ApprovalActionModal';
 import ExportButton from '../components/export/ExportButton';
+import { logCriticalAction } from '../components/session/SessionLogger';
 
 const ROLE_STAGES = {
   junior_admin: { statuses: ['submitted'], stage: 'verification', nextStatus: 'verified' },
@@ -225,6 +226,7 @@ export default function Approvals() {
       actionType === 'approve' ? 'Claim approved successfully' :
       actionType === 'reject' ? 'Claim rejected' : 'Claim sent back for correction'
     );
+    logCriticalAction('Approvals', actionType.charAt(0).toUpperCase() + actionType.slice(1).replace('_', ' '), claim.claim_number);
 
     setSelectedClaim(null);
     setActionType(null);
