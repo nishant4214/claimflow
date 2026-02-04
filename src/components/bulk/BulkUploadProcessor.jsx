@@ -8,6 +8,7 @@ import { Upload, FileSpreadsheet, AlertCircle, CheckCircle2, XCircle, Loader2 } 
 import { toast } from 'sonner';
 import * as XLSX from 'xlsx';
 import { format, addDays } from 'date-fns';
+import { logCriticalAction } from '../session/SessionLogger';
 
 export default function BulkUploadProcessor({ user, categories, onUploadComplete }) {
   const [uploading, setUploading] = useState(false);
@@ -173,6 +174,7 @@ export default function BulkUploadProcessor({ user, categories, onUploadComplete
       });
 
       toast.success(`Successfully created ${createdClaims.length} draft claims`);
+      logCriticalAction('Bulk Upload', 'Upload Excel', `${createdClaims.length} claims`);
       setPreview(null);
       setErrors([]);
       onUploadComplete?.();

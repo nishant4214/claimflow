@@ -17,6 +17,7 @@ import { format, addDays } from 'date-fns';
 import ExcelTemplateGenerator from '../components/bulk/ExcelTemplateGenerator';
 import BulkUploadProcessor from '../components/bulk/BulkUploadProcessor';
 import ClaimStatusBadge from '../components/claims/ClaimStatusBadge';
+import { logCriticalAction } from '../components/session/SessionLogger';
 
 export default function BulkUpload() {
   const [user, setUser] = useState(null);
@@ -65,8 +66,9 @@ export default function BulkUpload() {
         notes: 'Deleted draft claim'
       });
     },
-    onSuccess: () => {
+    onSuccess: (_, claimId) => {
       toast.success('Draft claim deleted');
+      logCriticalAction('Bulk Upload', 'Delete Draft', claimId);
       queryClient.invalidateQueries({ queryKey: ['bulk-draft-claims'] });
     },
   });
@@ -142,8 +144,9 @@ export default function BulkUpload() {
         body: `Dear ${claim.employee_name},\n\nYour claim ${claim.claim_number} has been submitted via bulk upload and is now in the approval workflow.\n\nClaim Details:\n- Amount: ₹${claim.amount}\n- Purpose: ${claim.purpose}\n- Status: ${newStatus.replace('_', ' ').toUpperCase()}\n\nThank you.`
       });
     },
-    onSuccess: () => {
+    onSuccess: (_, claim) => {
       toast.success('Claim submitted to workflow');
+      logCriticalAction('Bulk Upload', 'Submit Bulk Claim', claim.claim_number);
       queryClient.invalidateQueries({ queryKey: ['bulk-draft-claims'] });
     },
   });

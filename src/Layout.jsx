@@ -5,6 +5,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useSessionLogger } from '@/components/session/SessionLogger';
+import SessionLogger from '@/components/session/SessionLogger';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -113,7 +115,11 @@ export default function Layout({ children, currentPageName }) {
   const menuItems = roleMenuConfig[userRole] || roleMenuConfig.employee;
   const unreadCount = notifications.length;
 
-  const handleLogout = () => {
+  // Initialize session logging
+  useSessionLogger(user, currentPageName);
+
+  const handleLogout = async () => {
+    await SessionLogger.endSession('Logged_Out');
     base44.auth.logout(createPageUrl('Login'));
   };
 

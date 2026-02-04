@@ -50,6 +50,7 @@
 import ADIntegrationDocs from './pages/ADIntegrationDocs';
 import AdminCategories from './pages/AdminCategories';
 import Approvals from './pages/Approvals';
+import BulkUpload from './pages/BulkUpload';
 import ClaimDetails from './pages/ClaimDetails';
 import Dashboard from './pages/Dashboard';
 import DemoCredentials from './pages/DemoCredentials';
@@ -61,7 +62,6 @@ import SubmitClaim from './pages/SubmitClaim';
 import TestCredentials from './pages/TestCredentials';
 import UserManagement from './pages/UserManagement';
 import WorkflowConfig from './pages/WorkflowConfig';
-import BulkUpload from './pages/BulkUpload';
 import __Layout from './Layout.jsx';
 
 
@@ -69,6 +69,7 @@ export const PAGES = {
     "ADIntegrationDocs": ADIntegrationDocs,
     "AdminCategories": AdminCategories,
     "Approvals": Approvals,
+    "BulkUpload": BulkUpload,
     "ClaimDetails": ClaimDetails,
     "Dashboard": Dashboard,
     "DemoCredentials": DemoCredentials,
@@ -80,7 +81,6 @@ export const PAGES = {
     "TestCredentials": TestCredentials,
     "UserManagement": UserManagement,
     "WorkflowConfig": WorkflowConfig,
-    "BulkUpload": BulkUpload,
 }
 
 export const pagesConfig = {
