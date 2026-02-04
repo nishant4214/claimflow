@@ -10,6 +10,8 @@ import SLAIndicator from './SLAIndicator';
 import { motion } from "framer-motion";
 
 export default function ClaimCard({ claim, showActions = true }) {
+  const canEdit = claim.status === 'sent_back' || claim.status === 'draft';
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -82,12 +84,22 @@ export default function ClaimCard({ claim, showActions = true }) {
                   </div>
                   
                   {showActions && (
-                    <Link to={createPageUrl(`ClaimDetails?id=${claim.id}`)}>
-                      <Button variant="outline" size="sm" className="gap-2">
-                        <Eye className="w-4 h-4" />
-                        View Details
-                      </Button>
-                    </Link>
+                    <div className="flex gap-2">
+                      {canEdit && (
+                        <Link to={createPageUrl(`SubmitClaim?edit=${claim.id}`)}>
+                          <Button size="sm" className="gap-2 bg-amber-600 hover:bg-amber-700">
+                            <FileText className="w-4 h-4" />
+                            Edit & Resubmit
+                          </Button>
+                        </Link>
+                      )}
+                      <Link to={createPageUrl(`ClaimDetails?id=${claim.id}`)}>
+                        <Button variant="outline" size="sm" className="gap-2">
+                          <Eye className="w-4 h-4" />
+                          View Details
+                        </Button>
+                      </Link>
+                    </div>
                   )}
                 </div>
               </div>

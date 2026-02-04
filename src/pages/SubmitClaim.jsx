@@ -11,6 +11,7 @@ import ClaimForm from '../components/forms/ClaimForm';
 
 export default function SubmitClaim() {
   const [user, setUser] = useState(null);
+  const [editingClaim, setEditingClaim] = useState(null);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -20,7 +21,25 @@ export default function SubmitClaim() {
       setUser(userData);
     };
     loadUser();
+
+    // Check if editing existing claim
+    const urlParams = new URLSearchParams(window.location.search);
+    const editId = urlParams.get('edit');
+    if (editId) {
+      loadClaimForEdit(editId);
+    }
   }, []);
+
+  const loadClaimForEdit = async (claimId) => {
+    try {
+      const claims = await base44.entities.Claim.filter({ id: claimId });
+      if (claims.length > 0) {
+        setEditingClaim(claims[0]);
+      }
+    } catch (error) {
+      toast.error('Failed to load claim for editing');
+    }
+  };
 
   const createClaimMutation = useMutation({
     mutationFn: (claimData) => base44.entities.Claim.create(claimData),

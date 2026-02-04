@@ -25,7 +25,7 @@ import { toast } from "sonner";
 
 const PAYMENT_MODES = ['Cash', 'Card', 'UPI', 'Bank Transfer'];
 
-export default function ClaimForm({ user, onSubmit, initialData, isLoading }) {
+export default function ClaimForm({ user, onSubmit, initialData, isLoading, isEditing = false }) {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState(initialData || {
     employee_name: user?.full_name || '',
@@ -151,15 +151,20 @@ export default function ClaimForm({ user, onSubmit, initialData, isLoading }) {
 
   const handleSubmit = () => {
     if (validateStep(3)) {
-      const slaDate = addDays(new Date(), 45);
-      onSubmit({
+      const submitData = {
         ...formData,
         amount: parseFloat(formData.amount),
-        sla_date: format(slaDate, 'yyyy-MM-dd'),
         status: 'submitted',
         current_approver_role: formData.claim_type === 'sales_promotion' ? 'manager' : 'junior_admin',
-        claim_number: `CLM-${Date.now().toString(36).toUpperCase()}`,
-      });
+      };
+
+      // Only set these for new claims
+      if (!isEditing) {
+        submitData.sla_date = format(addDays(new Date(), 45), 'yyyy-MM-dd');
+        submitData.claim_number = `CLM-${Date.now().toString(36).toUpperCase()}`;
+      }
+
+      onSubmit(submitData);
     }
   };
 
@@ -616,10 +621,10 @@ export default function ClaimForm({ user, onSubmit, initialData, isLoading }) {
               {isLoading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Submitting...
+                  {isEditing ? 'Resubmitting...' : 'Submitting...'}
                 </>
               ) : (
-                'Submit Claim'
+                isEditing ? 'Resubmit Claim' : 'Submit Claim'
               )}
             </Button>
           )}
