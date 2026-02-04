@@ -33,6 +33,7 @@ import { createPageUrl } from '@/utils';
 import ClaimStatusBadge from '../components/claims/ClaimStatusBadge';
 import SLAIndicator from '../components/claims/SLAIndicator';
 import ApprovalActionModal from '../components/approvals/ApprovalActionModal';
+import ExportButton from '../components/export/ExportButton';
 
 const ROLE_STAGES = {
   junior_admin: { statuses: ['submitted'], stage: 'verification', nextStatus: 'verified' },
@@ -195,6 +196,18 @@ export default function Approvals() {
     });
 
     // Notify employee
+    // Send email to claimant
+    await base44.integrations.Core.SendEmail({
+      to: claim.employee_email,
+      subject: actionType === 'approve' ? `Claim ${claim.claim_number} Approved` :
+               actionType === 'reject' ? `Claim ${claim.claim_number} Rejected` : 
+               `Claim ${claim.claim_number} Sent Back for Correction`,
+      body: actionType === 'approve' 
+        ? `Dear ${claim.employee_name},\n\nYour claim ${claim.claim_number} for ₹${claim.amount?.toLocaleString('en-IN')} has been approved by ${user.full_name} (${userRole.replace('_', ' ')}).\n\nThe claim will now proceed to the next stage of approval.\n\nBest regards,\nClaim Management System`
+        : `Dear ${claim.employee_name},\n\nYour claim ${claim.claim_number} for ₹${claim.amount?.toLocaleString('en-IN')} has been ${actionType === 'reject' ? 'rejected' : 'sent back for correction'} by ${user.full_name} (${userRole.replace('_', ' ')}).\n\nReason: ${remarks}\n\nBest regards,\nClaim Management System`,
+    });
+
+    // Create in-app notification
     await createNotificationMutation.mutateAsync({
       recipient_email: claim.employee_email,
       claim_id: claim.id,
@@ -315,14 +328,17 @@ export default function Approvals() {
                 </TabsList>
               </Tabs>
               
-              <div className="relative w-full sm:w-72">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <Input
-                  placeholder="Search claims..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="pl-10"
-                />
+              <div className="flex items-center gap-3">
+                <ExportButton data={filteredClaims} filename={`approvals_${tab}`} />
+                <div className="relative w-full sm:w-72">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Input
+                    placeholder="Search claims..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
               </div>
             </div>
           </CardContent>

@@ -216,15 +216,27 @@ export default function ClaimDetails() {
                             </div>
                             <span className="text-sm font-medium">Document {index + 1}</span>
                           </div>
-                          <a 
-                            href={url} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-1 text-sm text-blue-600 hover:underline"
-                          >
-                            View
-                            <ExternalLink className="w-3 h-3" />
-                          </a>
+                          <div className="flex items-center gap-2">
+                            <a 
+                              href={url} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                            >
+                              <Button variant="ghost" size="sm" className="gap-1">
+                                <ExternalLink className="w-4 h-4" />
+                                View
+                              </Button>
+                            </a>
+                            <a 
+                              href={url} 
+                              download
+                            >
+                              <Button variant="ghost" size="sm" className="gap-1">
+                                <Download className="w-4 h-4" />
+                                Download
+                              </Button>
+                            </a>
+                          </div>
                         </div>
                       ))}
                     </div>

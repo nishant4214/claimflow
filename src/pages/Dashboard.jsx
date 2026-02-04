@@ -14,6 +14,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import StatsCard from '../components/dashboard/StatsCard';
 import ClaimCard from '../components/claims/ClaimCard';
+import ExportButton from '../components/export/ExportButton';
 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
@@ -217,16 +218,19 @@ export default function Dashboard() {
                 <CardTitle className="text-lg font-semibold">
                   {viewMode === 'my_claims' ? 'My Own Claims' : 'Employee Claims - Pending My Action'}
                 </CardTitle>
-                <div className="flex items-center gap-2">
-                  <Filter className="w-4 h-4 text-gray-400" />
-                  <Tabs value={statusFilter} onValueChange={setStatusFilter}>
-                    <TabsList className="bg-gray-100">
-                      <TabsTrigger value="all" className="text-xs">All</TabsTrigger>
-                      <TabsTrigger value="pending" className="text-xs">Pending</TabsTrigger>
-                      <TabsTrigger value="paid" className="text-xs">Paid</TabsTrigger>
-                      <TabsTrigger value="rejected" className="text-xs">Rejected</TabsTrigger>
-                    </TabsList>
-                  </Tabs>
+                <div className="flex items-center gap-3">
+                  <ExportButton data={filteredClaims} filename={`dashboard_${viewMode}`} variant="ghost" />
+                  <div className="flex items-center gap-2">
+                    <Filter className="w-4 h-4 text-gray-400" />
+                    <Tabs value={statusFilter} onValueChange={setStatusFilter}>
+                      <TabsList className="bg-gray-100">
+                        <TabsTrigger value="all" className="text-xs">All</TabsTrigger>
+                        <TabsTrigger value="pending" className="text-xs">Pending</TabsTrigger>
+                        <TabsTrigger value="paid" className="text-xs">Paid</TabsTrigger>
+                        <TabsTrigger value="rejected" className="text-xs">Rejected</TabsTrigger>
+                      </TabsList>
+                    </Tabs>
+                  </div>
                 </div>
               </div>
             </CardHeader>
