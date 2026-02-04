@@ -10,16 +10,19 @@ import { Separator } from "@/components/ui/separator";
 import { format, parseISO } from 'date-fns';
 import { 
   ArrowLeft, FileText, Calendar, IndianRupee, 
-  Tag, CreditCard, User, Building, ExternalLink,
+  Tag, CreditCard, User, Building, Eye,
   Download, Edit, RotateCcw
 } from "lucide-react";
 import { motion } from "framer-motion";
 import ClaimStatusBadge from '../components/claims/ClaimStatusBadge';
 import SLAIndicator from '../components/claims/SLAIndicator';
 import ClaimTimeline from '../components/claims/ClaimTimeline';
+import DocumentViewer from '../components/documents/DocumentViewer';
 
 export default function ClaimDetails() {
   const [user, setUser] = useState(null);
+  const [viewerOpen, setViewerOpen] = useState(false);
+  const [selectedDocument, setSelectedDocument] = useState(null);
   const urlParams = new URLSearchParams(window.location.search);
   const claimId = urlParams.get('id');
 
@@ -54,6 +57,18 @@ export default function ClaimDetails() {
 
   const canEdit = claim.status === 'draft' || claim.status === 'sent_back';
   const canResubmit = claim.status === 'sent_back';
+
+  const handleViewDocument = (url, index) => {
+    setSelectedDocument({ url, name: `Document ${index + 1}` });
+    setViewerOpen(true);
+  };
+
+  const handleDownloadDocument = (url, index) => {
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `document_${index + 1}`;
+    link.click();
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50">
@@ -204,41 +219,67 @@ export default function ClaimDetails() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid sm:grid-cols-2 gap-3">
-                      {claim.document_urls.map((url, index) => (
-                        <div 
-                          key={index}
-                          className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className="p-2 bg-blue-100 rounded-lg">
-                              <FileText className="w-4 h-4 text-blue-600" />
+                    <div className="grid gap-3">
+                      {claim.document_urls.map((url, index) => {
+                        const fileExtension = url.split('.').pop()?.toLowerCase();
+                        const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(fileExtension);
+                        const isPDF = fileExtension === 'pdf';
+                        
+                        return (
+                          <motion.div 
+                            key={index}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: index * 0.1 }}
+                            className="group relative overflow-hidden rounded-xl border border-gray-200 bg-gradient-to-br from-white to-gray-50 hover:shadow-lg hover:border-blue-300 transition-all duration-300"
+                          >
+                            <div className="flex items-center justify-between p-4">
+                              <div className="flex items-center gap-4 flex-1">
+                                <div className="relative">
+                                  <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
+                                    <FileText className="w-6 h-6 text-white" />
+                                  </div>
+                                  <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-white shadow-sm flex items-center justify-center">
+                                    <span className="text-[10px] font-bold text-blue-600">
+                                      {index + 1}
+                                    </span>
+                                  </div>
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-semibold text-gray-900">
+                                    Document {index + 1}
+                                  </p>
+                                  <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
+                                    {isPDF && <Badge variant="outline" className="text-[10px] px-1.5 py-0">PDF</Badge>}
+                                    {isImage && <Badge variant="outline" className="text-[10px] px-1.5 py-0">Image</Badge>}
+                                    {!isPDF && !isImage && <Badge variant="outline" className="text-[10px] px-1.5 py-0">File</Badge>}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Button 
+                                  onClick={() => handleViewDocument(url, index)}
+                                  className="gap-2 bg-blue-600 hover:bg-blue-700 shadow-md hover:shadow-lg transition-all"
+                                  size="sm"
+                                >
+                                  <Eye className="w-4 h-4" />
+                                  View
+                                </Button>
+                                <Button 
+                                  onClick={() => handleDownloadDocument(url, index)}
+                                  variant="outline"
+                                  className="gap-2 hover:bg-gray-100 hover:border-gray-300"
+                                  size="sm"
+                                >
+                                  <Download className="w-4 h-4" />
+                                  Download
+                                </Button>
+                              </div>
                             </div>
-                            <span className="text-sm font-medium">Document {index + 1}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <a 
-                              href={url} 
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                            >
-                              <Button variant="ghost" size="sm" className="gap-1">
-                                <ExternalLink className="w-4 h-4" />
-                                View
-                              </Button>
-                            </a>
-                            <a 
-                              href={url} 
-                              download
-                            >
-                              <Button variant="ghost" size="sm" className="gap-1">
-                                <Download className="w-4 h-4" />
-                                Download
-                              </Button>
-                            </a>
-                          </div>
-                        </div>
-                      ))}
+                            <div className="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-blue-500 to-blue-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
+                          </motion.div>
+                        );
+                      })}
                     </div>
                   </CardContent>
                 </Card>
@@ -379,6 +420,14 @@ export default function ClaimDetails() {
             </motion.div>
           </div>
         </div>
+
+        {/* Document Viewer Modal */}
+        <DocumentViewer
+          isOpen={viewerOpen}
+          onClose={() => setViewerOpen(false)}
+          documentUrl={selectedDocument?.url}
+          documentName={selectedDocument?.name}
+        />
       </div>
     </div>
   );
