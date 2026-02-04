@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import ClaimCard from '../components/claims/ClaimCard';
+import ExportButton from '../components/export/ExportButton';
 
 const STATUS_OPTIONS = [
   { value: 'all', label: 'All Status' },
@@ -124,12 +125,15 @@ export default function MyClaims() {
               View and manage all your expense claims
             </p>
           </div>
-          <Link to={createPageUrl('SubmitClaim')}>
-            <Button size="lg" className="bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-600/25">
-              <Plus className="w-5 h-5 mr-2" />
-              New Claim
-            </Button>
-          </Link>
+          <div className="flex items-center gap-3">
+            <ExportButton data={filteredClaims} filename="my_claims" />
+            <Link to={createPageUrl('SubmitClaim')}>
+              <Button size="lg" className="bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-600/25">
+                <Plus className="w-5 h-5 mr-2" />
+                New Claim
+              </Button>
+            </Link>
+          </div>
         </div>
 
         {/* Filters */}
