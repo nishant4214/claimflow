@@ -61,6 +61,7 @@ import SubmitClaim from './pages/SubmitClaim';
 import TestCredentials from './pages/TestCredentials';
 import UserManagement from './pages/UserManagement';
 import WorkflowConfig from './pages/WorkflowConfig';
+import BulkUpload from './pages/BulkUpload';
 import __Layout from './Layout.jsx';
 
 
@@ -79,6 +80,7 @@ export const PAGES = {
     "TestCredentials": TestCredentials,
     "UserManagement": UserManagement,
     "WorkflowConfig": WorkflowConfig,
+    "BulkUpload": BulkUpload,
 }
 
 export const pagesConfig = {

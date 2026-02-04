@@ -17,7 +17,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { 
   LayoutDashboard, FileText, Plus, CheckSquare, 
   Wallet, Settings, Tag, GitBranch, BarChart3, 
-  Bell, User, Users, LogOut, Menu, ChevronRight, X
+  Bell, User, Users, LogOut, Menu, ChevronRight, X, Upload
 } from "lucide-react";
 
 const roleMenuConfig = {
@@ -43,6 +43,7 @@ const roleMenuConfig = {
     { name: 'Dashboard', icon: LayoutDashboard, page: 'Dashboard' },
     { name: 'Approvals', icon: CheckSquare, page: 'Approvals' },
     { name: 'My Claims', icon: FileText, page: 'MyClaims' },
+    { name: 'Bulk Upload', icon: Upload, page: 'BulkUpload' },
     { name: 'Categories', icon: Tag, page: 'AdminCategories' },
     { name: 'Workflow Config', icon: GitBranch, page: 'WorkflowConfig' },
     { name: 'Reports', icon: BarChart3, page: 'Reports' },
@@ -52,6 +53,7 @@ const roleMenuConfig = {
     { name: 'Dashboard', icon: LayoutDashboard, page: 'Dashboard' },
     { name: 'Approvals', icon: CheckSquare, page: 'Approvals' },
     { name: 'My Claims', icon: FileText, page: 'MyClaims' },
+    { name: 'Bulk Upload', icon: Upload, page: 'BulkUpload' },
     { name: 'Notifications', icon: Bell, page: 'Notifications' },
   ],
   cfo: [
@@ -71,6 +73,7 @@ const roleMenuConfig = {
     { name: 'Test Credentials', icon: Users, page: 'TestCredentials' },
     { name: 'Approvals', icon: CheckSquare, page: 'Approvals' },
     { name: 'Finance', icon: Wallet, page: 'Finance' },
+    { name: 'Bulk Upload', icon: Upload, page: 'BulkUpload' },
     { name: 'Categories', icon: Tag, page: 'AdminCategories' },
     { name: 'Workflow Config', icon: GitBranch, page: 'WorkflowConfig' },
     { name: 'Reports', icon: BarChart3, page: 'Reports' },
