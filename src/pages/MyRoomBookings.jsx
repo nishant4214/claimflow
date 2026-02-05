@@ -134,11 +134,12 @@ export default function MyRoomBookings() {
           )}
 
           {booking.send_back_reason && (
-          <div className="mb-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-            <p className="text-xs font-medium text-amber-800 mb-1">Sent Back - Correction Needed:</p>
-            <p className="text-sm text-amber-700">{booking.send_back_reason}</p>
-          </div>
+            <div className="mb-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+              <p className="text-xs font-medium text-amber-800 mb-1">Sent Back - Correction Needed:</p>
+              <p className="text-sm text-amber-700">{booking.send_back_reason}</p>
+            </div>
           )}
+          </div>
 
           <div className="flex items-center gap-2 mt-4 pt-4 border-t">
           <Link to={createPageUrl(`RoomBookingDetails?id=${booking.id}`)}>
