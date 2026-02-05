@@ -109,7 +109,7 @@ export default function BookRoom() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Book Conference Room</h1>
           <p className="text-gray-500 mt-1">
-            Browse available rooms and book your meeting space
+            Browse available conference rooms and book your meeting space
           </p>
         </div>
 
@@ -188,7 +188,7 @@ export default function BookRoom() {
           <Card className="border-0 shadow-sm">
             <CardContent className="p-12 text-center">
               <Search className="w-16 h-16 mx-auto text-gray-300 mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No rooms found</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No conference rooms found</h3>
               <p className="text-gray-500">Try adjusting your filters</p>
             </CardContent>
           </Card>

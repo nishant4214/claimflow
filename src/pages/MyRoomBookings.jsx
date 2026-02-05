@@ -146,7 +146,7 @@ export default function MyRoomBookings() {
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">My Room Bookings</h1>
+            <h1 className="text-3xl font-bold text-gray-900">My Conference Room Bookings</h1>
             <p className="text-gray-500 mt-1">View and manage your conference room reservations</p>
           </div>
           <Link to={createPageUrl('BookRoom')}>
@@ -209,7 +209,7 @@ export default function MyRoomBookings() {
                   <Link to={createPageUrl('BookRoom')}>
                     <Button className="bg-blue-600 hover:bg-blue-700">
                       <Plus className="w-4 h-4 mr-2" />
-                      Book a Room
+                      Book a Conference Room
                     </Button>
                   </Link>
                 </CardContent>

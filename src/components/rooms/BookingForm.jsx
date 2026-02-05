@@ -91,7 +91,7 @@ export default function BookingForm({ room, user, onBack, onSubmit, isSubmitting
       <div className="max-w-4xl mx-auto">
         <Button variant="outline" onClick={onBack} className="mb-6">
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Rooms
+          Back to Conference Rooms
         </Button>
 
         <Card className="border-0 shadow-sm mb-6">

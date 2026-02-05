@@ -75,7 +75,7 @@ export default function RoomCard({ room, availability, onBook, viewMode = 'grid'
               disabled={status === 'booked'}
               className="bg-blue-600 hover:bg-blue-700 ml-4"
             >
-              {status === 'booked' ? 'Fully Booked' : 'Book Now'}
+              {status === 'booked' ? 'Fully Booked' : 'Book Conference Room'}
             </Button>
           </div>
         </CardContent>
@@ -133,7 +133,7 @@ export default function RoomCard({ room, availability, onBook, viewMode = 'grid'
             disabled={status === 'booked'}
             className="w-full bg-blue-600 hover:bg-blue-700"
           >
-            {status === 'booked' ? 'Fully Booked' : 'Book Now'}
+            {status === 'booked' ? 'Fully Booked' : 'Book Conference Room'}
           </Button>
         </div>
       </CardContent>
