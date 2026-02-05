@@ -70,7 +70,6 @@ import SubmitClaim from './pages/SubmitClaim';
 import TestCredentials from './pages/TestCredentials';
 import UserManagement from './pages/UserManagement';
 import WorkflowConfig from './pages/WorkflowConfig';
-import CalendarView from './pages/CalendarView';
 import __Layout from './Layout.jsx';
 
 
@@ -98,7 +97,6 @@ export const PAGES = {
     "TestCredentials": TestCredentials,
     "UserManagement": UserManagement,
     "WorkflowConfig": WorkflowConfig,
-    "CalendarView": CalendarView,
 }
 
 export const pagesConfig = {

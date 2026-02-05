@@ -8,10 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Grid3x3, List, Search, Users, MapPin, Calendar, Clock } from "lucide-react";
+import { Grid3x3, List, Search, Users, MapPin, Calendar as CalendarIcon, Clock } from "lucide-react";
 import { toast } from 'sonner';
 import RoomCard from '../components/rooms/RoomCard';
 import BookingForm from '../components/rooms/BookingForm';
+import CalendarViewToggle from '../components/rooms/CalendarViewToggle';
 import { logCriticalAction } from '../components/session/SessionLogger';
 
 export default function BookRoom() {
@@ -21,6 +22,7 @@ export default function BookRoom() {
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [capacityFilter, setCapacityFilter] = useState('all');
   const [selectedRoom, setSelectedRoom] = useState(null);
+  const [calendarDate, setCalendarDate] = useState(new Date());
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -179,13 +181,26 @@ export default function BookRoom() {
                 >
                   <List className="w-4 h-4" />
                 </Button>
+                <Button
+                  variant={viewMode === 'calendar' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setViewMode('calendar')}
+                >
+                  <CalendarIcon className="w-4 h-4" />
+                </Button>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Room Grid/List */}
-        {isLoading ? (
+        {/* Room Grid/List/Calendar */}
+        {viewMode === 'calendar' ? (
+          <CalendarViewToggle
+            onSelectRoom={(room) => setSelectedRoom(room)}
+            selectedDate={calendarDate}
+            onDateChange={setCalendarDate}
+          />
+        ) : isLoading ? (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[1, 2, 3, 4, 5, 6].map(i => (
               <div key={i} className="h-80 bg-gray-100 rounded-xl animate-pulse" />
