@@ -16,6 +16,7 @@ import StatsCard from '../components/dashboard/StatsCard';
 import ClaimCard from '../components/claims/ClaimCard';
 import ExportButton from '../components/export/ExportButton';
 import RoomAnalyticsWidget from '../components/dashboard/RoomAnalyticsWidget';
+import RoomAvailabilityWidget from '../components/dashboard/RoomAvailabilityWidget';
 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
@@ -367,7 +368,10 @@ export default function Dashboard() {
 
           {canViewRoomAnalytics && (
             <TabsContent value="rooms">
-              <RoomAnalyticsWidget />
+              <div className="space-y-6">
+                <RoomAvailabilityWidget />
+                <RoomAnalyticsWidget />
+              </div>
             </TabsContent>
           )}
         </Tabs>

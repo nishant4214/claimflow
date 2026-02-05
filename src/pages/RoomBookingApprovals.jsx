@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Calendar, Clock, Users, MapPin, CheckCircle, XCircle, AlertTriangle, Search, Eye } from "lucide-react";
+import { Calendar, Clock, Users, MapPin, CheckCircle, XCircle, AlertTriangle, Search, Eye, RotateCcw } from "lucide-react";
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { toast } from 'sonner';
@@ -91,11 +91,16 @@ export default function RoomBookingApprovals() {
     setReason('');
   };
 
+  const handleSendBack = (booking) => {
+    setActionModal({ open: true, booking, action: 'send_back' });
+    setReason('');
+  };
+
   const confirmAction = () => {
     const { booking, action } = actionModal;
     
-    if (action === 'reject' && !reason.trim()) {
-      toast.error('Please provide a rejection reason');
+    if ((action === 'reject' || action === 'send_back') && !reason.trim()) {
+      toast.error(`Please provide a ${action === 'reject' ? 'rejection' : 'send back'} reason`);
       return;
     }
 
@@ -106,13 +111,15 @@ export default function RoomBookingApprovals() {
     }
 
     const updateData = {
-      status: action === 'approve' ? 'approved' : 'rejected',
+      status: action === 'approve' ? 'approved' : action === 'send_back' ? 'sent_back' : 'rejected',
       approved_by: user?.email,
       approved_at: new Date().toISOString(),
     };
 
     if (action === 'reject') {
       updateData.rejection_reason = reason;
+    } else if (action === 'send_back') {
+      updateData.send_back_reason = reason;
     }
 
     updateBookingMutation.mutate({ id: booking.id, data: updateData });
@@ -199,36 +206,51 @@ export default function RoomBookingApprovals() {
             </div>
           )}
 
-          <div className="flex gap-2 pt-3 border-t">
-            <Link to={createPageUrl(`RoomBookingDetails?id=${booking.id}`)} className="flex-1">
-              <Button variant="outline" size="sm" className="w-full">
-                <Eye className="w-4 h-4 mr-1" />
-                View Details
-              </Button>
-            </Link>
+          <div className="space-y-2 pt-3 border-t">
+            <div className="flex gap-2">
+              <Link to={createPageUrl(`RoomBookingDetails?id=${booking.id}`)} className="flex-1">
+                <Button variant="outline" size="sm" className="w-full">
+                  <Eye className="w-4 h-4 mr-1" />
+                  View
+                </Button>
+              </Link>
+              
+              {isPending && (
+                <>
+                  <Button
+                    onClick={() => handleAction(booking, 'approve')}
+                    className="flex-1 bg-green-600 hover:bg-green-700"
+                    size="sm"
+                    disabled={updateBookingMutation.isPending || conflicts.length > 0}
+                  >
+                    <CheckCircle className="w-4 h-4 mr-1" />
+                    Approve
+                  </Button>
+                  <Button
+                    onClick={() => handleAction(booking, 'reject')}
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 text-red-600 border-red-200 hover:bg-red-50"
+                    disabled={updateBookingMutation.isPending}
+                  >
+                    <XCircle className="w-4 h-4 mr-1" />
+                    Reject
+                  </Button>
+                </>
+              )}
+            </div>
             
             {isPending && (
-              <>
-                <Button
-                  onClick={() => handleAction(booking, 'approve')}
-                  className="flex-1 bg-green-600 hover:bg-green-700"
-                  size="sm"
-                  disabled={updateBookingMutation.isPending || conflicts.length > 0}
-                >
-                  <CheckCircle className="w-4 h-4 mr-1" />
-                  Approve
-                </Button>
-                <Button
-                  onClick={() => handleAction(booking, 'reject')}
-                  variant="outline"
-                  size="sm"
-                  className="flex-1 text-red-600 border-red-200 hover:bg-red-50"
-                  disabled={updateBookingMutation.isPending}
-                >
-                  <XCircle className="w-4 h-4 mr-1" />
-                  Reject
-                </Button>
-              </>
+              <Button
+                onClick={() => handleSendBack(booking)}
+                variant="outline"
+                size="sm"
+                className="w-full text-amber-600 border-amber-200 hover:bg-amber-50"
+                disabled={updateBookingMutation.isPending}
+              >
+                <RotateCcw className="w-4 h-4 mr-1" />
+                Send Back for Correction
+              </Button>
             )}
           </div>
 
@@ -375,21 +397,23 @@ export default function RoomBookingApprovals() {
           <DialogContent>
             <DialogHeader>
               <DialogTitle>
-                {actionModal.action === 'approve' ? 'Approve Booking' : 'Reject Booking'}
+                {actionModal.action === 'approve' && 'Approve Booking'}
+                {actionModal.action === 'reject' && 'Reject Booking'}
+                {actionModal.action === 'send_back' && 'Send Back for Correction'}
               </DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <p className="text-sm text-gray-600">
-                {actionModal.action === 'approve' 
-                  ? 'Are you sure you want to approve this booking?' 
-                  : 'Please provide a reason for rejection:'}
+                {actionModal.action === 'approve' && 'Are you sure you want to approve this booking?'}
+                {actionModal.action === 'reject' && 'Please provide a reason for rejection:'}
+                {actionModal.action === 'send_back' && 'Please provide details on what needs to be corrected:'}
               </p>
               
-              {actionModal.action === 'reject' && (
+              {(actionModal.action === 'reject' || actionModal.action === 'send_back') && (
                 <Textarea
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
-                  placeholder="Enter rejection reason..."
+                  placeholder={actionModal.action === 'reject' ? 'Enter rejection reason...' : 'Enter what needs to be corrected...'}
                   rows={4}
                 />
               )}
@@ -400,7 +424,11 @@ export default function RoomBookingApprovals() {
               </Button>
               <Button
                 onClick={confirmAction}
-                className={actionModal.action === 'approve' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'}
+                className={
+                  actionModal.action === 'approve' ? 'bg-green-600 hover:bg-green-700' : 
+                  actionModal.action === 'send_back' ? 'bg-amber-600 hover:bg-amber-700' :
+                  'bg-red-600 hover:bg-red-700'
+                }
                 disabled={updateBookingMutation.isPending}
               >
                 {updateBookingMutation.isPending ? 'Processing...' : 'Confirm'}

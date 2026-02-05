@@ -130,6 +130,13 @@ export default function MyRoomBookings() {
           )}
         </div>
 
+        {booking.send_back_reason && (
+          <div className="mb-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+            <p className="text-xs font-medium text-amber-800 mb-1">Sent Back - Correction Needed:</p>
+            <p className="text-sm text-amber-700">{booking.send_back_reason}</p>
+          </div>
+        )}
+
         <div className="flex items-center gap-2 mt-4 pt-4 border-t">
           <Link to={createPageUrl(`RoomBookingDetails?id=${booking.id}`)}>
             <Button variant="outline" size="sm">
@@ -137,6 +144,14 @@ export default function MyRoomBookings() {
               View Details
             </Button>
           </Link>
+          {canEdit && (
+            <Link to={createPageUrl(`BookRoom?edit=${booking.id}`)}>
+              <Button variant="outline" size="sm" className="text-blue-600 border-blue-200 hover:bg-blue-50">
+                <Eye className="w-4 h-4 mr-1" />
+                Edit & Resubmit
+              </Button>
+            </Link>
+          )}
           {booking.status === 'pending' && (
             <Button
               variant="outline"
@@ -152,7 +167,8 @@ export default function MyRoomBookings() {
         </div>
       </CardContent>
     </Card>
-  );
+    );
+  };
 
   if (!user) {
     return (
