@@ -38,6 +38,7 @@ const roleMenuConfig = {
     { name: 'Book Conference Room', icon: Calendar, page: 'BookRoom' },
     { name: 'My Conference Room Bookings', icon: FileText, page: 'MyRoomBookings' },
     { name: 'Room Booking Approvals', icon: CheckSquare, page: 'RoomBookingApprovals' },
+    { name: 'Room Analytics', icon: BarChart3, page: 'RoomAnalytics' },
     { name: 'Housekeeping', icon: Settings, page: 'HousekeepingDashboard' },
     { name: 'Notifications', icon: Bell, page: 'Notifications' },
   ],
