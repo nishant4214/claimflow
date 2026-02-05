@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { base44 } from '@/api/base44Client';
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,7 +8,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ArrowLeft, Users, MapPin, Calendar, Clock } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { ArrowLeft, Users, MapPin, Calendar, Clock, AlertTriangle, CheckCircle } from "lucide-react";
 import { toast } from 'sonner';
 import { format, addDays } from 'date-fns';
 
@@ -29,6 +33,42 @@ export default function BookingForm({ room, user, onBack, onSubmit, isSubmitting
     video_recording_required: false,
     additional_notes: '',
   });
+
+  const { data: allBookings = [] } = useQuery({
+    queryKey: ['room-bookings-check'],
+    queryFn: () => base44.entities.RoomBooking.list(),
+  });
+
+  const checkAvailability = () => {
+    if (!formData.booking_date || !formData.start_time || !formData.end_time) {
+      return { available: true, conflicts: [] };
+    }
+
+    const conflicts = allBookings.filter(booking => 
+      booking.room_id === room.room_id &&
+      booking.booking_date === formData.booking_date &&
+      ['pending', 'approved'].includes(booking.status) &&
+      (
+        (formData.start_time >= booking.start_time && formData.start_time < booking.end_time) ||
+        (formData.end_time > booking.start_time && formData.end_time <= booking.end_time) ||
+        (formData.start_time <= booking.start_time && formData.end_time >= booking.end_time)
+      )
+    );
+
+    return { available: conflicts.length === 0, conflicts };
+  };
+
+  const getOccupiedSlots = () => {
+    if (!formData.booking_date) return [];
+    
+    return allBookings
+      .filter(b => 
+        b.room_id === room.room_id && 
+        b.booking_date === formData.booking_date && 
+        ['pending', 'approved'].includes(b.status)
+      )
+      .map(b => ({ start: b.start_time, end: b.end_time, title: b.meeting_title }));
+  };
 
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -56,6 +96,13 @@ export default function BookingForm({ room, user, onBack, onSubmit, isSubmitting
       toast.error('End time must be after start time');
       return;
     }
+
+    const { available, conflicts } = checkAvailability();
+    if (!available) {
+      toast.error(`Conference room is not available for the selected time slot. Conflicts with ${conflicts.length} existing booking(s).`);
+      return;
+    }
+
     if (!formData.meeting_title) {
       toast.error('Please enter a meeting title');
       return;
@@ -85,6 +132,9 @@ export default function BookingForm({ room, user, onBack, onSubmit, isSubmitting
       status: 'pending',
     });
   };
+
+  const { available, conflicts } = checkAvailability();
+  const occupiedSlots = getOccupiedSlots();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 p-6">
@@ -160,6 +210,52 @@ export default function BookingForm({ room, user, onBack, onSubmit, isSubmitting
                 <p className="text-sm text-gray-600">
                   Duration: {calculateDuration()} minutes ({Math.floor(calculateDuration() / 60)}h {calculateDuration() % 60}m)
                 </p>
+              )}
+
+              {/* Availability Status */}
+              {formData.booking_date && formData.start_time && formData.end_time && (
+                <Alert className={available ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}>
+                  <div className="flex items-start gap-3">
+                    {available ? (
+                      <CheckCircle className="w-5 h-5 text-green-600 mt-0.5" />
+                    ) : (
+                      <AlertTriangle className="w-5 h-5 text-red-600 mt-0.5" />
+                    )}
+                    <div className="flex-1">
+                      <AlertDescription className={available ? 'text-green-800' : 'text-red-800'}>
+                        {available ? (
+                          <span className="font-medium">Conference room is available for the selected time slot</span>
+                        ) : (
+                          <div>
+                            <p className="font-medium mb-2">Conference room is not available for the selected time slot</p>
+                            <p className="text-sm">Conflicts with {conflicts.length} existing booking(s):</p>
+                            <ul className="text-sm mt-1 space-y-1">
+                              {conflicts.map((c, idx) => (
+                                <li key={idx}>• {c.start_time} - {c.end_time}: {c.meeting_title}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </AlertDescription>
+                    </div>
+                  </div>
+                </Alert>
+              )}
+
+              {/* Show occupied slots for selected date */}
+              {formData.booking_date && occupiedSlots.length > 0 && (
+                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-sm font-medium text-blue-900 mb-2">
+                    Occupied time slots for {format(new Date(formData.booking_date), 'PPP')}:
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {occupiedSlots.map((slot, idx) => (
+                      <Badge key={idx} variant="outline" className="bg-white text-blue-800">
+                        {slot.start} - {slot.end}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
               )}
 
               {/* Meeting Info */}
