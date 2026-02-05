@@ -15,6 +15,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import StatsCard from '../components/dashboard/StatsCard';
 import ClaimCard from '../components/claims/ClaimCard';
 import ExportButton from '../components/export/ExportButton';
+import RoomAnalyticsWidget from '../components/dashboard/RoomAnalyticsWidget';
 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
@@ -42,6 +43,7 @@ export default function Dashboard() {
 
   const userRole = user?.portal_role || user?.role || 'employee';
   const canApprove = ['junior_admin', 'manager', 'admin_head', 'cro', 'cfo', 'finance', 'admin'].includes(userRole);
+  const canViewRoomAnalytics = ['junior_admin', 'admin_head', 'admin'].includes(userRole);
 
   const { data: allClaimsForApproval = [], isLoading: pendingLoading } = useQuery({
     queryKey: ['pending-approvals', userRole],
@@ -155,196 +157,223 @@ export default function Dashboard() {
           </Link>
         </div>
 
-        {/* View Toggle */}
-        {canApprove && (
-          <div className="mb-6">
-            <Tabs value={viewMode} onValueChange={setViewMode}>
-              <TabsList className="bg-white border shadow-sm">
-                <TabsTrigger value="pending_actions" className="gap-2">
-                  <CheckCircle className="w-4 h-4" />
-                  Employee Claims
-                  {pendingClaimsForApproval.length > 0 && (
-                    <span className="ml-1 px-2 py-0.5 bg-red-500 text-white text-xs rounded-full">
-                      {pendingClaimsForApproval.length}
-                    </span>
-                  )}
-                </TabsTrigger>
-                <TabsTrigger value="my_claims" className="gap-2">
-                  <FileText className="w-4 h-4" />
-                  My Own Claims
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
-          </div>
-        )}
+        {/* Main Tabs - Claims and Conference Rooms */}
+        <Tabs defaultValue="claims" className="mb-6">
+          <TabsList className="bg-white border shadow-sm">
+            <TabsTrigger value="claims" className="gap-2">
+              <FileText className="w-4 h-4" />
+              Expense Claims
+            </TabsTrigger>
+            {canViewRoomAnalytics && (
+              <TabsTrigger value="rooms" className="gap-2">
+                <TrendingUp className="w-4 h-4" />
+                Conference Rooms
+              </TabsTrigger>
+            )}
+          </TabsList>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <StatsCard
-            title="Total Claims"
-            value={stats.total}
-            icon={FileText}
-            color="blue"
-            delay={0}
-          />
-          <StatsCard
-            title="Pending Approval"
-            value={stats.pending}
-            icon={Clock}
-            color="amber"
-            delay={0.1}
-          />
-          <StatsCard
-            title="Approved"
-            value={stats.approved}
-            icon={CheckCircle}
-            color="green"
-            delay={0.2}
-          />
-          <StatsCard
-            title="Amount Paid"
-            value={`₹${stats.paidAmount.toLocaleString('en-IN')}`}
-            icon={Banknote}
-            color="indigo"
-            delay={0.3}
-          />
-        </div>
-
-        {/* Quick Stats Summary */}
-        <div className="grid lg:grid-cols-3 gap-6 mb-8">
-          <Card className="lg:col-span-2 border-0 shadow-sm">
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg font-semibold">
-                  {viewMode === 'my_claims' ? 'My Own Claims' : 'Employee Claims - Pending My Action'}
-                </CardTitle>
-                <div className="flex items-center gap-3">
-                  <ExportButton data={filteredClaims} filename={`dashboard_${viewMode}`} variant="ghost" />
-                  <div className="flex items-center gap-2">
-                    <Filter className="w-4 h-4 text-gray-400" />
-                    <Tabs value={statusFilter} onValueChange={setStatusFilter}>
-                      <TabsList className="bg-gray-100">
-                        <TabsTrigger value="all" className="text-xs">All</TabsTrigger>
-                        <TabsTrigger value="pending" className="text-xs">Pending</TabsTrigger>
-                        <TabsTrigger value="paid" className="text-xs">Paid</TabsTrigger>
-                        <TabsTrigger value="rejected" className="text-xs">Rejected</TabsTrigger>
-                      </TabsList>
-                    </Tabs>
-                  </div>
-                </div>
+          <TabsContent value="claims">
+            {/* View Toggle for Claims */}
+            {canApprove && (
+              <div className="mb-6">
+                <Tabs value={viewMode} onValueChange={setViewMode}>
+                  <TabsList className="bg-white border shadow-sm">
+                    <TabsTrigger value="pending_actions" className="gap-2">
+                      <CheckCircle className="w-4 h-4" />
+                      Employee Claims
+                      {pendingClaimsForApproval.length > 0 && (
+                        <span className="ml-1 px-2 py-0.5 bg-red-500 text-white text-xs rounded-full">
+                          {pendingClaimsForApproval.length}
+                        </span>
+                      )}
+                    </TabsTrigger>
+                    <TabsTrigger value="my_claims" className="gap-2">
+                      <FileText className="w-4 h-4" />
+                      My Own Claims
+                    </TabsTrigger>
+                  </TabsList>
+                </Tabs>
               </div>
-            </CardHeader>
-            <CardContent>
-              {isLoading ? (
-                <div className="space-y-4">
-                  {[1, 2, 3].map(i => (
-                    <div key={i} className="h-24 bg-gray-100 rounded-lg animate-pulse" />
-                  ))}
-                </div>
-              ) : recentClaims.length === 0 ? (
-                <div className="text-center py-12">
-                  <FileText className="w-12 h-12 mx-auto text-gray-300 mb-4" />
-                  <p className="text-gray-500">No claims found</p>
-                  <Link to={createPageUrl('SubmitClaim')}>
-                    <Button variant="link" className="mt-2 text-blue-600">
-                      Submit your first claim
-                    </Button>
-                  </Link>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <AnimatePresence>
-                    {recentClaims.map((claim, index) => (
-                      <ClaimCard key={claim.id} claim={claim} />
-                    ))}
-                  </AnimatePresence>
-                </div>
-              )}
-              
-              {claims.length > 5 && (
-                <div className="mt-6 text-center">
-                  <Link to={createPageUrl('MyClaims')}>
-                    <Button variant="outline" className="gap-2">
-                      View All Claims
-                      <ArrowRight className="w-4 h-4" />
-                    </Button>
-                  </Link>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+            )}
 
-          {/* Summary Stats */}
-          <Card className="border-0 shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold">Summary</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-blue-100 rounded-lg">
-                      <Send className="w-4 h-4 text-blue-600" />
-                    </div>
-                    <span className="text-sm font-medium text-gray-700">Submitted</span>
-                  </div>
-                  <span className="font-semibold text-blue-600">{stats.submitted}</span>
-                </div>
+            {/* Stats Grid */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+              <StatsCard
+                title="Total Claims"
+                value={stats.total}
+                icon={FileText}
+                color="blue"
+                delay={0}
+              />
+              <StatsCard
+                title="Pending Approval"
+                value={stats.pending}
+                icon={Clock}
+                color="amber"
+                delay={0.1}
+              />
+              <StatsCard
+                title="Approved"
+                value={stats.approved}
+                icon={CheckCircle}
+                color="green"
+                delay={0.2}
+              />
+              <StatsCard
+                title="Amount Paid"
+                value={`₹${stats.paidAmount.toLocaleString('en-IN')}`}
+                icon={Banknote}
+                color="indigo"
+                delay={0.3}
+              />
+            </div>
 
-                <div className="flex items-center justify-between p-3 bg-amber-50 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-amber-100 rounded-lg">
-                      <Clock className="w-4 h-4 text-amber-600" />
-                    </div>
-                    <span className="text-sm font-medium text-gray-700">In Progress</span>
-                  </div>
-                  <span className="font-semibold text-amber-600">{stats.pending}</span>
-                </div>
-
-                <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-green-100 rounded-lg">
-                      <Banknote className="w-4 h-4 text-green-600" />
-                    </div>
-                    <span className="text-sm font-medium text-gray-700">Paid</span>
-                  </div>
-                  <span className="font-semibold text-green-600">{stats.paid}</span>
-                </div>
-
-                <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-red-100 rounded-lg">
-                      <XCircle className="w-4 h-4 text-red-600" />
-                    </div>
-                    <span className="text-sm font-medium text-gray-700">Rejected</span>
-                  </div>
-                  <span className="font-semibold text-red-600">{stats.rejected}</span>
-                </div>
-
-                {stats.draft > 0 && (
-                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+            {/* Quick Stats Summary */}
+            <div className="grid lg:grid-cols-3 gap-6 mb-8">
+              <Card className="lg:col-span-2 border-0 shadow-sm">
+                <CardHeader className="pb-2">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-lg font-semibold">
+                      {viewMode === 'my_claims' ? 'My Own Claims' : 'Employee Claims - Pending My Action'}
+                    </CardTitle>
                     <div className="flex items-center gap-3">
-                      <div className="p-2 bg-gray-100 rounded-lg">
-                        <FileText className="w-4 h-4 text-gray-600" />
+                      <ExportButton data={filteredClaims} filename={`dashboard_${viewMode}`} variant="ghost" />
+                      <div className="flex items-center gap-2">
+                        <Filter className="w-4 h-4 text-gray-400" />
+                        <Tabs value={statusFilter} onValueChange={setStatusFilter}>
+                          <TabsList className="bg-gray-100">
+                            <TabsTrigger value="all" className="text-xs">All</TabsTrigger>
+                            <TabsTrigger value="pending" className="text-xs">Pending</TabsTrigger>
+                            <TabsTrigger value="paid" className="text-xs">Paid</TabsTrigger>
+                            <TabsTrigger value="rejected" className="text-xs">Rejected</TabsTrigger>
+                          </TabsList>
+                        </Tabs>
                       </div>
-                      <span className="text-sm font-medium text-gray-700">Drafts</span>
                     </div>
-                    <span className="font-semibold text-gray-600">{stats.draft}</span>
                   </div>
-                )}
-              </div>
+                </CardHeader>
+                <CardContent>
+                  {isLoading ? (
+                    <div className="space-y-4">
+                      {[1, 2, 3].map(i => (
+                        <div key={i} className="h-24 bg-gray-100 rounded-lg animate-pulse" />
+                      ))}
+                    </div>
+                  ) : recentClaims.length === 0 ? (
+                    <div className="text-center py-12">
+                      <FileText className="w-12 h-12 mx-auto text-gray-300 mb-4" />
+                      <p className="text-gray-500">No claims found</p>
+                      <Link to={createPageUrl('SubmitClaim')}>
+                        <Button variant="link" className="mt-2 text-blue-600">
+                          Submit your first claim
+                        </Button>
+                      </Link>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <AnimatePresence>
+                        {recentClaims.map((claim, index) => (
+                          <ClaimCard key={claim.id} claim={claim} />
+                        ))}
+                      </AnimatePresence>
+                    </div>
+                  )}
+                  
+                  {claims.length > 5 && (
+                    <div className="mt-6 text-center">
+                      <Link to={createPageUrl('MyClaims')}>
+                        <Button variant="outline" className="gap-2">
+                          View All Claims
+                          <ArrowRight className="w-4 h-4" />
+                        </Button>
+                      </Link>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
 
-              <div className="pt-4 border-t">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-500">Total Claimed</span>
-                  <span className="text-xl font-bold text-gray-900">
-                    ₹{stats.totalAmount.toLocaleString('en-IN')}
-                  </span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+              {/* Summary Stats */}
+              <Card className="border-0 shadow-sm">
+                <CardHeader>
+                  <CardTitle className="text-lg font-semibold">Summary</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-blue-100 rounded-lg">
+                          <Send className="w-4 h-4 text-blue-600" />
+                        </div>
+                        <span className="text-sm font-medium text-gray-700">Submitted</span>
+                      </div>
+                      <span className="font-semibold text-blue-600">{stats.submitted}</span>
+                    </div>
+
+                    <div className="flex items-center justify-between p-3 bg-amber-50 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-amber-100 rounded-lg">
+                          <Clock className="w-4 h-4 text-amber-600" />
+                        </div>
+                        <span className="text-sm font-medium text-gray-700">In Progress</span>
+                      </div>
+                      <span className="font-semibold text-amber-600">{stats.pending}</span>
+                    </div>
+
+                    <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-green-100 rounded-lg">
+                          <Banknote className="w-4 h-4 text-green-600" />
+                        </div>
+                        <span className="text-sm font-medium text-gray-700">Paid</span>
+                      </div>
+                      <span className="font-semibold text-green-600">{stats.paid}</span>
+                    </div>
+
+                    <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-red-100 rounded-lg">
+                          <XCircle className="w-4 h-4 text-red-600" />
+                        </div>
+                        <span className="text-sm font-medium text-gray-700">Rejected</span>
+                      </div>
+                      <span className="font-semibold text-red-600">{stats.rejected}</span>
+                    </div>
+
+                    {stats.draft > 0 && (
+                      <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-gray-100 rounded-lg">
+                            <FileText className="w-4 h-4 text-gray-600" />
+                          </div>
+                          <span className="text-sm font-medium text-gray-700">Drafts</span>
+                        </div>
+                        <span className="font-semibold text-gray-600">{stats.draft}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="pt-4 border-t">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-500">Total Claimed</span>
+                      <span className="text-xl font-bold text-gray-900">
+                        ₹{stats.totalAmount.toLocaleString('en-IN')}
+                      </span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {canViewRoomAnalytics && (
+            <TabsContent value="rooms">
+              <RoomAnalyticsWidget />
+            </TabsContent>
+          )}
+        </Tabs>
+        
+
+
       </div>
     </div>
   );
