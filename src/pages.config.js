@@ -62,6 +62,8 @@ import SubmitClaim from './pages/SubmitClaim';
 import TestCredentials from './pages/TestCredentials';
 import UserManagement from './pages/UserManagement';
 import WorkflowConfig from './pages/WorkflowConfig';
+import BookRoom from './pages/BookRoom';
+import MyRoomBookings from './pages/MyRoomBookings';
 import __Layout from './Layout.jsx';
 
 
@@ -81,6 +83,8 @@ export const PAGES = {
     "TestCredentials": TestCredentials,
     "UserManagement": UserManagement,
     "WorkflowConfig": WorkflowConfig,
+    "BookRoom": BookRoom,
+    "MyRoomBookings": MyRoomBookings,
 }
 
 export const pagesConfig = {

@@ -19,7 +19,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { 
   LayoutDashboard, FileText, Plus, CheckSquare, 
   Wallet, Settings, Tag, GitBranch, BarChart3, 
-  Bell, User, Users, LogOut, Menu, ChevronRight, X, Upload
+  Bell, User, Users, LogOut, Menu, ChevronRight, X, Upload, Calendar
 } from "lucide-react";
 
 const roleMenuConfig = {
@@ -27,24 +27,32 @@ const roleMenuConfig = {
     { name: 'Dashboard', icon: LayoutDashboard, page: 'Dashboard' },
     { name: 'Submit Claim', icon: Plus, page: 'SubmitClaim' },
     { name: 'My Claims', icon: FileText, page: 'MyClaims' },
+    { name: 'Book Room', icon: Calendar, page: 'BookRoom' },
+    { name: 'My Room Bookings', icon: FileText, page: 'MyRoomBookings' },
     { name: 'Notifications', icon: Bell, page: 'Notifications' },
   ],
   junior_admin: [
     { name: 'Dashboard', icon: LayoutDashboard, page: 'Dashboard' },
     { name: 'Approvals', icon: CheckSquare, page: 'Approvals' },
     { name: 'My Claims', icon: FileText, page: 'MyClaims' },
+    { name: 'Book Room', icon: Calendar, page: 'BookRoom' },
+    { name: 'My Room Bookings', icon: FileText, page: 'MyRoomBookings' },
     { name: 'Notifications', icon: Bell, page: 'Notifications' },
   ],
   manager: [
     { name: 'Dashboard', icon: LayoutDashboard, page: 'Dashboard' },
     { name: 'Approvals', icon: CheckSquare, page: 'Approvals' },
     { name: 'My Claims', icon: FileText, page: 'MyClaims' },
+    { name: 'Book Room', icon: Calendar, page: 'BookRoom' },
+    { name: 'My Room Bookings', icon: FileText, page: 'MyRoomBookings' },
     { name: 'Notifications', icon: Bell, page: 'Notifications' },
   ],
   admin_head: [
     { name: 'Dashboard', icon: LayoutDashboard, page: 'Dashboard' },
     { name: 'Approvals', icon: CheckSquare, page: 'Approvals' },
     { name: 'My Claims', icon: FileText, page: 'MyClaims' },
+    { name: 'Book Room', icon: Calendar, page: 'BookRoom' },
+    { name: 'My Room Bookings', icon: FileText, page: 'MyRoomBookings' },
     { name: 'Bulk Upload', icon: Upload, page: 'BulkUpload' },
     { name: 'Categories', icon: Tag, page: 'AdminCategories' },
     { name: 'Workflow Config', icon: GitBranch, page: 'WorkflowConfig' },
@@ -55,18 +63,24 @@ const roleMenuConfig = {
     { name: 'Dashboard', icon: LayoutDashboard, page: 'Dashboard' },
     { name: 'Approvals', icon: CheckSquare, page: 'Approvals' },
     { name: 'My Claims', icon: FileText, page: 'MyClaims' },
+    { name: 'Book Room', icon: Calendar, page: 'BookRoom' },
+    { name: 'My Room Bookings', icon: FileText, page: 'MyRoomBookings' },
     { name: 'Bulk Upload', icon: Upload, page: 'BulkUpload' },
     { name: 'Notifications', icon: Bell, page: 'Notifications' },
   ],
   cfo: [
     { name: 'Dashboard', icon: LayoutDashboard, page: 'Dashboard' },
     { name: 'Approvals', icon: CheckSquare, page: 'Approvals' },
+    { name: 'Book Room', icon: Calendar, page: 'BookRoom' },
+    { name: 'My Room Bookings', icon: FileText, page: 'MyRoomBookings' },
     { name: 'Reports', icon: BarChart3, page: 'Reports' },
     { name: 'Notifications', icon: Bell, page: 'Notifications' },
   ],
   finance: [
     { name: 'Dashboard', icon: LayoutDashboard, page: 'Dashboard' },
     { name: 'Finance', icon: Wallet, page: 'Finance' },
+    { name: 'Book Room', icon: Calendar, page: 'BookRoom' },
+    { name: 'My Room Bookings', icon: FileText, page: 'MyRoomBookings' },
     { name: 'Reports', icon: BarChart3, page: 'Reports' },
     { name: 'Notifications', icon: Bell, page: 'Notifications' },
   ],
@@ -75,6 +89,8 @@ const roleMenuConfig = {
     { name: 'Test Credentials', icon: Users, page: 'TestCredentials' },
     { name: 'Approvals', icon: CheckSquare, page: 'Approvals' },
     { name: 'Finance', icon: Wallet, page: 'Finance' },
+    { name: 'Book Room', icon: Calendar, page: 'BookRoom' },
+    { name: 'My Room Bookings', icon: FileText, page: 'MyRoomBookings' },
     { name: 'Bulk Upload', icon: Upload, page: 'BulkUpload' },
     { name: 'Categories', icon: Tag, page: 'AdminCategories' },
     { name: 'Workflow Config', icon: GitBranch, page: 'WorkflowConfig' },
