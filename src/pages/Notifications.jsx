@@ -21,6 +21,16 @@ const notificationIcons = {
   payment_processed: IndianRupee,
   sla_warning: AlertCircle,
   pending_approval: Bell,
+  booking_submitted: FileText,
+  booking_approval_required: AlertCircle,
+  booking_approved: CheckCircle,
+  booking_rejected: XCircle,
+  booking_cancelled: XCircle,
+  meeting_reminder: AlertCircle,
+  housekeeping_task_assigned: AlertCircle,
+  housekeeping_task_updated: AlertCircle,
+  housekeeping_task_completed: CheckCircle,
+  meeting_feedback_request: AlertCircle,
 };
 
 const notificationColors = {
@@ -31,6 +41,16 @@ const notificationColors = {
   payment_processed: 'bg-emerald-100 text-emerald-600',
   sla_warning: 'bg-orange-100 text-orange-600',
   pending_approval: 'bg-purple-100 text-purple-600',
+  booking_submitted: 'bg-blue-100 text-blue-600',
+  booking_approval_required: 'bg-amber-100 text-amber-600',
+  booking_approved: 'bg-green-100 text-green-600',
+  booking_rejected: 'bg-red-100 text-red-600',
+  booking_cancelled: 'bg-gray-100 text-gray-600',
+  meeting_reminder: 'bg-blue-100 text-blue-600',
+  housekeeping_task_assigned: 'bg-purple-100 text-purple-600',
+  housekeeping_task_updated: 'bg-purple-100 text-purple-600',
+  housekeeping_task_completed: 'bg-green-100 text-green-600',
+  meeting_feedback_request: 'bg-blue-100 text-blue-600',
 };
 
 export default function Notifications() {
@@ -155,12 +175,20 @@ export default function Notifications() {
                                     {notification.created_date && format(parseISO(notification.created_date), 'MMM d, yyyy h:mm a')}
                                   </span>
                                   {notification.claim_number && (
-                                    <Link 
-                                      to={createPageUrl(`ClaimDetails?id=${notification.claim_id}`)}
-                                      className="text-xs text-blue-600 hover:underline"
-                                    >
-                                      View Claim →
-                                    </Link>
+                                   <Link 
+                                     to={createPageUrl(`ClaimDetails?id=${notification.claim_id}`)}
+                                     className="text-xs text-blue-600 hover:underline"
+                                   >
+                                     View Claim →
+                                   </Link>
+                                  )}
+                                  {notification.booking_number && (
+                                   <Link 
+                                     to={createPageUrl('ConferenceRooms')}
+                                     className="text-xs text-blue-600 hover:underline"
+                                   >
+                                     View Booking →
+                                   </Link>
                                   )}
                                 </div>
                               </div>
