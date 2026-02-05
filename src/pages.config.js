@@ -64,6 +64,10 @@ import UserManagement from './pages/UserManagement';
 import WorkflowConfig from './pages/WorkflowConfig';
 import BookRoom from './pages/BookRoom';
 import MyRoomBookings from './pages/MyRoomBookings';
+import RoomBookingApprovals from './pages/RoomBookingApprovals';
+import RoomAnalytics from './pages/RoomAnalytics';
+import HousekeepingDashboard from './pages/HousekeepingDashboard';
+import AdminRooms from './pages/AdminRooms';
 import __Layout from './Layout.jsx';
 
 
@@ -85,6 +89,10 @@ export const PAGES = {
     "WorkflowConfig": WorkflowConfig,
     "BookRoom": BookRoom,
     "MyRoomBookings": MyRoomBookings,
+    "RoomBookingApprovals": RoomBookingApprovals,
+    "RoomAnalytics": RoomAnalytics,
+    "HousekeepingDashboard": HousekeepingDashboard,
+    "AdminRooms": AdminRooms,
 }
 
 export const pagesConfig = {
