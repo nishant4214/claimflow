@@ -44,11 +44,18 @@ export default function BookRoom() {
 
   const createBookingMutation = useMutation({
     mutationFn: (bookingData) => base44.entities.RoomBooking.create(bookingData),
-    onSuccess: (data) => {
+    onSuccess: async (newBooking) => {
       toast.success('Booking request submitted successfully');
-      logCriticalAction('Room Booking', 'Submit Booking', data.booking_number);
+      logCriticalAction('Room Booking', 'Submit Booking', newBooking.booking_number);
+      
+      // Send notifications
+      const { notifyBookingSubmitted, notifyApprovalRequired } = await import('../components/notifications/RoomBookingNotifications');
+      await notifyBookingSubmitted(newBooking, user);
+      await notifyApprovalRequired(newBooking);
+      
       queryClient.invalidateQueries({ queryKey: ['room-bookings-all'] });
       queryClient.invalidateQueries({ queryKey: ['my-room-bookings'] });
+      queryClient.invalidateQueries({ queryKey: ['notification-count'] });
       navigate(createPageUrl('MyRoomBookings'));
     },
     onError: (error) => {
