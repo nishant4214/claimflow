@@ -8,7 +8,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Calendar, Clock, Users, MapPin, CheckCircle, XCircle, AlertTriangle, Search } from "lucide-react";
+import { Calendar, Clock, Users, MapPin, CheckCircle, XCircle, AlertTriangle, Search, Eye } from "lucide-react";
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
 import { toast } from 'sonner';
 import { format, parseISO } from 'date-fns';
 import { logCriticalAction } from '../components/session/SessionLogger';
@@ -197,30 +199,41 @@ export default function RoomBookingApprovals() {
             </div>
           )}
 
-          {isPending && (
-            <div className="flex gap-2 pt-3 border-t">
-              <Button
-                onClick={() => handleAction(booking, 'approve')}
-                className="flex-1 bg-green-600 hover:bg-green-700"
-                disabled={updateBookingMutation.isPending || conflicts.length > 0}
-              >
-                <CheckCircle className="w-4 h-4 mr-1" />
-                Approve
+          <div className="flex gap-2 pt-3 border-t">
+            <Link to={createPageUrl(`RoomBookingDetails?id=${booking.id}`)} className="flex-1">
+              <Button variant="outline" size="sm" className="w-full">
+                <Eye className="w-4 h-4 mr-1" />
+                View Details
               </Button>
-              <Button
-                onClick={() => handleAction(booking, 'reject')}
-                variant="outline"
-                className="flex-1 text-red-600 border-red-200 hover:bg-red-50"
-                disabled={updateBookingMutation.isPending}
-              >
-                <XCircle className="w-4 h-4 mr-1" />
-                Reject
-              </Button>
-            </div>
-          )}
+            </Link>
+            
+            {isPending && (
+              <>
+                <Button
+                  onClick={() => handleAction(booking, 'approve')}
+                  className="flex-1 bg-green-600 hover:bg-green-700"
+                  size="sm"
+                  disabled={updateBookingMutation.isPending || conflicts.length > 0}
+                >
+                  <CheckCircle className="w-4 h-4 mr-1" />
+                  Approve
+                </Button>
+                <Button
+                  onClick={() => handleAction(booking, 'reject')}
+                  variant="outline"
+                  size="sm"
+                  className="flex-1 text-red-600 border-red-200 hover:bg-red-50"
+                  disabled={updateBookingMutation.isPending}
+                >
+                  <XCircle className="w-4 h-4 mr-1" />
+                  Reject
+                </Button>
+              </>
+            )}
+          </div>
 
           {!isPending && (
-            <div className="pt-3 border-t">
+            <div className="pt-3 border-t mt-3">
               <Badge className={booking.status === 'approved' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
                 {booking.status === 'approved' ? 'Approved' : 'Rejected'}
               </Badge>

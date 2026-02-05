@@ -123,6 +123,15 @@ export default function Layout({ children, currentPageName }) {
     refetchInterval: 30000,
   });
 
+  const canApproveBookings = ['junior_admin', 'admin_head', 'admin'].includes(userRole);
+  
+  const { data: pendingBookings = [] } = useQuery({
+    queryKey: ['pending-bookings-count', user?.email],
+    queryFn: () => base44.entities.RoomBooking.filter({ status: 'pending' }),
+    enabled: !!user && canApproveBookings,
+    refetchInterval: 30000,
+  });
+
   const userRole = user?.portal_role || user?.role || 'employee';
   const menuItems = roleMenuConfig[userRole] || roleMenuConfig.employee;
   const unreadCount = notifications.length;
@@ -139,6 +148,8 @@ export default function Layout({ children, currentPageName }) {
     const isActive = currentPageName === item.page;
     const Icon = item.icon;
     const isNotification = item.name === 'Notifications';
+    const isConferenceRooms = item.name === 'Conference Rooms';
+    const pendingBookingsCount = canApproveBookings ? pendingBookings.length : 0;
 
     return (
       <Link
@@ -155,6 +166,11 @@ export default function Layout({ children, currentPageName }) {
         {isNotification && unreadCount > 0 && (
           <Badge className="ml-auto bg-red-500 text-white text-xs px-2">
             {unreadCount}
+          </Badge>
+        )}
+        {isConferenceRooms && pendingBookingsCount > 0 && (
+          <Badge className="ml-auto bg-orange-500 text-white text-xs px-2">
+            {pendingBookingsCount}
           </Badge>
         )}
       </Link>

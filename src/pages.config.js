@@ -54,6 +54,7 @@ import Approvals from './pages/Approvals';
 import BookRoom from './pages/BookRoom';
 import BulkUpload from './pages/BulkUpload';
 import ClaimDetails from './pages/ClaimDetails';
+import ConferenceRooms from './pages/ConferenceRooms';
 import Dashboard from './pages/Dashboard';
 import DemoCredentials from './pages/DemoCredentials';
 import Finance from './pages/Finance';
@@ -64,12 +65,11 @@ import Notifications from './pages/Notifications';
 import Reports from './pages/Reports';
 import RoomAnalytics from './pages/RoomAnalytics';
 import RoomBookingApprovals from './pages/RoomBookingApprovals';
+import RoomBookingDetails from './pages/RoomBookingDetails';
 import SubmitClaim from './pages/SubmitClaim';
 import TestCredentials from './pages/TestCredentials';
 import UserManagement from './pages/UserManagement';
 import WorkflowConfig from './pages/WorkflowConfig';
-import ConferenceRooms from './pages/ConferenceRooms';
-import RoomBookingDetails from './pages/RoomBookingDetails';
 import __Layout from './Layout.jsx';
 
 
@@ -81,6 +81,7 @@ export const PAGES = {
     "BookRoom": BookRoom,
     "BulkUpload": BulkUpload,
     "ClaimDetails": ClaimDetails,
+    "ConferenceRooms": ConferenceRooms,
     "Dashboard": Dashboard,
     "DemoCredentials": DemoCredentials,
     "Finance": Finance,
@@ -91,12 +92,11 @@ export const PAGES = {
     "Reports": Reports,
     "RoomAnalytics": RoomAnalytics,
     "RoomBookingApprovals": RoomBookingApprovals,
+    "RoomBookingDetails": RoomBookingDetails,
     "SubmitClaim": SubmitClaim,
     "TestCredentials": TestCredentials,
     "UserManagement": UserManagement,
     "WorkflowConfig": WorkflowConfig,
-    "ConferenceRooms": ConferenceRooms,
-    "RoomBookingDetails": RoomBookingDetails,
 }
 
 export const pagesConfig = {
