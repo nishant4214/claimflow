@@ -369,7 +369,7 @@ export default function Dashboard() {
           {canViewRoomAnalytics && (
             <TabsContent value="rooms">
               <div className="space-y-6">
-                <CalendarViewWidget userRole={userRole} />
+                <CalendarViewWidget userRole={userRole} user={user} />
                 <RoomAnalyticsWidget />
               </div>
             </TabsContent>
