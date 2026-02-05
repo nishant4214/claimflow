@@ -11,6 +11,7 @@ import { Calendar, Clock, Users, MapPin, Plus, Eye, XCircle, CheckCircle, AlertC
 import { toast } from 'sonner';
 import { format, parseISO, isPast, isFuture } from 'date-fns';
 import { logCriticalAction } from '../components/session/SessionLogger';
+import { ROOM_NOTIFICATION_TYPES } from '../components/notifications/RoomBookingNotifications';
 
 const getStatusBadge = (status) => {
   const config = {
@@ -49,11 +50,25 @@ export default function MyRoomBookings() {
 
   const cancelBookingMutation = useMutation({
     mutationFn: (bookingId) => base44.entities.RoomBooking.update(bookingId, { status: 'cancelled' }),
-    onSuccess: (_, bookingId) => {
+    onSuccess: async (cancelledBooking, bookingId) => {
       toast.success('Booking cancelled successfully');
       logCriticalAction('Room Booking', 'Cancel Booking', bookingId);
+      
+      // Create cancellation notification
+      await base44.entities.Notification.create({
+        recipient_email: cancelledBooking.employee_email,
+        notification_type: ROOM_NOTIFICATION_TYPES.BOOKING_CANCELLED,
+        title: 'Booking Cancelled',
+        message: `Your booking for ${cancelledBooking.room_name} on ${format(parseISO(cancelledBooking.booking_date), 'PPP')} has been cancelled.`,
+        booking_id: cancelledBooking.id,
+        booking_number: cancelledBooking.booking_number,
+        is_read: false,
+        email_sent: false,
+      });
+      
       queryClient.invalidateQueries({ queryKey: ['my-room-bookings'] });
       queryClient.invalidateQueries({ queryKey: ['room-bookings-all'] });
+      queryClient.invalidateQueries({ queryKey: ['notification-count'] });
     },
   });
 

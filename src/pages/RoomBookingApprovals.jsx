@@ -12,6 +12,7 @@ import { Calendar, Clock, Users, MapPin, CheckCircle, XCircle, AlertTriangle, Se
 import { toast } from 'sonner';
 import { format, parseISO } from 'date-fns';
 import { logCriticalAction } from '../components/session/SessionLogger';
+import { notifyBookingApproved, notifyBookingRejected, notifyHousekeepingTask } from '../components/notifications/RoomBookingNotifications';
 
 export default function RoomBookingApprovals() {
   const [user, setUser] = useState(null);
@@ -44,13 +45,23 @@ export default function RoomBookingApprovals() {
 
   const updateBookingMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.RoomBooking.update(id, data),
-    onSuccess: (_, { id, data }) => {
+    onSuccess: async (updatedBooking, { id, data }) => {
       const action = data.status === 'approved' ? 'Approve' : data.status === 'rejected' ? 'Reject' : 'Update';
       toast.success(`Booking ${action.toLowerCase()}d successfully`);
       logCriticalAction('Room Booking Approval', action, id);
+      
+      // Send notifications
+      if (data.status === 'approved') {
+        await notifyBookingApproved(updatedBooking);
+        await notifyHousekeepingTask(updatedBooking);
+      } else if (data.status === 'rejected') {
+        await notifyBookingRejected(updatedBooking);
+      }
+      
       queryClient.invalidateQueries({ queryKey: ['room-bookings-approvals'] });
       queryClient.invalidateQueries({ queryKey: ['room-bookings-all'] });
       queryClient.invalidateQueries({ queryKey: ['my-room-bookings'] });
+      queryClient.invalidateQueries({ queryKey: ['notification-count'] });
       setActionModal({ open: false, booking: null, action: null });
       setReason('');
     },
