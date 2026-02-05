@@ -20,6 +20,7 @@ const getStatusBadge = (status) => {
     rejected: { icon: XCircle, color: 'bg-red-100 text-red-800 border-red-200', label: 'Rejected' },
     cancelled: { icon: XCircle, color: 'bg-gray-100 text-gray-800 border-gray-200', label: 'Cancelled' },
     completed: { icon: CheckCircle, color: 'bg-blue-100 text-blue-800 border-blue-200', label: 'Completed' },
+    sent_back: { icon: AlertCircle, color: 'bg-amber-100 text-amber-800 border-amber-200', label: 'Sent Back' },
   };
   const { icon: Icon, color, label } = config[status] || config.pending;
   return (
@@ -84,18 +85,21 @@ export default function MyRoomBookings() {
     return isPast(bookingDate) || ['completed', 'rejected', 'cancelled'].includes(b.status);
   });
 
-  const BookingCard = ({ booking }) => (
-    <Card className="border-0 shadow-sm hover:shadow-md transition-shadow">
-      <CardContent className="p-6">
-        <div className="flex items-start justify-between mb-4">
-          <div>
-            <div className="flex items-center gap-3 mb-2">
-              <h3 className="text-lg font-semibold text-gray-900">{booking.booking_number}</h3>
-              {getStatusBadge(booking.status)}
+  const BookingCard = ({ booking }) => {
+    const canEdit = booking.status === 'sent_back';
+    
+    return (
+      <Card className="border-0 shadow-sm hover:shadow-md transition-shadow">
+        <CardContent className="p-6">
+          <div className="flex items-start justify-between mb-4">
+            <div>
+              <div className="flex items-center gap-3 mb-2">
+                <h3 className="text-lg font-semibold text-gray-900">{booking.booking_number}</h3>
+                {getStatusBadge(booking.status)}
+              </div>
+              <p className="text-gray-600 font-medium">{booking.meeting_title}</p>
             </div>
-            <p className="text-gray-600 font-medium">{booking.meeting_title}</p>
           </div>
-        </div>
 
         <div className="space-y-3">
           <div className="flex items-center gap-2 text-sm text-gray-600">
