@@ -113,6 +113,8 @@ export default function Layout({ children, currentPageName }) {
     loadUser();
   }, []);
 
+  const userRole = user?.portal_role || user?.role || 'employee';
+  
   const { data: notifications = [] } = useQuery({
     queryKey: ['notification-count', user?.email],
     queryFn: () => base44.entities.Notification.filter({ 
@@ -131,8 +133,6 @@ export default function Layout({ children, currentPageName }) {
     enabled: !!user && canApproveBookings,
     refetchInterval: 30000,
   });
-
-  const userRole = user?.portal_role || user?.role || 'employee';
   const menuItems = roleMenuConfig[userRole] || roleMenuConfig.employee;
   const unreadCount = notifications.length;
 
