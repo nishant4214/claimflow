@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { ArrowLeft, Users, MapPin, Calendar, Clock, AlertTriangle, CheckCircle } from "lucide-react";
+import { ArrowLeft, Users, MapPin, Calendar, Clock, AlertTriangle, CheckCircle, Upload, X, Plus } from "lucide-react";
 import { toast } from 'sonner';
 import { format, addDays } from 'date-fns';
 
@@ -32,7 +32,12 @@ export default function BookingForm({ room, user, onBack, onSubmit, isSubmitting
     it_support_required: false,
     video_recording_required: false,
     additional_notes: '',
+    attendees_list: [],
+    document_urls: [],
   });
+
+  const [attendee, setAttendee] = useState({ name: '', email: '', contact: '', company_name: '' });
+  const [uploading, setUploading] = useState(false);
 
   const { data: allBookings = [] } = useQuery({
     queryKey: ['room-bookings-check'],
@@ -72,6 +77,56 @@ export default function BookingForm({ room, user, onBack, onSubmit, isSubmitting
 
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleAddAttendee = () => {
+    if (!attendee.name || !attendee.email) {
+      toast.error('Please enter attendee name and email');
+      return;
+    }
+    setFormData(prev => ({
+      ...prev,
+      attendees_list: [...prev.attendees_list, { ...attendee }]
+    }));
+    setAttendee({ name: '', email: '', contact: '', company_name: '' });
+  };
+
+  const handleRemoveAttendee = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      attendees_list: prev.attendees_list.filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleFileUpload = async (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length === 0) return;
+
+    setUploading(true);
+    try {
+      const uploadedUrls = [];
+      for (const file of files) {
+        const { file_url } = await base44.integrations.Core.UploadFile({ file });
+        uploadedUrls.push(file_url);
+      }
+      setFormData(prev => ({
+        ...prev,
+        document_urls: [...prev.document_urls, ...uploadedUrls]
+      }));
+      toast.success(`${files.length} file(s) uploaded successfully`);
+    } catch (error) {
+      toast.error('Failed to upload files');
+    } finally {
+      setUploading(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleRemoveDocument = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      document_urls: prev.document_urls.filter((_, i) => i !== index)
+    }));
   };
 
   const calculateDuration = () => {
@@ -415,6 +470,121 @@ export default function BookingForm({ room, user, onBack, onSubmit, isSubmitting
                   placeholder="Any other requirements or notes..."
                   rows={2}
                 />
+              </div>
+
+              {/* Attendees List */}
+              <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
+                <h3 className="font-semibold text-gray-900">Attendees List (Optional)</h3>
+                
+                <div className="grid md:grid-cols-2 gap-3">
+                  <Input
+                    placeholder="Attendee Name"
+                    value={attendee.name}
+                    onChange={(e) => setAttendee(prev => ({ ...prev, name: e.target.value }))}
+                  />
+                  <Input
+                    placeholder="Email"
+                    type="email"
+                    value={attendee.email}
+                    onChange={(e) => setAttendee(prev => ({ ...prev, email: e.target.value }))}
+                  />
+                  <Input
+                    placeholder="Contact Number"
+                    value={attendee.contact}
+                    onChange={(e) => setAttendee(prev => ({ ...prev, contact: e.target.value }))}
+                  />
+                  <Input
+                    placeholder="Company/Vendor Name"
+                    value={attendee.company_name}
+                    onChange={(e) => setAttendee(prev => ({ ...prev, company_name: e.target.value }))}
+                  />
+                </div>
+
+                <Button type="button" variant="outline" onClick={handleAddAttendee} className="w-full">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Attendee
+                </Button>
+
+                {formData.attendees_list.length > 0 && (
+                  <div className="space-y-2 mt-4">
+                    {formData.attendees_list.map((att, idx) => (
+                      <div key={idx} className="flex items-center justify-between p-3 bg-white border rounded-lg">
+                        <div className="flex-1">
+                          <p className="font-medium text-sm">{att.name}</p>
+                          <p className="text-xs text-gray-500">{att.email}</p>
+                          {(att.contact || att.company_name) && (
+                            <p className="text-xs text-gray-500">
+                              {att.contact} {att.company_name && `• ${att.company_name}`}
+                            </p>
+                          )}
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleRemoveAttendee(idx)}
+                        >
+                          <X className="w-4 h-4 text-red-500" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Supporting Documents */}
+              <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
+                <h3 className="font-semibold text-gray-900">Supporting Documents (Optional)</h3>
+                
+                <div>
+                  <Label htmlFor="documents" className="cursor-pointer">
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-500 transition-colors">
+                      <Upload className="w-8 h-8 mx-auto text-gray-400 mb-2" />
+                      <p className="text-sm text-gray-600 mb-1">
+                        Click to upload documents
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        PDF, Images, Excel, CSV supported
+                      </p>
+                    </div>
+                    <Input
+                      id="documents"
+                      type="file"
+                      multiple
+                      accept=".pdf,.png,.jpg,.jpeg,.xls,.xlsx,.csv"
+                      onChange={handleFileUpload}
+                      className="hidden"
+                      disabled={uploading}
+                    />
+                  </Label>
+                </div>
+
+                {uploading && (
+                  <div className="text-center text-sm text-gray-500">
+                    Uploading files...
+                  </div>
+                )}
+
+                {formData.document_urls.length > 0 && (
+                  <div className="space-y-2">
+                    {formData.document_urls.map((url, idx) => (
+                      <div key={idx} className="flex items-center justify-between p-3 bg-white border rounded-lg">
+                        <div className="flex items-center gap-2">
+                          <Upload className="w-4 h-4 text-blue-600" />
+                          <span className="text-sm">Document {idx + 1}</span>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleRemoveDocument(idx)}
+                        >
+                          <X className="w-4 h-4 text-red-500" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div className="flex justify-end gap-3 pt-4 border-t">

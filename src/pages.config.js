@@ -69,6 +69,7 @@ import TestCredentials from './pages/TestCredentials';
 import UserManagement from './pages/UserManagement';
 import WorkflowConfig from './pages/WorkflowConfig';
 import ConferenceRooms from './pages/ConferenceRooms';
+import RoomBookingDetails from './pages/RoomBookingDetails';
 import __Layout from './Layout.jsx';
 
 
@@ -95,6 +96,7 @@ export const PAGES = {
     "UserManagement": UserManagement,
     "WorkflowConfig": WorkflowConfig,
     "ConferenceRooms": ConferenceRooms,
+    "RoomBookingDetails": RoomBookingDetails,
 }
 
 export const pagesConfig = {

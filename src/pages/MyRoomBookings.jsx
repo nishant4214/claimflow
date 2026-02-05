@@ -131,6 +131,12 @@ export default function MyRoomBookings() {
         </div>
 
         <div className="flex items-center gap-2 mt-4 pt-4 border-t">
+          <Link to={createPageUrl(`RoomBookingDetails?id=${booking.id}`)}>
+            <Button variant="outline" size="sm">
+              <Eye className="w-4 h-4 mr-1" />
+              View Details
+            </Button>
+          </Link>
           {booking.status === 'pending' && (
             <Button
               variant="outline"
