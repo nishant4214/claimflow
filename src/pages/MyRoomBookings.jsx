@@ -101,7 +101,7 @@ export default function MyRoomBookings() {
             </div>
           </div>
 
-        <div className="space-y-3">
+          <div className="space-y-3">
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <MapPin className="w-4 h-4 text-blue-600" />
             <span className="font-medium">{booking.room_name}</span>
@@ -132,16 +132,15 @@ export default function MyRoomBookings() {
               <p className="text-sm text-red-700">{booking.rejection_reason}</p>
             </div>
           )}
-        </div>
 
-        {booking.send_back_reason && (
+          {booking.send_back_reason && (
           <div className="mb-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
             <p className="text-xs font-medium text-amber-800 mb-1">Sent Back - Correction Needed:</p>
             <p className="text-sm text-amber-700">{booking.send_back_reason}</p>
           </div>
-        )}
+          )}
 
-        <div className="flex items-center gap-2 mt-4 pt-4 border-t">
+          <div className="flex items-center gap-2 mt-4 pt-4 border-t">
           <Link to={createPageUrl(`RoomBookingDetails?id=${booking.id}`)}>
             <Button variant="outline" size="sm">
               <Eye className="w-4 h-4 mr-1" />
@@ -168,9 +167,9 @@ export default function MyRoomBookings() {
               Cancel
             </Button>
           )}
-        </div>
-      </CardContent>
-    </Card>
+          </div>
+        </CardContent>
+      </Card>
     );
   };
 
