@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
-const FEEDBACK_DELAY_MINUTES = 15;
+const FEEDBACK_DELAY_MINUTES = 10;
 
 Deno.serve(async (req) => {
   try {
