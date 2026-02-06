@@ -60,8 +60,24 @@ export default function CalendarViewWidget({ userRole, user, defaultExpanded = f
         return slotHour >= hour && slotHour < hour + 3;
       });
 
-  const handleBookRoom = (room) => {
-    navigate(createPageUrl('BookRoom'));
+  const handleBookRoom = (room, timeSlot = null) => {
+    if (timeSlot) {
+      // Calculate end time (30 minutes after start)
+      const [hours, minutes] = timeSlot.split(':').map(Number);
+      const endMinutes = minutes + 30;
+      const endHours = endMinutes >= 60 ? hours + 1 : hours;
+      const endTime = `${String(endHours).padStart(2, '0')}:${String(endMinutes % 60).padStart(2, '0')}`;
+      
+      const params = new URLSearchParams({
+        roomId: room.room_id,
+        date: format(selectedDate, 'yyyy-MM-dd'),
+        startTime: timeSlot,
+        endTime: endTime
+      });
+      navigate(`${createPageUrl('BookRoom')}?${params.toString()}`);
+    } else {
+      navigate(createPageUrl('BookRoom'));
+    }
   };
 
   const getBookingForSlot = (room, timeSlot) => {
@@ -82,7 +98,7 @@ export default function CalendarViewWidget({ userRole, user, defaultExpanded = f
         className={`h-12 border-l border-gray-200 flex items-center justify-center transition-colors relative group ${
           isBooked ? 'bg-red-50' : 'bg-green-50 hover:bg-green-100 cursor-pointer'
         }`}
-        onClick={() => !isBooked && handleBookRoom(room)}
+        onClick={() => !isBooked && handleBookRoom(room, timeSlot)}
         title={isBooked ? 'Booked' : 'Click to book this room'}
       >
         <Badge className={`text-xs ${isBooked ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
