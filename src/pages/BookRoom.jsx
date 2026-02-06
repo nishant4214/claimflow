@@ -17,7 +17,7 @@ import { logCriticalAction } from '../components/session/SessionLogger';
 
 export default function BookRoom() {
   const [user, setUser] = useState(null);
-  const [viewMode, setViewMode] = useState('grid');
+  const [viewMode, setViewMode] = useState('calendar');
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [capacityFilter, setCapacityFilter] = useState('all');
@@ -112,15 +112,8 @@ export default function BookRoom() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 p-6">
+    <div className="min-h-screen">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Book Conference Room</h1>
-          <p className="text-gray-500 mt-1">
-            Browse available conference rooms and book your meeting space
-          </p>
-        </div>
 
         {/* Filters */}
         <Card className="mb-6 border-0 shadow-sm">
