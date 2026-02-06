@@ -12,10 +12,10 @@ import { Calendar as CalendarIcon, MapPin, Clock, Users, ChevronDown, ChevronUp 
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 
-export default function CalendarViewWidget({ userRole, user }) {
+export default function CalendarViewWidget({ userRole, user, defaultExpanded = false }) {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedTimeSlot, setSelectedTimeSlot] = useState('all');
-  const [expandedView, setExpandedView] = useState(false);
+  const [expandedView, setExpandedView] = useState(defaultExpanded);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -64,12 +64,22 @@ export default function CalendarViewWidget({ userRole, user }) {
     navigate(createPageUrl('BookRoom'));
   };
 
+  const getBookingForSlot = (room, timeSlot) => {
+    return bookings.find(booking => {
+      if (booking.room_id !== room.room_id) return false;
+      const bookingStart = booking.start_time;
+      const bookingEnd = booking.end_time;
+      return timeSlot >= bookingStart && timeSlot < bookingEnd;
+    });
+  };
+
   const BookingCell = ({ room, timeSlot }) => {
-    const isBooked = isRoomBooked(room, timeSlot);
+    const booking = getBookingForSlot(room, timeSlot);
+    const isBooked = !!booking;
 
     return (
       <div 
-        className={`h-12 border-l border-gray-200 flex items-center justify-center transition-colors ${
+        className={`h-12 border-l border-gray-200 flex items-center justify-center transition-colors relative group ${
           isBooked ? 'bg-red-50' : 'bg-green-50 hover:bg-green-100 cursor-pointer'
         }`}
         onClick={() => !isBooked && handleBookRoom(room)}
@@ -78,6 +88,26 @@ export default function CalendarViewWidget({ userRole, user }) {
         <Badge className={`text-xs ${isBooked ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
           {isBooked ? 'Booked' : 'Available'}
         </Badge>
+        
+        {isBooked && canViewDetails && booking && (
+          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-50 w-64 pointer-events-none">
+            <div className="bg-gray-900 text-white text-xs rounded-lg p-3 shadow-xl">
+              <div className="font-semibold mb-1">{booking.meeting_title}</div>
+              <div className="text-gray-300 mb-2">{booking.purpose}</div>
+              <div className="border-t border-gray-700 pt-2 space-y-1">
+                <div className="flex items-center gap-2">
+                  <Clock className="w-3 h-3" />
+                  <span>{booking.start_time} - {booking.end_time}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Users className="w-3 h-3" />
+                  <span>Booked by: {booking.employee_name}</span>
+                </div>
+              </div>
+              <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+            </div>
+          </div>
+        )}
       </div>
     );
   };
