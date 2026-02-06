@@ -59,6 +59,7 @@ import Dashboard from './pages/Dashboard';
 import DemoCredentials from './pages/DemoCredentials';
 import Finance from './pages/Finance';
 import HousekeepingDashboard from './pages/HousekeepingDashboard';
+import MyAccount from './pages/MyAccount';
 import MyClaims from './pages/MyClaims';
 import MyRoomBookings from './pages/MyRoomBookings';
 import Notifications from './pages/Notifications';
@@ -70,7 +71,8 @@ import SubmitClaim from './pages/SubmitClaim';
 import TestCredentials from './pages/TestCredentials';
 import UserManagement from './pages/UserManagement';
 import WorkflowConfig from './pages/WorkflowConfig';
-import MyAccount from './pages/MyAccount';
+import RoomFeedback from './pages/RoomFeedback';
+import FeedbackDashboard from './pages/FeedbackDashboard';
 import __Layout from './Layout.jsx';
 
 
@@ -87,6 +89,7 @@ export const PAGES = {
     "DemoCredentials": DemoCredentials,
     "Finance": Finance,
     "HousekeepingDashboard": HousekeepingDashboard,
+    "MyAccount": MyAccount,
     "MyClaims": MyClaims,
     "MyRoomBookings": MyRoomBookings,
     "Notifications": Notifications,
@@ -98,7 +101,8 @@ export const PAGES = {
     "TestCredentials": TestCredentials,
     "UserManagement": UserManagement,
     "WorkflowConfig": WorkflowConfig,
-    "MyAccount": MyAccount,
+    "RoomFeedback": RoomFeedback,
+    "FeedbackDashboard": FeedbackDashboard,
 }
 
 export const pagesConfig = {
