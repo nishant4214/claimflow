@@ -57,6 +57,7 @@ import ClaimDetails from './pages/ClaimDetails';
 import ConferenceRooms from './pages/ConferenceRooms';
 import Dashboard from './pages/Dashboard';
 import DemoCredentials from './pages/DemoCredentials';
+import FeedbackDashboard from './pages/FeedbackDashboard';
 import Finance from './pages/Finance';
 import HousekeepingDashboard from './pages/HousekeepingDashboard';
 import MyAccount from './pages/MyAccount';
@@ -67,12 +68,11 @@ import Reports from './pages/Reports';
 import RoomAnalytics from './pages/RoomAnalytics';
 import RoomBookingApprovals from './pages/RoomBookingApprovals';
 import RoomBookingDetails from './pages/RoomBookingDetails';
+import RoomFeedback from './pages/RoomFeedback';
 import SubmitClaim from './pages/SubmitClaim';
 import TestCredentials from './pages/TestCredentials';
 import UserManagement from './pages/UserManagement';
 import WorkflowConfig from './pages/WorkflowConfig';
-import RoomFeedback from './pages/RoomFeedback';
-import FeedbackDashboard from './pages/FeedbackDashboard';
 import __Layout from './Layout.jsx';
 
 
@@ -87,6 +87,7 @@ export const PAGES = {
     "ConferenceRooms": ConferenceRooms,
     "Dashboard": Dashboard,
     "DemoCredentials": DemoCredentials,
+    "FeedbackDashboard": FeedbackDashboard,
     "Finance": Finance,
     "HousekeepingDashboard": HousekeepingDashboard,
     "MyAccount": MyAccount,
@@ -97,12 +98,11 @@ export const PAGES = {
     "RoomAnalytics": RoomAnalytics,
     "RoomBookingApprovals": RoomBookingApprovals,
     "RoomBookingDetails": RoomBookingDetails,
+    "RoomFeedback": RoomFeedback,
     "SubmitClaim": SubmitClaim,
     "TestCredentials": TestCredentials,
     "UserManagement": UserManagement,
     "WorkflowConfig": WorkflowConfig,
-    "RoomFeedback": RoomFeedback,
-    "FeedbackDashboard": FeedbackDashboard,
 }
 
 export const pagesConfig = {

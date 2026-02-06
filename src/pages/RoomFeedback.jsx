@@ -81,31 +81,57 @@ export default function RoomFeedback() {
     try {
       const bookings = await base44.entities.RoomBooking.filter({ id });
       if (bookings.length > 0) {
-        setBooking(bookings[0]);
+        const bookingData = bookings[0];
         
-        // Check if feedback already exists
+        // Check if booking has ended (time-based validation)
+        const bookingEndTime = new Date(`${bookingData.booking_date}T${bookingData.end_time}`);
+        const now = new Date();
+        
+        if (now < bookingEndTime) {
+          toast.error('Feedback can only be submitted after the meeting has ended');
+          return;
+        }
+        
+        setBooking(bookingData);
+        
+        // Check if feedback already exists for this user
         const feedback = await base44.entities.ConferenceFeedback.filter({ 
           booking_id: id,
-          created_by: user?.email 
+          attendee_id: user?.email 
         });
+        
         if (feedback.length > 0) {
-          setExistingFeedback(feedback[0]);
+          const existingData = feedback[0];
+          
+          // Check if within 24 hours for editing
+          const submittedAt = new Date(existingData.created_date);
+          const hoursSinceSubmission = (now - submittedAt) / (1000 * 60 * 60);
+          
+          if (hoursSinceSubmission > 24) {
+            toast.error('Feedback can only be edited within 24 hours of submission');
+            return;
+          }
+          
+          setExistingFeedback(existingData);
           setFormData({
-            overall_rating: feedback[0].overall_rating,
-            cleanliness_rating: feedback[0].cleanliness_rating,
-            av_quality: feedback[0].av_quality,
-            connectivity: feedback[0].connectivity,
-            facilities_used: feedback[0].facilities_used || [],
-            issue_reported: feedback[0].issue_reported,
-            issue_description: feedback[0].issue_description || '',
-            room_on_time: feedback[0].room_on_time,
-            suggestions: feedback[0].suggestions || '',
-            would_recommend: feedback[0].would_recommend,
-            is_anonymous: feedback[0].is_anonymous,
+            overall_rating: existingData.overall_rating,
+            cleanliness_rating: existingData.cleanliness_rating,
+            av_quality: existingData.av_quality,
+            connectivity: existingData.connectivity,
+            facilities_used: existingData.facilities_used || [],
+            issue_reported: existingData.issue_reported,
+            issue_description: existingData.issue_description || '',
+            room_on_time: existingData.room_on_time,
+            suggestions: existingData.suggestions || '',
+            would_recommend: existingData.would_recommend,
+            is_anonymous: existingData.is_anonymous,
           });
         }
+      } else {
+        toast.error('Booking not found');
       }
     } catch (error) {
+      console.error('Error loading booking:', error);
       toast.error('Failed to load booking details');
     }
   };
