@@ -201,6 +201,10 @@ export default function Layout({ children, currentPageName }) {
                 <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuLabel>My Account</DropdownMenuLabel>
                   <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => navigate(createPageUrl('MyAccount'))}>
+                    <User className="w-4 h-4 mr-2" />
+                    Profile
+                  </DropdownMenuItem>
                   <DropdownMenuItem className="text-red-600" onClick={handleLogout}>
                     <LogOut className="w-4 h-4 mr-2" />
                     Logout

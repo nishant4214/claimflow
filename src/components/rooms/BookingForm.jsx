@@ -16,9 +16,9 @@ import { format, addDays } from 'date-fns';
 
 export default function BookingForm({ room, user, onBack, onSubmit, isSubmitting }) {
   const [formData, setFormData] = useState({
-    booking_date: '',
-    start_time: '',
-    end_time: '',
+    booking_date: room.prefillData?.date || '',
+    start_time: room.prefillData?.startTime || '',
+    end_time: room.prefillData?.endTime || '',
     meeting_title: '',
     purpose: '',
     attendees_count: '',

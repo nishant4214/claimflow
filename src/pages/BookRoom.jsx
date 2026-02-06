@@ -39,6 +39,24 @@ export default function BookRoom() {
     queryFn: () => base44.entities.ConferenceRoom.filter({ is_active: true }),
   });
 
+  // Pre-fill from URL params after rooms are loaded
+  useEffect(() => {
+    if (rooms.length === 0) return;
+    
+    const urlParams = new URLSearchParams(window.location.search);
+    const roomId = urlParams.get('roomId');
+    const date = urlParams.get('date');
+    const startTime = urlParams.get('startTime');
+    const endTime = urlParams.get('endTime');
+
+    if (roomId && !selectedRoom) {
+      const room = rooms.find(r => r.room_id === roomId);
+      if (room) {
+        setSelectedRoom({ ...room, prefillData: { date, startTime, endTime } });
+      }
+    }
+  }, [rooms, selectedRoom]);
+
   const { data: allBookings = [] } = useQuery({
     queryKey: ['room-bookings-all'],
     queryFn: () => base44.entities.RoomBooking.list('-created_date'),
