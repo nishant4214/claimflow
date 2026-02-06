@@ -45,12 +45,11 @@ Deno.serve(async (req) => {
     const results = [];
     
     for (const booking of bookingsToProcess) {
-
-    // Check if booking is completed
-    if (booking.status !== 'completed') {
-      return Response.json({ error: 'Booking must be completed' }, { status: 400 });
-    }
-
+      // Check if feedback already sent to all attendees
+      const existingFeedbacks = await base44.asServiceRole.entities.ConferenceFeedback.filter({
+        booking_id: booking.id
+      });
+      
       const attendees = booking.attendees_list || [];
       
       // Add organizer to attendee list if not already included
