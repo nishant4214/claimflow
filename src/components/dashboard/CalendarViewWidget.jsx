@@ -16,7 +16,7 @@ import { toast } from 'sonner';
 export default function CalendarViewWidget({ userRole, user }) {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedTimeSlot, setSelectedTimeSlot] = useState('all');
-  const [expandedView, setExpandedView] = useState(false);
+  const [expandedView, setExpandedView] = useState(true);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
