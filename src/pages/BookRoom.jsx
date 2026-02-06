@@ -17,7 +17,7 @@ import { logCriticalAction } from '../components/session/SessionLogger';
 
 export default function BookRoom() {
   const [user, setUser] = useState(null);
-  const [viewMode, setViewMode] = useState('calendar');
+  const [viewMode, setViewMode] = useState('grid');
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [capacityFilter, setCapacityFilter] = useState('all');
@@ -112,14 +112,20 @@ export default function BookRoom() {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 p-6">
       <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">Book Conference Room</h1>
+          <p className="text-gray-500 mt-1">
+            Browse available conference rooms and book your meeting space
+          </p>
+        </div>
 
-        {/* Filters - Only show when not in calendar view */}
-        {viewMode !== 'calendar' && (
-          <Card className="mb-6 border-0 shadow-sm">
-            <CardContent className="p-4">
-              <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
+        {/* Filters */}
+        <Card className="mb-6 border-0 shadow-sm">
+          <CardContent className="p-4">
+            <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
               <div className="flex flex-wrap gap-3 flex-1">
                 <div className="relative w-full sm:w-72">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -186,7 +192,6 @@ export default function BookRoom() {
             </div>
           </CardContent>
         </Card>
-        )}
 
         {/* Room Grid/List/Calendar */}
         {viewMode === 'calendar' ? (

@@ -8,15 +8,14 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Calendar } from "@/components/ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar as CalendarIcon, MapPin, Clock, Users, ChevronDown, ChevronUp, Info } from "lucide-react";
+import { Calendar as CalendarIcon, MapPin, Clock, Users, ChevronDown, ChevronUp } from "lucide-react";
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 
 export default function CalendarViewWidget({ userRole, user }) {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedTimeSlot, setSelectedTimeSlot] = useState('all');
-  const [expandedView, setExpandedView] = useState(true);
+  const [expandedView, setExpandedView] = useState(false);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -44,17 +43,13 @@ export default function CalendarViewWidget({ userRole, user }) {
     '15:00', '15:30', '16:00', '16:30', '17:00', '17:30', '18:00'
   ];
 
-  const getBookingForSlot = (room, timeSlot) => {
-    return bookings.find(booking => {
+  const isRoomBooked = (room, timeSlot) => {
+    return bookings.some(booking => {
       if (booking.room_id !== room.room_id) return false;
       const bookingStart = booking.start_time;
       const bookingEnd = booking.end_time;
       return timeSlot >= bookingStart && timeSlot < bookingEnd;
     });
-  };
-
-  const isRoomBooked = (room, timeSlot) => {
-    return !!getBookingForSlot(room, timeSlot);
   };
 
   const filteredTimeSlots = selectedTimeSlot === 'all' 
@@ -70,64 +65,18 @@ export default function CalendarViewWidget({ userRole, user }) {
   };
 
   const BookingCell = ({ room, timeSlot }) => {
-    const booking = getBookingForSlot(room, timeSlot);
-    const isBooked = !!booking;
-
-    if (isBooked) {
-      return (
-        <Popover>
-          <PopoverTrigger asChild>
-            <div 
-              className="h-12 border-l border-gray-200 flex items-center justify-center transition-colors bg-red-50 hover:bg-red-100 cursor-pointer"
-            >
-              <Badge className="text-xs bg-red-100 text-red-700 hover:bg-red-200">
-                Booked
-              </Badge>
-            </div>
-          </PopoverTrigger>
-          <PopoverContent className="w-80 p-4" align="center">
-            <div className="space-y-3">
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-                  <Info className="w-4 h-4 text-blue-600" />
-                </div>
-                <div className="flex-1">
-                  <h4 className="font-semibold text-gray-900 mb-1">{booking.meeting_title}</h4>
-                  <p className="text-sm text-gray-600 mb-2">{booking.purpose || 'No agenda provided'}</p>
-                </div>
-              </div>
-              
-              <div className="border-t pt-3 space-y-2">
-                <div className="flex items-center gap-2 text-sm">
-                  <Users className="w-4 h-4 text-gray-400" />
-                  <span className="font-medium text-gray-700">Booked by:</span>
-                  <span className="text-gray-600">{booking.employee_name}</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <Clock className="w-4 h-4 text-gray-400" />
-                  <span className="font-medium text-gray-700">Time:</span>
-                  <span className="text-gray-600">{booking.start_time} - {booking.end_time}</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <MapPin className="w-4 h-4 text-gray-400" />
-                  <span className="font-medium text-gray-700">Room:</span>
-                  <span className="text-gray-600">{booking.room_name}</span>
-                </div>
-              </div>
-            </div>
-          </PopoverContent>
-        </Popover>
-      );
-    }
+    const isBooked = isRoomBooked(room, timeSlot);
 
     return (
       <div 
-        className="h-12 border-l border-gray-200 flex items-center justify-center transition-colors bg-green-50 hover:bg-green-100 cursor-pointer"
-        onClick={() => handleBookRoom(room)}
-        title="Click to book this room"
+        className={`h-12 border-l border-gray-200 flex items-center justify-center transition-colors ${
+          isBooked ? 'bg-red-50' : 'bg-green-50 hover:bg-green-100 cursor-pointer'
+        }`}
+        onClick={() => !isBooked && handleBookRoom(room)}
+        title={isBooked ? 'Booked' : 'Click to book this room'}
       >
-        <Badge className="text-xs bg-green-100 text-green-700 hover:bg-green-200">
-          Available
+        <Badge className={`text-xs ${isBooked ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
+          {isBooked ? 'Booked' : 'Available'}
         </Badge>
       </div>
     );

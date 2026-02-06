@@ -31,67 +31,53 @@ export default function ConferenceRooms() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8 text-center">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-            Conference Rooms
-          </h1>
-          <p className="text-gray-600 mt-2 text-lg">Manage your conference room bookings efficiently</p>
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">Conference Rooms</h1>
+          <p className="text-gray-500 mt-1">Manage your conference room bookings</p>
         </div>
 
         <Tabs defaultValue="book" className="w-full">
-          <TabsList className="mb-8 bg-white/80 backdrop-blur-sm border border-gray-200 shadow-lg rounded-xl p-1.5 inline-flex gap-1">
-            <TabsTrigger 
-              value="book" 
-              className="gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white rounded-lg transition-all"
-            >
+          <TabsList className="mb-6 bg-white border shadow-sm">
+            <TabsTrigger value="book" className="gap-2">
               <Calendar className="w-4 h-4" />
-              Book Room
+              Book Conference Room
             </TabsTrigger>
-            <TabsTrigger 
-              value="my-bookings" 
-              className="gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white rounded-lg transition-all"
-            >
+            <TabsTrigger value="my-bookings" className="gap-2">
               <FileText className="w-4 h-4" />
               My Bookings
             </TabsTrigger>
             {canApprove && (
-              <TabsTrigger 
-                value="approvals" 
-                className="gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white rounded-lg transition-all"
-              >
+              <TabsTrigger value="approvals" className="gap-2">
                 <CheckCircle className="w-4 h-4" />
                 Approvals
               </TabsTrigger>
             )}
             {canViewAnalytics && (
-              <TabsTrigger 
-                value="analytics" 
-                className="gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white rounded-lg transition-all"
-              >
+              <TabsTrigger value="analytics" className="gap-2">
                 <BarChart3 className="w-4 h-4" />
                 Analytics
               </TabsTrigger>
             )}
           </TabsList>
 
-          <TabsContent value="book" className="mt-0">
+          <TabsContent value="book">
             <BookRoom />
           </TabsContent>
 
-          <TabsContent value="my-bookings" className="mt-0">
+          <TabsContent value="my-bookings">
             <MyRoomBookings />
           </TabsContent>
 
           {canApprove && (
-            <TabsContent value="approvals" className="mt-0">
+            <TabsContent value="approvals">
               <RoomBookingApprovals />
             </TabsContent>
           )}
 
           {canViewAnalytics && (
-            <TabsContent value="analytics" className="mt-0">
+            <TabsContent value="analytics">
               <RoomAnalytics />
             </TabsContent>
           )}

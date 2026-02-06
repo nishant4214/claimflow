@@ -147,29 +147,33 @@ export default function Dashboard() {
               Welcome back, {user?.full_name?.split(' ')[0] || 'User'}
             </h1>
             <p className="text-gray-500 mt-1">
-              {canViewRoomAnalytics ? 'Manage conference room bookings and analytics' : 'Track and manage your expense claims'}
+              Track and manage your expense claims
             </p>
           </div>
-          {!canViewRoomAnalytics && (
-            <Link to={createPageUrl('SubmitClaim')}>
-              <Button size="lg" className="bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-600/25">
-                <Plus className="w-5 h-5 mr-2" />
-                New Claim
-              </Button>
-            </Link>
-          )}
+          <Link to={createPageUrl('SubmitClaim')}>
+            <Button size="lg" className="bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-600/25">
+              <Plus className="w-5 h-5 mr-2" />
+              New Claim
+            </Button>
+          </Link>
         </div>
 
-        {/* Main Tabs - Conference Rooms Only */}
-        {canViewRoomAnalytics ? (
-          <div className="mb-6">
-            <div className="space-y-6">
-              <CalendarViewWidget userRole={userRole} user={user} />
-              <RoomAnalyticsWidget />
-            </div>
-          </div>
-        ) : (
-          <>
+        {/* Main Tabs - Claims and Conference Rooms */}
+        <Tabs defaultValue="claims" className="mb-6">
+          <TabsList className="bg-white border shadow-sm">
+            <TabsTrigger value="claims" className="gap-2">
+              <FileText className="w-4 h-4" />
+              Expense Claims
+            </TabsTrigger>
+            {canViewRoomAnalytics && (
+              <TabsTrigger value="rooms" className="gap-2">
+                <TrendingUp className="w-4 h-4" />
+                Conference Rooms
+              </TabsTrigger>
+            )}
+          </TabsList>
+
+          <TabsContent value="claims">
             {/* View Toggle for Claims */}
             {canApprove && (
               <div className="mb-6">
@@ -360,8 +364,17 @@ export default function Dashboard() {
                 </CardContent>
               </Card>
             </div>
-          </>
-        )}
+          </TabsContent>
+
+          {canViewRoomAnalytics && (
+            <TabsContent value="rooms">
+              <div className="space-y-6">
+                <CalendarViewWidget userRole={userRole} user={user} />
+                <RoomAnalyticsWidget />
+              </div>
+            </TabsContent>
+          )}
+        </Tabs>
         
 
 
