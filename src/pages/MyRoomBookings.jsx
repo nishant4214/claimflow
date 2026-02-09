@@ -49,6 +49,12 @@ export default function MyRoomBookings() {
     enabled: !!user?.email,
   });
 
+  const { data: allFeedback = [] } = useQuery({
+    queryKey: ['my-feedback', user?.email],
+    queryFn: () => base44.entities.RoomFeedback.filter({ respondent_email: user?.email }),
+    enabled: !!user?.email,
+  });
+
   const cancelBookingMutation = useMutation({
     mutationFn: (bookingId) => base44.entities.RoomBooking.update(bookingId, { status: 'cancelled' }),
     onSuccess: async (cancelledBooking, bookingId) => {
@@ -87,6 +93,22 @@ export default function MyRoomBookings() {
 
   const BookingCard = ({ booking }) => {
     const canEdit = booking.status === 'sent_back';
+    
+    // Check if feedback submitted
+    const hasFeedback = allFeedback.some(f => f.booking_id === booking.id);
+    
+    // Check if booking is completed and eligible for feedback
+    const isCompleted = ['completed', 'approved'].includes(booking.status);
+    const bookingDate = new Date(booking.booking_date);
+    const isPastBooking = isPast(bookingDate);
+    const canSubmitFeedback = isCompleted && isPastBooking && !hasFeedback;
+    
+    // Check if feedback window expired (48 hours)
+    const [hours, minutes] = booking.end_time.split(':').map(Number);
+    const meetingEndTime = new Date(booking.booking_date);
+    meetingEndTime.setHours(hours, minutes, 0, 0);
+    const feedbackDeadline = new Date(meetingEndTime.getTime() + 48 * 60 * 60 * 1000);
+    const isFeedbackExpired = new Date() > feedbackDeadline;
     
     return (
       <Card className="border-0 shadow-sm hover:shadow-md transition-shadow">
@@ -141,13 +163,42 @@ export default function MyRoomBookings() {
           )}
           </div>
 
-          <div className="flex items-center gap-2 mt-4 pt-4 border-t">
+          <div className="mt-4 pt-4 border-t space-y-3">
+          {isCompleted && isPastBooking && (
+            <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+              <span className="text-sm text-gray-600">Feedback Status:</span>
+              {hasFeedback ? (
+                <Badge className="bg-green-100 text-green-800 border-green-200">
+                  <CheckCircle className="w-3 h-3 mr-1" />
+                  Submitted
+                </Badge>
+              ) : isFeedbackExpired ? (
+                <Badge className="bg-gray-100 text-gray-800 border-gray-200">
+                  Expired
+                </Badge>
+              ) : (
+                <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">
+                  <Clock className="w-3 h-3 mr-1" />
+                  Pending
+                </Badge>
+              )}
+            </div>
+          )}
+          
+          <div className="flex items-center gap-2">
           <Link to={createPageUrl(`RoomBookingDetails?id=${booking.id}`)}>
             <Button variant="outline" size="sm">
               <Eye className="w-4 h-4 mr-1" />
               View Details
             </Button>
           </Link>
+          {canSubmitFeedback && !isFeedbackExpired && (
+            <Link to={createPageUrl(`SubmitFeedback?bookingId=${booking.id}`)}>
+              <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
+                Submit Feedback
+              </Button>
+            </Link>
+          )}
           {canEdit && (
             <Link to={createPageUrl(`BookRoom?edit=${booking.id}`)}>
               <Button variant="outline" size="sm" className="text-blue-600 border-blue-200 hover:bg-blue-50">
@@ -168,6 +219,7 @@ export default function MyRoomBookings() {
               Cancel
             </Button>
           )}
+          </div>
           </div>
         </CardContent>
       </Card>

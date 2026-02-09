@@ -72,6 +72,7 @@ import TestCredentials from './pages/TestCredentials';
 import UserManagement from './pages/UserManagement';
 import WorkflowConfig from './pages/WorkflowConfig';
 import SubmitFeedback from './pages/SubmitFeedback';
+import RoomFeedbackDashboard from './pages/RoomFeedbackDashboard';
 import __Layout from './Layout.jsx';
 
 
@@ -101,6 +102,7 @@ export const PAGES = {
     "UserManagement": UserManagement,
     "WorkflowConfig": WorkflowConfig,
     "SubmitFeedback": SubmitFeedback,
+    "RoomFeedbackDashboard": RoomFeedbackDashboard,
 }
 
 export const pagesConfig = {
