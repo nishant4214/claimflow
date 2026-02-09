@@ -48,15 +48,37 @@ export default function CalendarViewToggle({ onSelectRoom, selectedDate, onDateC
         return slotHour >= hour && slotHour < hour + 3;
       });
 
+  const getEndTime = (startTime) => {
+    const [hours, minutes] = startTime.split(':').map(Number);
+    const endMinutes = minutes + 30;
+    const endHours = hours + Math.floor(endMinutes / 60);
+    const finalMinutes = endMinutes % 60;
+    return `${String(endHours).padStart(2, '0')}:${String(finalMinutes).padStart(2, '0')}`;
+  };
+
   const BookingCell = ({ room, timeSlot }) => {
     const isBooked = isRoomBooked(room, timeSlot);
+
+    const handleSlotClick = () => {
+      if (!isBooked && onSelectRoom) {
+        const roomWithPrefill = {
+          ...room,
+          prefillData: {
+            date: format(selectedDate, 'yyyy-MM-dd'),
+            startTime: timeSlot,
+            endTime: getEndTime(timeSlot)
+          }
+        };
+        onSelectRoom(roomWithPrefill);
+      }
+    };
 
     return (
       <div 
         className={`h-12 border-l border-gray-200 flex items-center justify-center transition-colors ${
           isBooked ? 'bg-red-50 hover:bg-red-100' : 'bg-green-50 hover:bg-green-100 cursor-pointer'
         }`}
-        onClick={() => !isBooked && onSelectRoom && onSelectRoom(room)}
+        onClick={handleSlotClick}
       >
         <Badge className={`text-xs ${isBooked ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
           {isBooked ? 'Booked' : 'Available'}
