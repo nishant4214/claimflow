@@ -8,8 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Calendar, Clock, Users, MapPin, Plus, Eye, XCircle, CheckCircle, AlertCircle, MessageSquare, Search } from "lucide-react";
+import { Calendar, Clock, Users, MapPin, Plus, Eye, XCircle, CheckCircle, AlertCircle, MessageSquare, Search, Filter } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from 'sonner';
 import { format, parseISO, isPast, isFuture } from 'date-fns';
 import { logCriticalAction } from '../components/session/SessionLogger';
@@ -36,6 +37,8 @@ const getStatusBadge = (status) => {
 export default function MyRoomBookings() {
   const [user, setUser] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [feedbackFilter, setFeedbackFilter] = useState('all');
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -82,16 +85,34 @@ export default function MyRoomBookings() {
     },
   });
 
-  const filterBySearch = (booking) => {
-    if (!searchQuery.trim()) return true;
-    const query = searchQuery.toLowerCase();
-    return (
-      booking.meeting_title?.toLowerCase().includes(query) ||
-      booking.room_name?.toLowerCase().includes(query) ||
-      booking.booking_number?.toLowerCase().includes(query) ||
-      booking.booking_date?.includes(query) ||
-      booking.status?.toLowerCase().includes(query)
-    );
+  const filterBookings = (booking) => {
+    // Search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      const matchesSearch = 
+        booking.meeting_title?.toLowerCase().includes(query) ||
+        booking.room_name?.toLowerCase().includes(query) ||
+        booking.booking_number?.toLowerCase().includes(query) ||
+        booking.booking_date?.includes(query) ||
+        booking.status?.toLowerCase().includes(query);
+      if (!matchesSearch) return false;
+    }
+
+    // Status filter
+    if (statusFilter !== 'all' && booking.status !== statusFilter) {
+      return false;
+    }
+
+    // Feedback filter
+    if (feedbackFilter !== 'all') {
+      const feedbackInfo = getFeedbackStatus(booking);
+      if (feedbackFilter === 'pending' && feedbackInfo?.status !== 'pending') return false;
+      if (feedbackFilter === 'submitted' && feedbackInfo?.status !== 'submitted') return false;
+      if (feedbackFilter === 'expired' && feedbackInfo?.status !== 'expired') return false;
+      if (feedbackFilter === 'not_ready' && feedbackInfo?.status !== 'not_ready') return false;
+    }
+
+    return true;
   };
 
   const upcomingBookings = myBookings.filter(b => {
@@ -99,7 +120,7 @@ export default function MyRoomBookings() {
     const [hours, minutes] = b.end_time.split(':').map(Number);
     const meetingEndTime = new Date(b.booking_date);
     meetingEndTime.setHours(hours, minutes, 0, 0);
-    return meetingEndTime > new Date() && ['pending', 'approved'].includes(b.status) && filterBySearch(b);
+    return meetingEndTime > new Date() && ['pending', 'approved'].includes(b.status) && filterBookings(b);
   });
 
   const pastBookings = myBookings.filter(b => {
@@ -107,7 +128,7 @@ export default function MyRoomBookings() {
     const [hours, minutes] = b.end_time.split(':').map(Number);
     const meetingEndTime = new Date(b.booking_date);
     meetingEndTime.setHours(hours, minutes, 0, 0);
-    return (meetingEndTime < new Date() || ['rejected', 'cancelled'].includes(b.status)) && filterBySearch(b);
+    return (meetingEndTime < new Date() || ['rejected', 'cancelled'].includes(b.status)) && filterBookings(b);
   });
 
   const getFeedbackStatus = (booking) => {
@@ -299,15 +320,45 @@ export default function MyRoomBookings() {
 
         <Card className="border-0 shadow-sm mb-6">
           <CardContent className="p-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <Input
-                type="text"
-                placeholder="Search by meeting title, room name, booking number, date..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 h-11"
-              />
+            <div className="flex flex-col lg:flex-row gap-3">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Input
+                  type="text"
+                  placeholder="Search by meeting title, room name, booking number, date..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 h-11"
+                />
+              </div>
+              
+              <div className="flex gap-3">
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="w-40">
+                    <SelectValue placeholder="Booking Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Status</SelectItem>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="approved">Approved</SelectItem>
+                    <SelectItem value="rejected">Rejected</SelectItem>
+                    <SelectItem value="cancelled">Cancelled</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <Select value={feedbackFilter} onValueChange={setFeedbackFilter}>
+                  <SelectTrigger className="w-40">
+                    <SelectValue placeholder="Feedback Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Feedback</SelectItem>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="submitted">Submitted</SelectItem>
+                    <SelectItem value="expired">Expired</SelectItem>
+                    <SelectItem value="not_ready">Not Ready</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </CardContent>
         </Card>

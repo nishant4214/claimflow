@@ -17,7 +17,7 @@ import { logCriticalAction } from '../components/session/SessionLogger';
 
 export default function BookRoom() {
   const [user, setUser] = useState(null);
-  const [viewMode, setViewMode] = useState('grid');
+  const [viewMode, setViewMode] = useState('calendar');
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [capacityFilter, setCapacityFilter] = useState('all');
