@@ -206,42 +206,43 @@ export default function MyRoomBookings() {
 
           {/* Action buttons */}
           <div className="flex items-center gap-2 pt-3 border-t">
-          <Link to={createPageUrl(`RoomBookingDetails?id=${booking.id}`)}>
-            <Button variant="outline" size="sm" className="flex-1">
-              <Eye className="w-4 h-4 mr-1" />
-              View Details
-            </Button>
-          </Link>
-          
-          {feedbackStatus === 'pending' && (
-            <Link to={createPageUrl(`SubmitFeedback?bookingId=${booking.id}`)} className="flex-1">
-              <Button size="sm" className="w-full bg-blue-600 hover:bg-blue-700">
-                <MessageSquare className="w-4 h-4 mr-1" />
-                Give Feedback
-              </Button>
-            </Link>
-          )}
-          {canEdit && (
-            <Link to={createPageUrl(`BookRoom?edit=${booking.id}`)}>
-              <Button variant="outline" size="sm" className="text-blue-600 border-blue-200 hover:bg-blue-50">
+            <Link to={createPageUrl(`RoomBookingDetails?id=${booking.id}`)}>
+              <Button variant="outline" size="sm" className="flex-1">
                 <Eye className="w-4 h-4 mr-1" />
-                Edit & Resubmit
+                View Details
               </Button>
             </Link>
-          )}
-          {booking.status === 'pending' && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="text-red-600 border-red-200 hover:bg-red-50"
-              onClick={() => cancelBookingMutation.mutate(booking.id)}
-              disabled={cancelBookingMutation.isPending}
-            >
-              <XCircle className="w-4 h-4 mr-1" />
-              Cancel
-            </Button>
-          )}
-          </div>
+            
+            {feedbackStatus === 'pending' && (
+              <Link to={createPageUrl(`SubmitFeedback?bookingId=${booking.id}`)} className="flex-1">
+                <Button size="sm" className="w-full bg-blue-600 hover:bg-blue-700">
+                  <MessageSquare className="w-4 h-4 mr-1" />
+                  Give Feedback
+                </Button>
+              </Link>
+            )}
+            
+            {canEdit && (
+              <Link to={createPageUrl(`BookRoom?edit=${booking.id}`)}>
+                <Button variant="outline" size="sm" className="text-blue-600 border-blue-200 hover:bg-blue-50">
+                  <Eye className="w-4 h-4 mr-1" />
+                  Edit & Resubmit
+                </Button>
+              </Link>
+            )}
+            
+            {booking.status === 'pending' && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-red-600 border-red-200 hover:bg-red-50"
+                onClick={() => cancelBookingMutation.mutate(booking.id)}
+                disabled={cancelBookingMutation.isPending}
+              >
+                <XCircle className="w-4 h-4 mr-1" />
+                Cancel
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>
