@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Calendar, Clock, Users, MapPin, Plus, Eye, XCircle, CheckCircle, AlertCircle, MessageSquare } from "lucide-react";
 import { toast } from 'sonner';
 import { format, parseISO, isPast, isFuture } from 'date-fns';
@@ -95,195 +96,135 @@ export default function MyRoomBookings() {
     return meetingEndTime < new Date() || ['rejected', 'cancelled'].includes(b.status);
   });
 
-  const BookingCard = ({ booking }) => {
-    const canEdit = booking.status === 'sent_back';
-    
-    // Check if feedback submitted
+  const getFeedbackStatus = (booking) => {
     const hasFeedback = allFeedback.some(f => f.booking_id === booking.id);
-    
-    // Check if meeting has ended (based on actual date/time, not status)
     const [hours, minutes] = booking.end_time.split(':').map(Number);
     const meetingEndTime = new Date(booking.booking_date);
     meetingEndTime.setHours(hours, minutes, 0, 0);
     const hasMeetingEnded = new Date() > meetingEndTime;
-    
-    // Check if feedback window expired (48 hours after meeting end)
     const feedbackDeadline = new Date(meetingEndTime.getTime() + 48 * 60 * 60 * 1000);
     const isFeedbackExpired = new Date() > feedbackDeadline;
-    
-    // Feedback eligibility: meeting ended, not cancelled/rejected
     const canHaveFeedback = hasMeetingEnded && !['cancelled', 'rejected'].includes(booking.status);
     
-    // Determine feedback status
-    let feedbackStatus = null;
-    let feedbackMessage = '';
-    
     if (canHaveFeedback) {
-      if (hasFeedback) {
-        feedbackStatus = 'submitted';
-        feedbackMessage = 'Thank you for your feedback';
-      } else if (isFeedbackExpired) {
-        feedbackStatus = 'expired';
-        feedbackMessage = 'Feedback window closed';
-      } else {
-        feedbackStatus = 'pending';
-        const hoursLeft = Math.round((feedbackDeadline - new Date()) / (1000 * 60 * 60));
-        feedbackMessage = `Share your experience (${hoursLeft}h left)`;
-      }
-    } else if (!hasMeetingEnded && !['cancelled', 'rejected'].includes(booking.status)) {
-      feedbackStatus = 'not_ready';
-      feedbackMessage = 'Available after meeting ends';
+      if (hasFeedback) return { status: 'submitted', label: 'Submitted', color: 'bg-green-100 text-green-700 border-green-300' };
+      if (isFeedbackExpired) return { status: 'expired', label: 'Expired', color: 'bg-gray-100 text-gray-600 border-gray-300' };
+      const hoursLeft = Math.round((feedbackDeadline - new Date()) / (1000 * 60 * 60));
+      return { status: 'pending', label: 'Pending', color: 'bg-amber-100 text-amber-800 border-amber-300', hoursLeft };
     }
+    if (!hasMeetingEnded && !['cancelled', 'rejected'].includes(booking.status)) {
+      return { status: 'not_ready', label: 'Not Ready', color: 'bg-slate-100 text-slate-600 border-slate-300' };
+    }
+    return null;
+  };
+
+  const BookingRow = ({ booking }) => {
+    const canEdit = booking.status === 'sent_back';
+    const feedbackInfo = getFeedbackStatus(booking);
     
     return (
-      <Card className="border-0 shadow-sm hover:shadow-md transition-shadow">
-        <CardContent className="p-5">
-          {/* Header with booking number and status */}
-          <div className="flex items-start justify-between mb-4 pb-3 border-b gap-2">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-xs font-mono text-gray-500">{booking.booking_number}</span>
-              {getStatusBadge(booking.status)}
-            </div>
-            {feedbackStatus && (
-              <Badge className={
-                feedbackStatus === 'submitted' 
-                  ? 'bg-green-100 text-green-700 border-green-300 font-medium'
-                  : feedbackStatus === 'expired'
-                  ? 'bg-gray-100 text-gray-600 border-gray-300'
-                  : feedbackStatus === 'not_ready'
-                  ? 'bg-slate-100 text-slate-600 border-slate-300 text-xs'
-                  : 'bg-amber-100 text-amber-800 border-amber-300 font-semibold'
-              }>
-                {feedbackStatus === 'submitted' && <CheckCircle className="w-3 h-3 mr-1" />}
-                {feedbackStatus === 'pending' && <MessageSquare className="w-3 h-3 mr-1" />}
-                {feedbackStatus === 'not_ready' && <Clock className="w-3 h-3 mr-1" />}
-                {feedbackStatus === 'submitted' ? 'Feedback Submitted' : 
-                 feedbackStatus === 'expired' ? 'Feedback Expired' :
-                 feedbackStatus === 'not_ready' ? 'Feedback: Not Ready' :
-                 'Feedback Pending'}
-              </Badge>
-            )}
+      <TableRow className="hover:bg-gray-50">
+        <TableCell className="py-4">
+          <div className="space-y-1">
+            <div className="font-medium text-gray-900">{booking.meeting_title}</div>
+            <div className="text-xs font-mono text-gray-500">{booking.booking_number}</div>
           </div>
-
-          {/* Meeting title */}
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">{booking.meeting_title}</h3>
-
-          {/* Key details in grid */}
-          <div className="grid grid-cols-2 gap-3 mb-4">
-            <div className="flex items-center gap-2 text-sm">
-              <MapPin className="w-4 h-4 text-blue-600 flex-shrink-0" />
-              <span className="text-gray-700 truncate">{booking.room_name}</span>
+        </TableCell>
+        
+        <TableCell>
+          <div className="flex items-center gap-2 text-sm">
+            <MapPin className="w-4 h-4 text-gray-400" />
+            <span className="text-gray-700">{booking.room_name}</span>
+          </div>
+        </TableCell>
+        
+        <TableCell>
+          <div className="space-y-1 text-sm">
+            <div className="flex items-center gap-1.5 text-gray-700">
+              <Calendar className="w-3.5 h-3.5 text-gray-400" />
+              {booking.booking_date ? format(parseISO(booking.booking_date), 'MMM dd, yyyy') : 'N/A'}
             </div>
-            
-            <div className="flex items-center gap-2 text-sm">
-              <Users className="w-4 h-4 text-blue-600 flex-shrink-0" />
-              <span className="text-gray-700">{booking.attendees_count} attendees</span>
-            </div>
-            
-            <div className="flex items-center gap-2 text-sm">
-              <Calendar className="w-4 h-4 text-blue-600 flex-shrink-0" />
-              <span className="text-gray-700">{booking.booking_date ? format(parseISO(booking.booking_date), 'MMM dd, yyyy') : 'N/A'}</span>
-            </div>
-            
-            <div className="flex items-center gap-2 text-sm">
-              <Clock className="w-4 h-4 text-blue-600 flex-shrink-0" />
-              <span className="text-gray-700">{booking.start_time} - {booking.end_time}</span>
+            <div className="flex items-center gap-1.5 text-gray-600">
+              <Clock className="w-3.5 h-3.5 text-gray-400" />
+              {booking.start_time} - {booking.end_time}
             </div>
           </div>
-
-          {/* Alert messages */}
+        </TableCell>
+        
+        <TableCell>
+          <div className="flex items-center gap-1.5 text-sm text-gray-700">
+            <Users className="w-4 h-4 text-gray-400" />
+            {booking.attendees_count}
+          </div>
+        </TableCell>
+        
+        <TableCell>
+          {getStatusBadge(booking.status)}
           {booking.rejection_reason && (
-            <div className="mb-4 p-3 bg-red-50 border-l-4 border-red-400 rounded">
-              <p className="text-xs font-semibold text-red-800 mb-1">Rejection Reason</p>
-              <p className="text-sm text-red-700">{booking.rejection_reason}</p>
+            <div className="mt-2 text-xs text-red-600 max-w-xs truncate" title={booking.rejection_reason}>
+              Reason: {booking.rejection_reason}
             </div>
           )}
-
           {booking.send_back_reason && (
-            <div className="mb-4 p-3 bg-amber-50 border-l-4 border-amber-400 rounded">
-              <p className="text-xs font-semibold text-amber-800 mb-1">Correction Required</p>
-              <p className="text-sm text-amber-700">{booking.send_back_reason}</p>
+            <div className="mt-2 text-xs text-amber-600 max-w-xs truncate" title={booking.send_back_reason}>
+              {booking.send_back_reason}
             </div>
           )}
-
-          {/* Feedback status messages */}
-          {feedbackStatus === 'pending' && (
-            <div className="mb-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg flex items-start gap-3">
-              <MessageSquare className="w-6 h-6 text-blue-600 flex-shrink-0 mt-0.5" />
-              <div className="flex-1">
-                <p className="text-sm font-semibold text-blue-900 mb-1">📝 Feedback Requested</p>
-                <p className="text-xs text-blue-800">
-                  {feedbackMessage}
-                </p>
-              </div>
-            </div>
+        </TableCell>
+        
+        <TableCell>
+          {feedbackInfo ? (
+            <Badge className={`${feedbackInfo.color} border font-medium whitespace-nowrap`}>
+              {feedbackInfo.status === 'submitted' && <CheckCircle className="w-3 h-3 mr-1" />}
+              {feedbackInfo.status === 'pending' && <MessageSquare className="w-3 h-3 mr-1" />}
+              {feedbackInfo.status === 'not_ready' && <Clock className="w-3 h-3 mr-1" />}
+              {feedbackInfo.label}
+            </Badge>
+          ) : (
+            <span className="text-xs text-gray-400">N/A</span>
           )}
-          
-          {feedbackStatus === 'not_ready' && (
-            <div className="mb-3 p-2 bg-slate-50 border border-slate-200 rounded text-xs text-slate-600 flex items-center gap-2">
-              <Clock className="w-4 h-4" />
-              {feedbackMessage}
-            </div>
-          )}
-          
-          {feedbackStatus === 'submitted' && (
-            <div className="mb-3 p-2 bg-green-50 border border-green-200 rounded text-xs text-green-700 flex items-center gap-2">
-              <CheckCircle className="w-4 h-4" />
-              {feedbackMessage}
-            </div>
-          )}
-          
-          {feedbackStatus === 'expired' && (
-            <div className="mb-3 p-2 bg-gray-50 border border-gray-200 rounded text-xs text-gray-600 flex items-center gap-2">
-              <AlertCircle className="w-4 h-4" />
-              {feedbackMessage}
-            </div>
-          )}
-
-          {/* Action buttons */}
-          <div className="flex flex-col gap-2 pt-3 border-t">
-            {feedbackStatus === 'pending' && (
+        </TableCell>
+        
+        <TableCell>
+          <div className="flex items-center gap-2 justify-end">
+            {feedbackInfo?.status === 'pending' && (
               <Link to={createPageUrl(`SubmitFeedback?bookingId=${booking.id}`)}>
-                <Button size="sm" className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-md">
-                  <MessageSquare className="w-4 h-4 mr-2" />
-                  Give Feedback Now
+                <Button size="sm" className="bg-blue-600 hover:bg-blue-700 whitespace-nowrap">
+                  <MessageSquare className="w-3.5 h-3.5 mr-1.5" />
+                  Give Feedback
                 </Button>
               </Link>
             )}
             
-            <div className="flex items-center gap-2">
-              <Link to={createPageUrl(`RoomBookingDetails?id=${booking.id}`)} className="flex-1">
-                <Button variant="outline" size="sm" className="w-full">
-                  <Eye className="w-4 h-4 mr-1" />
-                  View Details
+            <Link to={createPageUrl(`RoomBookingDetails?id=${booking.id}`)}>
+              <Button variant="outline" size="sm">
+                <Eye className="w-3.5 h-3.5 mr-1.5" />
+                Details
+              </Button>
+            </Link>
+            
+            {canEdit && (
+              <Link to={createPageUrl(`BookRoom?edit=${booking.id}`)}>
+                <Button variant="outline" size="sm" className="text-blue-600 border-blue-200 hover:bg-blue-50">
+                  Edit
                 </Button>
               </Link>
-              
-              {canEdit && (
-                <Link to={createPageUrl(`BookRoom?edit=${booking.id}`)} className="flex-1">
-                  <Button variant="outline" size="sm" className="w-full text-blue-600 border-blue-200 hover:bg-blue-50">
-                    <Eye className="w-4 h-4 mr-1" />
-                    Edit & Resubmit
-                  </Button>
-                </Link>
-              )}
-              
-              {booking.status === 'pending' && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="text-red-600 border-red-200 hover:bg-red-50"
-                  onClick={() => cancelBookingMutation.mutate(booking.id)}
-                  disabled={cancelBookingMutation.isPending}
-                >
-                  <XCircle className="w-4 h-4 mr-1" />
-                  Cancel
-                </Button>
-              )}
-            </div>
+            )}
+            
+            {booking.status === 'pending' && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-red-600 border-red-200 hover:bg-red-50"
+                onClick={() => cancelBookingMutation.mutate(booking.id)}
+                disabled={cancelBookingMutation.isPending}
+              >
+                <XCircle className="w-3.5 h-3.5" />
+              </Button>
+            )}
           </div>
-        </CardContent>
-      </Card>
+        </TableCell>
+      </TableRow>
     );
   };
 
@@ -356,11 +297,15 @@ export default function MyRoomBookings() {
 
           <TabsContent value="upcoming">
             {isLoading ? (
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {[1, 2, 3].map(i => (
-                  <div key={i} className="h-64 bg-gray-100 rounded-xl animate-pulse" />
-                ))}
-              </div>
+              <Card className="border-0 shadow-sm">
+                <CardContent className="p-6">
+                  <div className="space-y-4">
+                    {[1, 2, 3].map(i => (
+                      <div key={i} className="h-16 bg-gray-100 rounded animate-pulse" />
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
             ) : upcomingBookings.length === 0 ? (
               <Card className="border-0 shadow-sm">
                 <CardContent className="p-12 text-center">
@@ -376,11 +321,28 @@ export default function MyRoomBookings() {
                 </CardContent>
               </Card>
             ) : (
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {upcomingBookings.map(booking => (
-                  <BookingCard key={booking.id} booking={booking} />
-                ))}
-              </div>
+              <Card className="border-0 shadow-sm overflow-hidden">
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-gray-50">
+                        <TableHead className="font-semibold">Meeting Details</TableHead>
+                        <TableHead className="font-semibold">Room</TableHead>
+                        <TableHead className="font-semibold">Date & Time</TableHead>
+                        <TableHead className="font-semibold">Attendees</TableHead>
+                        <TableHead className="font-semibold">Booking Status</TableHead>
+                        <TableHead className="font-semibold">Feedback Status</TableHead>
+                        <TableHead className="font-semibold text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {upcomingBookings.map(booking => (
+                        <BookingRow key={booking.id} booking={booking} />
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </Card>
             )}
           </TabsContent>
 
@@ -394,11 +356,28 @@ export default function MyRoomBookings() {
                 </CardContent>
               </Card>
             ) : (
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {pastBookings.map(booking => (
-                  <BookingCard key={booking.id} booking={booking} />
-                ))}
-              </div>
+              <Card className="border-0 shadow-sm overflow-hidden">
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-gray-50">
+                        <TableHead className="font-semibold">Meeting Details</TableHead>
+                        <TableHead className="font-semibold">Room</TableHead>
+                        <TableHead className="font-semibold">Date & Time</TableHead>
+                        <TableHead className="font-semibold">Attendees</TableHead>
+                        <TableHead className="font-semibold">Booking Status</TableHead>
+                        <TableHead className="font-semibold">Feedback Status</TableHead>
+                        <TableHead className="font-semibold text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {pastBookings.map(booking => (
+                        <BookingRow key={booking.id} booking={booking} />
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </Card>
             )}
           </TabsContent>
         </Tabs>
