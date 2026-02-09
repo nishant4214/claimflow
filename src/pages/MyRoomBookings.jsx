@@ -107,45 +107,60 @@ export default function MyRoomBookings() {
     meetingEndTime.setHours(hours, minutes, 0, 0);
     const hasMeetingEnded = new Date() > meetingEndTime;
     
-    // Only allow feedback for approved bookings that have ended
-    const isEligibleForFeedback = booking.status === 'approved' && hasMeetingEnded;
-    
     // Check if feedback window expired (48 hours after meeting end)
     const feedbackDeadline = new Date(meetingEndTime.getTime() + 48 * 60 * 60 * 1000);
     const isFeedbackExpired = new Date() > feedbackDeadline;
     
+    // Feedback eligibility: meeting ended, not cancelled/rejected
+    const canHaveFeedback = hasMeetingEnded && !['cancelled', 'rejected'].includes(booking.status);
+    
     // Determine feedback status
     let feedbackStatus = null;
-    if (isEligibleForFeedback) {
+    let feedbackMessage = '';
+    
+    if (canHaveFeedback) {
       if (hasFeedback) {
         feedbackStatus = 'submitted';
+        feedbackMessage = 'Thank you for your feedback';
       } else if (isFeedbackExpired) {
         feedbackStatus = 'expired';
+        feedbackMessage = 'Feedback window closed';
       } else {
         feedbackStatus = 'pending';
+        const hoursLeft = Math.round((feedbackDeadline - new Date()) / (1000 * 60 * 60));
+        feedbackMessage = `Share your experience (${hoursLeft}h left)`;
       }
+    } else if (!hasMeetingEnded && !['cancelled', 'rejected'].includes(booking.status)) {
+      feedbackStatus = 'not_ready';
+      feedbackMessage = 'Available after meeting ends';
     }
     
     return (
       <Card className="border-0 shadow-sm hover:shadow-md transition-shadow">
         <CardContent className="p-5">
           {/* Header with booking number and status */}
-          <div className="flex items-center justify-between mb-4 pb-3 border-b">
-            <div className="flex items-center gap-3">
-              <span className="text-sm font-mono text-gray-500">{booking.booking_number}</span>
+          <div className="flex items-start justify-between mb-4 pb-3 border-b gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-xs font-mono text-gray-500">{booking.booking_number}</span>
               {getStatusBadge(booking.status)}
             </div>
             {feedbackStatus && (
               <Badge className={
                 feedbackStatus === 'submitted' 
-                  ? 'bg-green-100 text-green-800 border-green-300'
+                  ? 'bg-green-100 text-green-700 border-green-300 font-medium'
                   : feedbackStatus === 'expired'
                   ? 'bg-gray-100 text-gray-600 border-gray-300'
-                  : 'bg-amber-100 text-amber-800 border-amber-300'
+                  : feedbackStatus === 'not_ready'
+                  ? 'bg-slate-100 text-slate-600 border-slate-300 text-xs'
+                  : 'bg-amber-100 text-amber-800 border-amber-300 font-semibold'
               }>
                 {feedbackStatus === 'submitted' && <CheckCircle className="w-3 h-3 mr-1" />}
-                {feedbackStatus === 'pending' && <AlertCircle className="w-3 h-3 mr-1" />}
-                Feedback: {feedbackStatus.charAt(0).toUpperCase() + feedbackStatus.slice(1)}
+                {feedbackStatus === 'pending' && <MessageSquare className="w-3 h-3 mr-1" />}
+                {feedbackStatus === 'not_ready' && <Clock className="w-3 h-3 mr-1" />}
+                {feedbackStatus === 'submitted' ? 'Feedback Submitted' : 
+                 feedbackStatus === 'expired' ? 'Feedback Expired' :
+                 feedbackStatus === 'not_ready' ? 'Feedback: Not Ready' :
+                 'Feedback Pending'}
               </Badge>
             )}
           </div>
@@ -191,58 +206,81 @@ export default function MyRoomBookings() {
             </div>
           )}
 
-          {/* Feedback prompt for pending */}
+          {/* Feedback status messages */}
           {feedbackStatus === 'pending' && (
-            <div className="mb-4 p-3 bg-blue-50 border-l-4 border-blue-400 rounded flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+            <div className="mb-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg flex items-start gap-3">
+              <MessageSquare className="w-6 h-6 text-blue-600 flex-shrink-0 mt-0.5" />
               <div className="flex-1">
-                <p className="text-sm font-medium text-blue-900">Your feedback is important!</p>
-                <p className="text-xs text-blue-700 mt-1">
-                  Share your experience within {Math.round((feedbackDeadline - new Date()) / (1000 * 60 * 60))} hours
+                <p className="text-sm font-semibold text-blue-900 mb-1">📝 Feedback Requested</p>
+                <p className="text-xs text-blue-800">
+                  {feedbackMessage}
                 </p>
               </div>
             </div>
           )}
+          
+          {feedbackStatus === 'not_ready' && (
+            <div className="mb-3 p-2 bg-slate-50 border border-slate-200 rounded text-xs text-slate-600 flex items-center gap-2">
+              <Clock className="w-4 h-4" />
+              {feedbackMessage}
+            </div>
+          )}
+          
+          {feedbackStatus === 'submitted' && (
+            <div className="mb-3 p-2 bg-green-50 border border-green-200 rounded text-xs text-green-700 flex items-center gap-2">
+              <CheckCircle className="w-4 h-4" />
+              {feedbackMessage}
+            </div>
+          )}
+          
+          {feedbackStatus === 'expired' && (
+            <div className="mb-3 p-2 bg-gray-50 border border-gray-200 rounded text-xs text-gray-600 flex items-center gap-2">
+              <AlertCircle className="w-4 h-4" />
+              {feedbackMessage}
+            </div>
+          )}
 
           {/* Action buttons */}
-          <div className="flex items-center gap-2 pt-3 border-t">
-            <Link to={createPageUrl(`RoomBookingDetails?id=${booking.id}`)}>
-              <Button variant="outline" size="sm" className="flex-1">
-                <Eye className="w-4 h-4 mr-1" />
-                View Details
-              </Button>
-            </Link>
-            
+          <div className="flex flex-col gap-2 pt-3 border-t">
             {feedbackStatus === 'pending' && (
-              <Link to={createPageUrl(`SubmitFeedback?bookingId=${booking.id}`)} className="flex-1">
-                <Button size="sm" className="w-full bg-blue-600 hover:bg-blue-700">
-                  <MessageSquare className="w-4 h-4 mr-1" />
-                  Give Feedback
+              <Link to={createPageUrl(`SubmitFeedback?bookingId=${booking.id}`)}>
+                <Button size="sm" className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-md">
+                  <MessageSquare className="w-4 h-4 mr-2" />
+                  Give Feedback Now
                 </Button>
               </Link>
             )}
             
-            {canEdit && (
-              <Link to={createPageUrl(`BookRoom?edit=${booking.id}`)}>
-                <Button variant="outline" size="sm" className="text-blue-600 border-blue-200 hover:bg-blue-50">
+            <div className="flex items-center gap-2">
+              <Link to={createPageUrl(`RoomBookingDetails?id=${booking.id}`)} className="flex-1">
+                <Button variant="outline" size="sm" className="w-full">
                   <Eye className="w-4 h-4 mr-1" />
-                  Edit & Resubmit
+                  View Details
                 </Button>
               </Link>
-            )}
-            
-            {booking.status === 'pending' && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-red-600 border-red-200 hover:bg-red-50"
-                onClick={() => cancelBookingMutation.mutate(booking.id)}
-                disabled={cancelBookingMutation.isPending}
-              >
-                <XCircle className="w-4 h-4 mr-1" />
-                Cancel
-              </Button>
-            )}
+              
+              {canEdit && (
+                <Link to={createPageUrl(`BookRoom?edit=${booking.id}`)} className="flex-1">
+                  <Button variant="outline" size="sm" className="w-full text-blue-600 border-blue-200 hover:bg-blue-50">
+                    <Eye className="w-4 h-4 mr-1" />
+                    Edit & Resubmit
+                  </Button>
+                </Link>
+              )}
+              
+              {booking.status === 'pending' && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-red-600 border-red-200 hover:bg-red-50"
+                  onClick={() => cancelBookingMutation.mutate(booking.id)}
+                  disabled={cancelBookingMutation.isPending}
+                >
+                  <XCircle className="w-4 h-4 mr-1" />
+                  Cancel
+                </Button>
+              )}
+            </div>
           </div>
         </CardContent>
       </Card>
