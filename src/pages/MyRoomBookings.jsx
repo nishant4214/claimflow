@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Calendar, Clock, Users, MapPin, Plus, Eye, XCircle, CheckCircle, AlertCircle, MessageSquare } from "lucide-react";
+import { Calendar, Clock, Users, MapPin, Plus, Eye, XCircle, CheckCircle, AlertCircle, MessageSquare, Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { toast } from 'sonner';
 import { format, parseISO, isPast, isFuture } from 'date-fns';
 import { logCriticalAction } from '../components/session/SessionLogger';
@@ -34,6 +35,7 @@ const getStatusBadge = (status) => {
 
 export default function MyRoomBookings() {
   const [user, setUser] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -80,12 +82,24 @@ export default function MyRoomBookings() {
     },
   });
 
+  const filterBySearch = (booking) => {
+    if (!searchQuery.trim()) return true;
+    const query = searchQuery.toLowerCase();
+    return (
+      booking.meeting_title?.toLowerCase().includes(query) ||
+      booking.room_name?.toLowerCase().includes(query) ||
+      booking.booking_number?.toLowerCase().includes(query) ||
+      booking.booking_date?.includes(query) ||
+      booking.status?.toLowerCase().includes(query)
+    );
+  };
+
   const upcomingBookings = myBookings.filter(b => {
     if (!b.booking_date) return false;
     const [hours, minutes] = b.end_time.split(':').map(Number);
     const meetingEndTime = new Date(b.booking_date);
     meetingEndTime.setHours(hours, minutes, 0, 0);
-    return meetingEndTime > new Date() && ['pending', 'approved'].includes(b.status);
+    return meetingEndTime > new Date() && ['pending', 'approved'].includes(b.status) && filterBySearch(b);
   });
 
   const pastBookings = myBookings.filter(b => {
@@ -93,7 +107,7 @@ export default function MyRoomBookings() {
     const [hours, minutes] = b.end_time.split(':').map(Number);
     const meetingEndTime = new Date(b.booking_date);
     meetingEndTime.setHours(hours, minutes, 0, 0);
-    return meetingEndTime < new Date() || ['rejected', 'cancelled'].includes(b.status);
+    return (meetingEndTime < new Date() || ['rejected', 'cancelled'].includes(b.status)) && filterBySearch(b);
   });
 
   const getFeedbackStatus = (booking) => {
@@ -279,6 +293,21 @@ export default function MyRoomBookings() {
                 </p>
                 <p className="text-sm text-gray-500">Feedback Given</p>
               </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-0 shadow-sm mb-6">
+          <CardContent className="p-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Input
+                type="text"
+                placeholder="Search by meeting title, room name, booking number, date..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 h-11"
+              />
             </div>
           </CardContent>
         </Card>
