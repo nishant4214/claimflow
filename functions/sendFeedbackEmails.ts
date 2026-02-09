@@ -46,7 +46,8 @@ Deno.serve(async (req) => {
         continue;
       }
       
-      const feedbackUrl = `${Deno.env.get('BASE44_APP_URL')}/SubmitFeedback?bookingId=${booking.id}`;
+      const appUrl = Deno.env.get('BASE44_APP_URL') || 'https://your-app-url.base44.com';
+      const feedbackUrl = `${appUrl}/SubmitFeedback?bookingId=${booking.id}`;
       
       // Send email to organizer
       try {
