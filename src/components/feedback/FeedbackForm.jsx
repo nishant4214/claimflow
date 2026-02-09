@@ -3,7 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Star, CheckCircle } from "lucide-react";
+import { Star, CheckCircle, MapPin, Calendar, Clock, Users } from "lucide-react";
+import { format, parseISO } from 'date-fns';
 
 export default function FeedbackForm({ booking, userEmail, userName, onSubmit, isSubmitting }) {
   const [ratings, setRatings] = useState({
@@ -48,72 +49,125 @@ export default function FeedbackForm({ booking, userEmail, userName, onSubmit, i
     const hovered = hoveredRating[category] || 0;
 
     return (
-      <div className="flex gap-2">
-        {[1, 2, 3, 4, 5].map(star => (
-          <button
-            key={star}
-            type="button"
-            onMouseEnter={() => setHoveredRating(prev => ({ ...prev, [category]: star }))}
-            onMouseLeave={() => setHoveredRating(prev => ({ ...prev, [category]: 0 }))}
-            onClick={() => handleRatingClick(category, star)}
-            className="transition-transform hover:scale-110"
-          >
-            <Star
-              className={`w-8 h-8 ${
-                star <= (hovered || currentRating)
-                  ? 'fill-yellow-400 text-yellow-400'
-                  : 'text-gray-300'
-              }`}
-            />
-          </button>
-        ))}
-        <span className="ml-2 text-sm font-medium text-gray-600">
-          {currentRating > 0 && `${currentRating}/5`}
-        </span>
+      <div className="flex items-center gap-3">
+        <div className="flex gap-1">
+          {[1, 2, 3, 4, 5].map(star => (
+            <button
+              key={star}
+              type="button"
+              onMouseEnter={() => setHoveredRating(prev => ({ ...prev, [category]: star }))}
+              onMouseLeave={() => setHoveredRating(prev => ({ ...prev, [category]: 0 }))}
+              onClick={() => handleRatingClick(category, star)}
+              className="transition-all hover:scale-110 focus:outline-none"
+            >
+              <Star
+                className={`w-9 h-9 transition-colors ${
+                  star <= (hovered || currentRating)
+                    ? 'fill-yellow-400 text-yellow-400'
+                    : 'text-gray-300 hover:text-gray-400'
+                }`}
+              />
+            </button>
+          ))}
+        </div>
+        <div className="min-w-[80px]">
+          {currentRating > 0 ? (
+            <span className="text-sm font-medium text-gray-700">
+              {currentRating}/5 Stars
+            </span>
+          ) : (
+            <span className="text-xs text-gray-400">Not rated</span>
+          )}
+        </div>
       </div>
     );
   };
 
   return (
     <div className="max-w-3xl mx-auto">
-      <Card className="border-0 shadow-lg">
-        <CardHeader className="border-b bg-gradient-to-r from-blue-50 to-indigo-50">
-          <CardTitle className="text-2xl">Conference Room Feedback</CardTitle>
-          <div className="mt-2 space-y-1 text-sm text-gray-600">
-            <p><strong>Meeting:</strong> {booking.meeting_title}</p>
-            <p><strong>Room:</strong> {booking.room_name}</p>
-            <p><strong>Date:</strong> {new Date(booking.booking_date).toLocaleDateString()}</p>
-            <p><strong>Time:</strong> {booking.start_time} - {booking.end_time}</p>
+      {/* Booking Details Card */}
+      <Card className="mb-6 border-0 shadow-sm">
+        <CardHeader className="pb-4 border-b bg-gray-50">
+          <CardTitle className="text-xl text-gray-900">Booking Details</CardTitle>
+        </CardHeader>
+        <CardContent className="pt-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="flex items-start gap-3">
+              <MapPin className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+              <div>
+                <div className="text-xs text-gray-500 mb-0.5">Conference Room</div>
+                <div className="font-medium text-gray-900">{booking.room_name}</div>
+              </div>
+            </div>
+            
+            <div className="flex items-start gap-3">
+              <Calendar className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+              <div>
+                <div className="text-xs text-gray-500 mb-0.5">Date</div>
+                <div className="font-medium text-gray-900">
+                  {booking.booking_date ? format(parseISO(booking.booking_date), 'MMMM dd, yyyy') : 'N/A'}
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex items-start gap-3">
+              <Clock className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+              <div>
+                <div className="text-xs text-gray-500 mb-0.5">Time</div>
+                <div className="font-medium text-gray-900">{booking.start_time} - {booking.end_time}</div>
+              </div>
+            </div>
+            
+            <div className="flex items-start gap-3">
+              <Users className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+              <div>
+                <div className="text-xs text-gray-500 mb-0.5">Meeting Title</div>
+                <div className="font-medium text-gray-900">{booking.meeting_title}</div>
+              </div>
+            </div>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Feedback Form Card */}
+      <Card className="border-0 shadow-sm">
+        <CardHeader className="pb-4 border-b bg-gradient-to-r from-blue-50 to-indigo-50">
+          <CardTitle className="text-xl text-gray-900">Rate Your Experience</CardTitle>
+          <p className="text-sm text-gray-600 mt-1">Please rate the following aspects of your meeting experience</p>
         </CardHeader>
         <CardContent className="pt-6">
           <form onSubmit={handleSubmit} className="space-y-8">
-            {ratingCategories.map(category => (
-              <div key={category.key} className="space-y-3">
-                <div>
-                  <Label className="text-base font-semibold">{category.label}</Label>
-                  <p className="text-sm text-gray-500">{category.description}</p>
+            {ratingCategories.map((category, index) => (
+              <div key={category.key} className={`pb-6 ${index !== ratingCategories.length - 1 ? 'border-b' : ''}`}>
+                <div className="mb-3">
+                  <Label className="text-sm font-semibold text-gray-900">{category.label}</Label>
+                  <p className="text-xs text-gray-500 mt-0.5">{category.description}</p>
                 </div>
                 <StarRating category={category.key} value={ratings[category.key]} />
               </div>
             ))}
 
-            <div className="pt-4 border-t">
-              <Label className="text-base font-semibold">Additional Comments (Optional)</Label>
-              <p className="text-sm text-gray-500 mb-3">Share any suggestions or concerns</p>
+            <div className="pt-2">
+              <Label className="text-sm font-semibold text-gray-900 mb-2 block">
+                Additional Comments <span className="text-gray-400 font-normal">(Optional)</span>
+              </Label>
               <Textarea
                 value={comments}
                 onChange={(e) => setComments(e.target.value)}
-                placeholder="Tell us more about your experience..."
+                placeholder="Share any additional thoughts, suggestions, or concerns about the conference room or meeting experience..."
                 rows={4}
                 className="resize-none"
               />
             </div>
 
-            <div className="flex justify-end gap-3 pt-4 border-t">
-              <Button type="submit" disabled={isSubmitting} size="lg" className="bg-blue-600 hover:bg-blue-700">
-                {isSubmitting ? 'Submitting...' : 'Submit Feedback'}
-                <CheckCircle className="w-4 h-4 ml-2" />
+            <div className="pt-4 border-t">
+              <Button 
+                type="submit" 
+                disabled={isSubmitting} 
+                className="w-full h-12 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-base font-medium"
+              >
+                {isSubmitting ? 'Submitting Feedback...' : 'Submit Feedback'}
+                {!isSubmitting && <CheckCircle className="w-4 h-4 ml-2" />}
               </Button>
             </div>
           </form>
