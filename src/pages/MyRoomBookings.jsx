@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, Clock, Users, MapPin, Plus, Eye, XCircle, CheckCircle, AlertCircle } from "lucide-react";
+import { Calendar, Clock, Users, MapPin, Plus, Eye, XCircle, CheckCircle, AlertCircle, MessageSquare } from "lucide-react";
 import { toast } from 'sonner';
 import { format, parseISO, isPast, isFuture } from 'date-fns';
 import { logCriticalAction } from '../components/session/SessionLogger';
@@ -81,14 +81,18 @@ export default function MyRoomBookings() {
 
   const upcomingBookings = myBookings.filter(b => {
     if (!b.booking_date) return false;
-    const bookingDate = new Date(b.booking_date);
-    return isFuture(bookingDate) && ['pending', 'approved'].includes(b.status);
+    const [hours, minutes] = b.end_time.split(':').map(Number);
+    const meetingEndTime = new Date(b.booking_date);
+    meetingEndTime.setHours(hours, minutes, 0, 0);
+    return meetingEndTime > new Date() && ['pending', 'approved'].includes(b.status);
   });
 
   const pastBookings = myBookings.filter(b => {
     if (!b.booking_date) return false;
-    const bookingDate = new Date(b.booking_date);
-    return isPast(bookingDate) || ['completed', 'rejected', 'cancelled'].includes(b.status);
+    const [hours, minutes] = b.end_time.split(':').map(Number);
+    const meetingEndTime = new Date(b.booking_date);
+    meetingEndTime.setHours(hours, minutes, 0, 0);
+    return meetingEndTime < new Date() || ['rejected', 'cancelled'].includes(b.status);
   });
 
   const BookingCard = ({ booking }) => {
@@ -97,105 +101,123 @@ export default function MyRoomBookings() {
     // Check if feedback submitted
     const hasFeedback = allFeedback.some(f => f.booking_id === booking.id);
     
-    // Check if booking is completed and eligible for feedback
-    const isCompleted = ['completed', 'approved'].includes(booking.status);
-    const bookingDate = new Date(booking.booking_date);
-    const isPastBooking = isPast(bookingDate);
-    const canSubmitFeedback = isCompleted && isPastBooking && !hasFeedback;
-    
-    // Check if feedback window expired (48 hours)
+    // Check if meeting has ended (based on actual date/time, not status)
     const [hours, minutes] = booking.end_time.split(':').map(Number);
     const meetingEndTime = new Date(booking.booking_date);
     meetingEndTime.setHours(hours, minutes, 0, 0);
+    const hasMeetingEnded = new Date() > meetingEndTime;
+    
+    // Only allow feedback for approved bookings that have ended
+    const isEligibleForFeedback = booking.status === 'approved' && hasMeetingEnded;
+    
+    // Check if feedback window expired (48 hours after meeting end)
     const feedbackDeadline = new Date(meetingEndTime.getTime() + 48 * 60 * 60 * 1000);
     const isFeedbackExpired = new Date() > feedbackDeadline;
     
+    // Determine feedback status
+    let feedbackStatus = null;
+    if (isEligibleForFeedback) {
+      if (hasFeedback) {
+        feedbackStatus = 'submitted';
+      } else if (isFeedbackExpired) {
+        feedbackStatus = 'expired';
+      } else {
+        feedbackStatus = 'pending';
+      }
+    }
+    
     return (
       <Card className="border-0 shadow-sm hover:shadow-md transition-shadow">
-        <CardContent className="p-6">
-          <div className="flex items-start justify-between mb-4">
-            <div>
-              <div className="flex items-center gap-3 mb-2">
-                <h3 className="text-lg font-semibold text-gray-900">{booking.booking_number}</h3>
-                {getStatusBadge(booking.status)}
-              </div>
-              <p className="text-gray-600 font-medium">{booking.meeting_title}</p>
+        <CardContent className="p-5">
+          {/* Header with booking number and status */}
+          <div className="flex items-center justify-between mb-4 pb-3 border-b">
+            <div className="flex items-center gap-3">
+              <span className="text-sm font-mono text-gray-500">{booking.booking_number}</span>
+              {getStatusBadge(booking.status)}
+            </div>
+            {feedbackStatus && (
+              <Badge className={
+                feedbackStatus === 'submitted' 
+                  ? 'bg-green-100 text-green-800 border-green-300'
+                  : feedbackStatus === 'expired'
+                  ? 'bg-gray-100 text-gray-600 border-gray-300'
+                  : 'bg-amber-100 text-amber-800 border-amber-300'
+              }>
+                {feedbackStatus === 'submitted' && <CheckCircle className="w-3 h-3 mr-1" />}
+                {feedbackStatus === 'pending' && <AlertCircle className="w-3 h-3 mr-1" />}
+                Feedback: {feedbackStatus.charAt(0).toUpperCase() + feedbackStatus.slice(1)}
+              </Badge>
+            )}
+          </div>
+
+          {/* Meeting title */}
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">{booking.meeting_title}</h3>
+
+          {/* Key details in grid */}
+          <div className="grid grid-cols-2 gap-3 mb-4">
+            <div className="flex items-center gap-2 text-sm">
+              <MapPin className="w-4 h-4 text-blue-600 flex-shrink-0" />
+              <span className="text-gray-700 truncate">{booking.room_name}</span>
+            </div>
+            
+            <div className="flex items-center gap-2 text-sm">
+              <Users className="w-4 h-4 text-blue-600 flex-shrink-0" />
+              <span className="text-gray-700">{booking.attendees_count} attendees</span>
+            </div>
+            
+            <div className="flex items-center gap-2 text-sm">
+              <Calendar className="w-4 h-4 text-blue-600 flex-shrink-0" />
+              <span className="text-gray-700">{booking.booking_date ? format(parseISO(booking.booking_date), 'MMM dd, yyyy') : 'N/A'}</span>
+            </div>
+            
+            <div className="flex items-center gap-2 text-sm">
+              <Clock className="w-4 h-4 text-blue-600 flex-shrink-0" />
+              <span className="text-gray-700">{booking.start_time} - {booking.end_time}</span>
             </div>
           </div>
 
-          <div className="space-y-3">
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <MapPin className="w-4 h-4 text-blue-600" />
-            <span className="font-medium">{booking.room_name}</span>
-          </div>
-          
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <Calendar className="w-4 h-4 text-blue-600" />
-            <span>{booking.booking_date ? format(parseISO(booking.booking_date), 'PPP') : 'N/A'}</span>
-          </div>
-          
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <Clock className="w-4 h-4 text-blue-600" />
-            <span>{booking.start_time} - {booking.end_time} ({booking.duration_minutes} min)</span>
-          </div>
-          
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <Users className="w-4 h-4 text-blue-600" />
-            <span>{booking.attendees_count} attendees</span>
-          </div>
-
-          {booking.purpose && (
-            <p className="text-sm text-gray-500 mt-2 line-clamp-2">{booking.purpose}</p>
-          )}
-
+          {/* Alert messages */}
           {booking.rejection_reason && (
-            <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-xs font-medium text-red-800 mb-1">Rejection Reason:</p>
+            <div className="mb-4 p-3 bg-red-50 border-l-4 border-red-400 rounded">
+              <p className="text-xs font-semibold text-red-800 mb-1">Rejection Reason</p>
               <p className="text-sm text-red-700">{booking.rejection_reason}</p>
             </div>
           )}
 
           {booking.send_back_reason && (
-            <div className="mb-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-              <p className="text-xs font-medium text-amber-800 mb-1">Sent Back - Correction Needed:</p>
+            <div className="mb-4 p-3 bg-amber-50 border-l-4 border-amber-400 rounded">
+              <p className="text-xs font-semibold text-amber-800 mb-1">Correction Required</p>
               <p className="text-sm text-amber-700">{booking.send_back_reason}</p>
             </div>
           )}
-          </div>
 
-          <div className="mt-4 pt-4 border-t space-y-3">
-          {isCompleted && isPastBooking && (
-            <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
-              <span className="text-sm text-gray-600">Feedback Status:</span>
-              {hasFeedback ? (
-                <Badge className="bg-green-100 text-green-800 border-green-200">
-                  <CheckCircle className="w-3 h-3 mr-1" />
-                  Submitted
-                </Badge>
-              ) : isFeedbackExpired ? (
-                <Badge className="bg-gray-100 text-gray-800 border-gray-200">
-                  Expired
-                </Badge>
-              ) : (
-                <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">
-                  <Clock className="w-3 h-3 mr-1" />
-                  Pending
-                </Badge>
-              )}
+          {/* Feedback prompt for pending */}
+          {feedbackStatus === 'pending' && (
+            <div className="mb-4 p-3 bg-blue-50 border-l-4 border-blue-400 rounded flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="text-sm font-medium text-blue-900">Your feedback is important!</p>
+                <p className="text-xs text-blue-700 mt-1">
+                  Share your experience within {Math.round((feedbackDeadline - new Date()) / (1000 * 60 * 60))} hours
+                </p>
+              </div>
             </div>
           )}
-          
-          <div className="flex items-center gap-2">
+
+          {/* Action buttons */}
+          <div className="flex items-center gap-2 pt-3 border-t">
           <Link to={createPageUrl(`RoomBookingDetails?id=${booking.id}`)}>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" className="flex-1">
               <Eye className="w-4 h-4 mr-1" />
               View Details
             </Button>
           </Link>
-          {canSubmitFeedback && !isFeedbackExpired && (
-            <Link to={createPageUrl(`SubmitFeedback?bookingId=${booking.id}`)}>
-              <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
-                Submit Feedback
+          
+          {feedbackStatus === 'pending' && (
+            <Link to={createPageUrl(`SubmitFeedback?bookingId=${booking.id}`)} className="flex-1">
+              <Button size="sm" className="w-full bg-blue-600 hover:bg-blue-700">
+                <MessageSquare className="w-4 h-4 mr-1" />
+                Give Feedback
               </Button>
             </Link>
           )}
@@ -252,10 +274,10 @@ export default function MyRoomBookings() {
 
         <Card className="border-0 shadow-sm mb-6">
           <CardContent className="p-4">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               <div className="text-center">
                 <p className="text-2xl font-bold text-blue-600">{myBookings.length}</p>
-                <p className="text-sm text-gray-500">Total Bookings</p>
+                <p className="text-sm text-gray-500">Total</p>
               </div>
               <div className="text-center">
                 <p className="text-2xl font-bold text-green-600">{upcomingBookings.length}</p>
@@ -271,6 +293,12 @@ export default function MyRoomBookings() {
                 <p className="text-2xl font-bold text-gray-600">{pastBookings.length}</p>
                 <p className="text-sm text-gray-500">Past</p>
               </div>
+              <div className="text-center">
+                <p className="text-2xl font-bold text-amber-600">
+                  {allFeedback.filter(f => f.respondent_email === user?.email).length}
+                </p>
+                <p className="text-sm text-gray-500">Feedback Given</p>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -281,7 +309,8 @@ export default function MyRoomBookings() {
               <Calendar className="w-4 h-4" />
               Upcoming ({upcomingBookings.length})
             </TabsTrigger>
-            <TabsTrigger value="past">
+            <TabsTrigger value="past" className="gap-2">
+              <Clock className="w-4 h-4" />
               Past ({pastBookings.length})
             </TabsTrigger>
           </TabsList>

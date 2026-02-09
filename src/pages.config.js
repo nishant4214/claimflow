@@ -67,12 +67,12 @@ import Reports from './pages/Reports';
 import RoomAnalytics from './pages/RoomAnalytics';
 import RoomBookingApprovals from './pages/RoomBookingApprovals';
 import RoomBookingDetails from './pages/RoomBookingDetails';
+import RoomFeedbackDashboard from './pages/RoomFeedbackDashboard';
 import SubmitClaim from './pages/SubmitClaim';
+import SubmitFeedback from './pages/SubmitFeedback';
 import TestCredentials from './pages/TestCredentials';
 import UserManagement from './pages/UserManagement';
 import WorkflowConfig from './pages/WorkflowConfig';
-import SubmitFeedback from './pages/SubmitFeedback';
-import RoomFeedbackDashboard from './pages/RoomFeedbackDashboard';
 import __Layout from './Layout.jsx';
 
 
@@ -97,12 +97,12 @@ export const PAGES = {
     "RoomAnalytics": RoomAnalytics,
     "RoomBookingApprovals": RoomBookingApprovals,
     "RoomBookingDetails": RoomBookingDetails,
+    "RoomFeedbackDashboard": RoomFeedbackDashboard,
     "SubmitClaim": SubmitClaim,
+    "SubmitFeedback": SubmitFeedback,
     "TestCredentials": TestCredentials,
     "UserManagement": UserManagement,
     "WorkflowConfig": WorkflowConfig,
-    "SubmitFeedback": SubmitFeedback,
-    "RoomFeedbackDashboard": RoomFeedbackDashboard,
 }
 
 export const pagesConfig = {
