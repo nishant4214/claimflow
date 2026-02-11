@@ -88,7 +88,7 @@ Deno.serve(async (req) => {
         }
       }
 
-      // Mark as sent
+      // Mark as sent (create a minimal tracking record)
       await base44.asServiceRole.entities.RoomFeedback.create({
         booking_id: booking.id,
         booking_number: booking.booking_number,
@@ -99,6 +99,10 @@ Deno.serve(async (req) => {
         respondent_email: booking.employee_email,
         respondent_name: booking.employee_name,
         respondent_type: 'organizer',
+        overall_rating: 0,
+        room_quality_rating: 0,
+        equipment_rating: 0,
+        cleanliness_rating: 0,
         feedback_email_sent: true,
         feedback_email_sent_at: new Date().toISOString()
       });
