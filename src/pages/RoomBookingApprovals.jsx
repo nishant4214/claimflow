@@ -126,9 +126,18 @@ export default function RoomBookingApprovals() {
   };
 
   const pendingBookings = allBookings.filter(b => b.status === 'pending');
+  const sentBackBookings = allBookings.filter(b => b.status === 'sent_back');
   const processedBookings = allBookings.filter(b => ['approved', 'rejected'].includes(b.status));
 
   const filteredPending = pendingBookings.filter(b =>
+    !search || 
+    b.booking_number?.toLowerCase().includes(search.toLowerCase()) ||
+    b.employee_name?.toLowerCase().includes(search.toLowerCase()) ||
+    b.meeting_title?.toLowerCase().includes(search.toLowerCase()) ||
+    b.room_name?.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const filteredSentBack = sentBackBookings.filter(b =>
     !search || 
     b.booking_number?.toLowerCase().includes(search.toLowerCase()) ||
     b.employee_name?.toLowerCase().includes(search.toLowerCase()) ||
@@ -419,6 +428,9 @@ export default function RoomBookingApprovals() {
             <TabsTrigger value="pending" className="gap-2">
               Pending ({filteredPending.length})
             </TabsTrigger>
+            <TabsTrigger value="sent_back" className="gap-2">
+              Sent Back ({filteredSentBack.length})
+            </TabsTrigger>
             <TabsTrigger value="processed">
               Processed ({filteredProcessed.length})
             </TabsTrigger>
@@ -453,6 +465,68 @@ export default function RoomBookingApprovals() {
                     <tbody>
                       {filteredPending.map(booking => (
                         <BookingRow key={booking.id} booking={booking} isPending={true} />
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </Card>
+            )}
+          </TabsContent>
+
+          <TabsContent value="sent_back">
+            {filteredSentBack.length === 0 ? (
+              <Card className="border-0 shadow-sm">
+                <CardContent className="p-12 text-center">
+                  <RotateCcw className="w-16 h-16 mx-auto text-gray-300 mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No sent back bookings</h3>
+                  <p className="text-gray-500">Bookings sent back for correction will appear here</p>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card className="border-0 shadow-sm overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Booking #</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Meeting</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Room</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Time</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Attendees</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Send Back Reason</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredSentBack.map(booking => (
+                        <tr key={booking.id} className="border-b hover:bg-gray-50">
+                          <td className="p-4">
+                            <span className="font-medium text-sm">{booking.booking_number}</span>
+                          </td>
+                          <td className="p-4">
+                            <div className="flex flex-col">
+                              <span className="font-medium text-sm">{booking.meeting_title}</span>
+                              <span className="text-xs text-gray-500">{booking.employee_name}</span>
+                            </div>
+                          </td>
+                          <td className="p-4 text-sm">{booking.room_name}</td>
+                          <td className="p-4 text-sm">{booking.booking_date ? format(parseISO(booking.booking_date), 'MMM dd, yyyy') : 'N/A'}</td>
+                          <td className="p-4 text-sm">{booking.start_time} - {booking.end_time}</td>
+                          <td className="p-4 text-sm">{booking.attendees_count}</td>
+                          <td className="p-4">
+                            <div className="max-w-xs">
+                              <p className="text-sm text-amber-700 line-clamp-2">{booking.send_back_reason}</p>
+                            </div>
+                          </td>
+                          <td className="p-4">
+                            <Link to={createPageUrl(`RoomBookingDetails?id=${booking.id}`)}>
+                              <Button variant="ghost" size="sm">
+                                <Eye className="w-4 h-4" />
+                              </Button>
+                            </Link>
+                          </td>
+                        </tr>
                       ))}
                     </tbody>
                   </table>

@@ -120,7 +120,7 @@ export default function MyRoomBookings() {
     const [hours, minutes] = b.end_time.split(':').map(Number);
     const meetingEndTime = new Date(b.booking_date);
     meetingEndTime.setHours(hours, minutes, 0, 0);
-    return meetingEndTime > new Date() && ['pending', 'approved'].includes(b.status) && filterBookings(b);
+    return meetingEndTime > new Date() && ['pending', 'approved', 'sent_back'].includes(b.status) && filterBookings(b);
   });
 
   const pastBookings = myBookings.filter(b => {
@@ -341,6 +341,7 @@ export default function MyRoomBookings() {
                     <SelectItem value="all">All Status</SelectItem>
                     <SelectItem value="pending">Pending</SelectItem>
                     <SelectItem value="approved">Approved</SelectItem>
+                    <SelectItem value="sent_back">Sent Back</SelectItem>
                     <SelectItem value="rejected">Rejected</SelectItem>
                     <SelectItem value="cancelled">Cancelled</SelectItem>
                   </SelectContent>
