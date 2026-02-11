@@ -16,8 +16,21 @@ export default function SubmitFeedback() {
 
   useEffect(() => {
     const loadUser = async () => {
-      const userData = await base44.auth.me();
-      setUser(userData);
+      try {
+        const userData = await base44.auth.me();
+        setUser(userData);
+      } catch (error) {
+        console.error('Auth error:', error);
+        // For unauthenticated users (feedback links), allow anonymous access
+        const urlParams = new URLSearchParams(window.location.search);
+        const type = urlParams.get('type');
+        const email = urlParams.get('email');
+        const name = urlParams.get('name');
+        
+        if (type && email && name) {
+          setUser({ email, full_name: name });
+        }
+      }
     };
     loadUser();
 
