@@ -39,11 +39,14 @@ export default function SubmitFeedback() {
     setBookingId(urlParams.get('bookingId'));
   }, []);
 
-  const { data: booking, isLoading: bookingLoading } = useQuery({
+  const { data: booking, isLoading: bookingLoading, error: bookingError } = useQuery({
     queryKey: ['booking-feedback', bookingId],
-    queryFn: () => base44.entities.RoomBooking.filter({ id: bookingId }),
+    queryFn: async () => {
+      const data = await base44.entities.RoomBooking.filter({ id: bookingId });
+      return data[0];
+    },
     enabled: !!bookingId,
-    select: (data) => data[0],
+    retry: false,
   });
 
   const { data: existingFeedback, isLoading: feedbackLoading } = useQuery({
