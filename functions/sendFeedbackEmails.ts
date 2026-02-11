@@ -6,9 +6,9 @@ Deno.serve(async (req) => {
     
     // Service role for system operations
     const now = new Date();
-    const thirtyMinutesAgo = new Date(now.getTime() - 30 * 60 * 1000);
+    const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000);
     
-    // Find bookings that ended 30 minutes ago and are approved/completed
+    // Find bookings that ended 5 minutes ago and are approved/completed
     const allBookings = await base44.asServiceRole.entities.RoomBooking.list();
     
     const eligibleBookings = allBookings.filter(booking => {
@@ -19,11 +19,11 @@ Deno.serve(async (req) => {
       const bookingEndTime = new Date(booking.booking_date);
       bookingEndTime.setHours(hours, minutes, 0, 0);
       
-      // Check if ended ~30 minutes ago (within 5 minute window)
+      // Check if ended ~5 minutes ago (within 5 minute window)
       const timeDiff = Math.abs(now - bookingEndTime);
-      const thirtyMinutes = 30 * 60 * 1000;
+      const fiveMinutes = 5 * 60 * 1000;
       
-      return timeDiff >= thirtyMinutes && timeDiff <= (thirtyMinutes + 5 * 60 * 1000);
+      return timeDiff >= fiveMinutes && timeDiff <= (fiveMinutes + 5 * 60 * 1000);
     });
 
     if (eligibleBookings.length === 0) {

@@ -159,7 +159,7 @@ export const notifyBookingApproved = async (booking) => {
   const title = 'Conference Room Booking Approved';
   const message = `Your booking for ${booking.room_name} on ${format(parseISO(booking.booking_date), 'PPP')} at ${booking.start_time} has been approved.`;
 
-  // In-app notification
+  // In-app notification to organizer
   await createInAppNotification(
     booking.employee_email,
     ROOM_NOTIFICATION_TYPES.BOOKING_APPROVED,
@@ -169,7 +169,7 @@ export const notifyBookingApproved = async (booking) => {
     booking.booking_number
   );
 
-  // Email notification
+  // Email notification to organizer
   const emailBody = `
     <h2>${title}</h2>
     <p>Dear ${booking.employee_name},</p>
@@ -188,6 +188,29 @@ export const notifyBookingApproved = async (booking) => {
   `;
 
   await sendEmailNotification(booking.employee_email, title, emailBody);
+
+  // Send emails to all attendees
+  if (booking.attendees_list && booking.attendees_list.length > 0) {
+    const attendeeEmailBody = `
+      <h2>Meeting Confirmed: ${booking.meeting_title}</h2>
+      <p>You have been invited to a meeting. The booking has been approved.</p>
+      <h3>Meeting Details:</h3>
+      <ul>
+        <li><strong>Room:</strong> ${booking.room_name}</li>
+        <li><strong>Date:</strong> ${format(parseISO(booking.booking_date), 'PPP')}</li>
+        <li><strong>Time:</strong> ${booking.start_time} - ${booking.end_time}</li>
+        <li><strong>Meeting Title:</strong> ${booking.meeting_title}</li>
+        <li><strong>Organized by:</strong> ${booking.employee_name}</li>
+      </ul>
+      <p>Please make sure to attend on time. See you at the meeting!</p>
+    `;
+
+    for (const attendee of booking.attendees_list) {
+      if (attendee.email) {
+        await sendEmailNotification(attendee.email, `Meeting Confirmed: ${booking.meeting_title}`, attendeeEmailBody);
+      }
+    }
+  }
 
   // SMS notification if housekeeping is required
   if (booking.pre_setup_required || booking.post_cleanup_required) {

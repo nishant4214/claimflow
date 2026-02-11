@@ -144,6 +144,80 @@ export default function RoomBookingApprovals() {
     b.room_name?.toLowerCase().includes(search.toLowerCase())
   );
 
+  const BookingRow = ({ booking, isPending }) => {
+    const conflicts = isPending ? checkConflicts(booking) : [];
+    
+    return (
+      <tr className="border-b hover:bg-gray-50">
+        <td className="p-4">
+          <div className="flex flex-col">
+            <span className="font-medium text-sm">{booking.booking_number}</span>
+            {conflicts.length > 0 && (
+              <Badge className="bg-red-100 text-red-800 border-red-200 mt-1 w-fit">
+                <AlertTriangle className="w-3 h-3 mr-1" />
+                Conflict
+              </Badge>
+            )}
+          </div>
+        </td>
+        <td className="p-4">
+          <div className="flex flex-col">
+            <span className="font-medium text-sm">{booking.meeting_title}</span>
+            <span className="text-xs text-gray-500">{booking.employee_name}</span>
+          </div>
+        </td>
+        <td className="p-4 text-sm">{booking.room_name}</td>
+        <td className="p-4 text-sm">{booking.booking_date ? format(parseISO(booking.booking_date), 'MMM dd, yyyy') : 'N/A'}</td>
+        <td className="p-4 text-sm">{booking.start_time} - {booking.end_time}</td>
+        <td className="p-4 text-sm">{booking.attendees_count}</td>
+        <td className="p-4">
+          <div className="flex gap-2">
+            <Link to={createPageUrl(`RoomBookingDetails?id=${booking.id}`)}>
+              <Button variant="ghost" size="sm">
+                <Eye className="w-4 h-4" />
+              </Button>
+            </Link>
+            {isPending && (
+              <>
+                <Button
+                  onClick={() => handleAction(booking, 'approve')}
+                  className="bg-green-600 hover:bg-green-700"
+                  size="sm"
+                  disabled={updateBookingMutation.isPending || conflicts.length > 0}
+                >
+                  <CheckCircle className="w-4 h-4" />
+                </Button>
+                <Button
+                  onClick={() => handleAction(booking, 'reject')}
+                  variant="outline"
+                  size="sm"
+                  className="text-red-600 border-red-200 hover:bg-red-50"
+                  disabled={updateBookingMutation.isPending}
+                >
+                  <XCircle className="w-4 h-4" />
+                </Button>
+                <Button
+                  onClick={() => handleSendBack(booking)}
+                  variant="outline"
+                  size="sm"
+                  className="text-amber-600 border-amber-200 hover:bg-amber-50"
+                  disabled={updateBookingMutation.isPending}
+                >
+                  <RotateCcw className="w-4 h-4" />
+                </Button>
+              </>
+            )}
+            {!isPending && (
+              <Badge className={booking.status === 'approved' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
+                {booking.status === 'approved' ? 'Approved' : 'Rejected'}
+              </Badge>
+            )}
+          </div>
+        </td>
+      </tr>
+    );
+  };
+
   const BookingCard = ({ booking, isPending }) => {
     const conflicts = isPending ? checkConflicts(booking) : [];
     
@@ -352,11 +426,7 @@ export default function RoomBookingApprovals() {
 
           <TabsContent value="pending">
             {isLoading ? (
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {[1, 2, 3].map(i => (
-                  <div key={i} className="h-80 bg-gray-100 rounded-xl animate-pulse" />
-                ))}
-              </div>
+              <div className="h-64 bg-gray-100 rounded-xl animate-pulse" />
             ) : filteredPending.length === 0 ? (
               <Card className="border-0 shadow-sm">
                 <CardContent className="p-12 text-center">
@@ -366,11 +436,28 @@ export default function RoomBookingApprovals() {
                 </CardContent>
               </Card>
             ) : (
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filteredPending.map(booking => (
-                  <BookingCard key={booking.id} booking={booking} isPending={true} />
-                ))}
-              </div>
+              <Card className="border-0 shadow-sm overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Booking #</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Meeting</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Room</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Time</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Attendees</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredPending.map(booking => (
+                        <BookingRow key={booking.id} booking={booking} isPending={true} />
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </Card>
             )}
           </TabsContent>
 
@@ -384,11 +471,28 @@ export default function RoomBookingApprovals() {
                 </CardContent>
               </Card>
             ) : (
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filteredProcessed.map(booking => (
-                  <BookingCard key={booking.id} booking={booking} isPending={false} />
-                ))}
-              </div>
+              <Card className="border-0 shadow-sm overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Booking #</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Meeting</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Room</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Time</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Attendees</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredProcessed.map(booking => (
+                        <BookingRow key={booking.id} booking={booking} isPending={false} />
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </Card>
             )}
           </TabsContent>
         </Tabs>
