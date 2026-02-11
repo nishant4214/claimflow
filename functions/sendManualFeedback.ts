@@ -29,11 +29,21 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Check which bookings already have feedback emails sent
+    // For manual resend, we allow resending by deleting old placeholder records
     const existingFeedback = await base44.asServiceRole.entities.RoomFeedback.filter({
-      feedback_email_sent: true
+      feedback_email_sent: true,
+      overall_rating: 0
     });
-    const sentBookingIds = new Set(existingFeedback.map(f => f.booking_id));
+    
+    // Delete placeholder feedback records for the bookings we're about to send
+    const bookingIds = bookings.map(b => b.id);
+    for (const feedback of existingFeedback) {
+      if (bookingIds.includes(feedback.booking_id)) {
+        await base44.asServiceRole.entities.RoomFeedback.delete(feedback.id);
+      }
+    }
+    
+    const sentBookingIds = new Set();
 
     const results = [];
 
