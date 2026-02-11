@@ -19,12 +19,12 @@ Deno.serve(async (req) => {
       const bookingEndTime = new Date(booking.booking_date);
       bookingEndTime.setHours(hours, minutes, 0, 0);
       
-      // Check if ended between 5-10 minutes ago (wider window to catch bookings)
+      // Check if ended between 5-30 minutes ago (wider window to ensure no bookings are missed)
       const timeSinceEnd = now - bookingEndTime;
       const fiveMinutes = 5 * 60 * 1000;
-      const tenMinutes = 10 * 60 * 1000;
+      const thirtyMinutes = 30 * 60 * 1000;
       
-      return timeSinceEnd >= fiveMinutes && timeSinceEnd <= tenMinutes;
+      return timeSinceEnd >= fiveMinutes && timeSinceEnd <= thirtyMinutes;
     });
 
     if (eligibleBookings.length === 0) {
