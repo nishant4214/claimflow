@@ -53,9 +53,11 @@ export default function SubmitFeedback() {
     queryKey: ['existing-feedback', bookingId, user?.email],
     queryFn: () => base44.entities.RoomFeedback.filter({ 
       booking_id: bookingId, 
-      respondent_email: user?.email 
+      respondent_email: user?.email,
+      overall_rating: { $gt: 0 }
     }),
     enabled: !!bookingId && !!user?.email,
+    retry: false,
   });
 
   const submitFeedbackMutation = useMutation({
