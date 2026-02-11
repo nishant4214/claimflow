@@ -23,6 +23,7 @@ export default function BookRoom() {
   const [capacityFilter, setCapacityFilter] = useState('all');
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [calendarDate, setCalendarDate] = useState(new Date());
+  const [editBookingId, setEditBookingId] = useState(null);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -39,11 +40,42 @@ export default function BookRoom() {
     queryFn: () => base44.entities.ConferenceRoom.filter({ is_active: true }),
   });
 
-  // Pre-fill from URL params after rooms are loaded
+  // Check for edit mode
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const editId = urlParams.get('edit');
+    if (editId && !editBookingId) {
+      setEditBookingId(editId);
+    }
+  }, [editBookingId]);
+
+  // Fetch booking for edit
+  const { data: editBooking } = useQuery({
+    queryKey: ['edit-booking', editBookingId],
+    queryFn: () => base44.entities.RoomBooking.filter({ id: editBookingId }).then(res => res[0]),
+    enabled: !!editBookingId,
+  });
+
+  // Pre-fill from URL params or edit booking after rooms are loaded
   useEffect(() => {
     if (rooms.length === 0) return;
     
     const urlParams = new URLSearchParams(window.location.search);
+    
+    // Edit mode
+    if (editBooking && !selectedRoom) {
+      const room = rooms.find(r => r.room_id === editBooking.room_id);
+      if (room) {
+        setSelectedRoom({ 
+          ...room, 
+          editMode: true,
+          editData: editBooking 
+        });
+      }
+      return;
+    }
+
+    // Pre-fill from calendar
     const roomId = urlParams.get('roomId');
     const date = urlParams.get('date');
     const startTime = urlParams.get('startTime');
@@ -55,7 +87,7 @@ export default function BookRoom() {
         setSelectedRoom({ ...room, prefillData: { date, startTime, endTime } });
       }
     }
-  }, [rooms, selectedRoom]);
+  }, [rooms, selectedRoom, editBooking]);
 
   const { data: allBookings = [] } = useQuery({
     queryKey: ['room-bookings-all'],
@@ -80,6 +112,27 @@ export default function BookRoom() {
     },
     onError: (error) => {
       toast.error(error.message || 'Failed to create booking');
+    },
+  });
+
+  const updateBookingMutation = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.RoomBooking.update(id, data),
+    onSuccess: async (updatedBooking) => {
+      toast.success('Booking updated and resubmitted successfully');
+      logCriticalAction('Room Booking', 'Update Booking', updatedBooking.booking_number);
+      
+      // Send notifications
+      const { notifyBookingSubmitted, notifyApprovalRequired } = await import('../components/notifications/RoomBookingNotifications');
+      await notifyBookingSubmitted(updatedBooking, user);
+      await notifyApprovalRequired(updatedBooking);
+      
+      queryClient.invalidateQueries({ queryKey: ['room-bookings-all'] });
+      queryClient.invalidateQueries({ queryKey: ['my-room-bookings'] });
+      queryClient.invalidateQueries({ queryKey: ['notification-count'] });
+      navigate(createPageUrl('MyRoomBookings'));
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to update booking');
     },
   });
 
@@ -114,7 +167,20 @@ export default function BookRoom() {
   });
 
   const handleSubmitBooking = (bookingData) => {
-    createBookingMutation.mutate(bookingData);
+    if (selectedRoom?.editMode && editBookingId) {
+      // Update existing booking
+      updateBookingMutation.mutate({ 
+        id: editBookingId, 
+        data: { 
+          ...bookingData, 
+          status: 'pending',
+          send_back_reason: null
+        } 
+      });
+    } else {
+      // Create new booking
+      createBookingMutation.mutate(bookingData);
+    }
   };
 
   if (selectedRoom) {
@@ -122,9 +188,12 @@ export default function BookRoom() {
       <BookingForm
         room={selectedRoom}
         user={user}
-        onBack={() => setSelectedRoom(null)}
+        onBack={() => {
+          setSelectedRoom(null);
+          setEditBookingId(null);
+        }}
         onSubmit={handleSubmitBooking}
-        isSubmitting={createBookingMutation.isPending}
+        isSubmitting={createBookingMutation.isPending || updateBookingMutation.isPending}
       />
     );
   }

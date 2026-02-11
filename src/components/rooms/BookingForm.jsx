@@ -15,25 +15,28 @@ import { toast } from 'sonner';
 import { format, addDays } from 'date-fns';
 
 export default function BookingForm({ room, user, onBack, onSubmit, isSubmitting }) {
+  const editData = room.editData;
+  const isEditMode = room.editMode;
+
   const [formData, setFormData] = useState({
-    booking_date: room.prefillData?.date || '',
-    start_time: room.prefillData?.startTime || '',
-    end_time: room.prefillData?.endTime || '',
-    meeting_title: '',
-    purpose: '',
-    attendees_count: '',
-    meeting_category: 'Meeting',
-    pre_setup_required: false,
-    pre_setup_minutes: 0,
-    post_cleanup_required: false,
-    post_cleanup_minutes: 0,
-    special_instructions: '',
-    catering_required: false,
-    it_support_required: false,
-    video_recording_required: false,
-    additional_notes: '',
-    attendees_list: [],
-    document_urls: [],
+    booking_date: editData?.booking_date || room.prefillData?.date || '',
+    start_time: editData?.start_time || room.prefillData?.startTime || '',
+    end_time: editData?.end_time || room.prefillData?.endTime || '',
+    meeting_title: editData?.meeting_title || '',
+    purpose: editData?.purpose || '',
+    attendees_count: editData?.attendees_count || '',
+    meeting_category: editData?.meeting_category || 'Meeting',
+    pre_setup_required: editData?.pre_setup_required || false,
+    pre_setup_minutes: editData?.pre_setup_minutes || 0,
+    post_cleanup_required: editData?.post_cleanup_required || false,
+    post_cleanup_minutes: editData?.post_cleanup_minutes || 0,
+    special_instructions: editData?.special_instructions || '',
+    catering_required: editData?.catering_required || false,
+    it_support_required: editData?.it_support_required || false,
+    video_recording_required: editData?.video_recording_required || false,
+    additional_notes: editData?.additional_notes || '',
+    attendees_list: editData?.attendees_list || [],
+    document_urls: editData?.document_urls || [],
   });
 
   const [attendee, setAttendee] = useState({ name: '', email: '', contact: '', company_name: '' });
@@ -172,20 +175,33 @@ export default function BookingForm({ room, user, onBack, onSubmit, isSubmitting
     }
 
     const duration = calculateDuration();
-    const bookingNumber = `RB-${format(new Date(), 'yyyy-MM-dd')}-${Date.now().toString().slice(-6)}`;
-
-    onSubmit({
-      booking_number: bookingNumber,
-      room_id: room.room_id,
-      room_name: room.room_name,
-      employee_name: user?.full_name || '',
-      employee_email: user?.email || '',
-      department: user?.department || '',
+    
+    const submitData = {
       ...formData,
       duration_minutes: duration,
       attendees_count: parseInt(formData.attendees_count),
-      status: 'pending',
-    });
+    };
+
+    if (isEditMode) {
+      // Keep existing booking number and details for edit
+      onSubmit({
+        ...editData,
+        ...submitData,
+      });
+    } else {
+      // Generate new booking number for new booking
+      const bookingNumber = `RB-${format(new Date(), 'yyyy-MM-dd')}-${Date.now().toString().slice(-6)}`;
+      onSubmit({
+        booking_number: bookingNumber,
+        room_id: room.room_id,
+        room_name: room.room_name,
+        employee_name: user?.full_name || '',
+        employee_email: user?.email || '',
+        department: user?.department || '',
+        ...submitData,
+        status: 'pending',
+      });
+    }
   };
 
   const { available, conflicts } = checkAvailability();
@@ -206,7 +222,14 @@ export default function BookingForm({ room, user, onBack, onSubmit, isSubmitting
                 📍
               </div>
               <div className="flex-1">
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">{room.room_name}</h2>
+                <div className="flex items-center gap-3 mb-2">
+                  <h2 className="text-2xl font-bold text-gray-900">{room.room_name}</h2>
+                  {isEditMode && (
+                    <Badge className="bg-amber-100 text-amber-800 border-amber-300">
+                      Editing Booking
+                    </Badge>
+                  )}
+                </div>
                 <div className="flex flex-wrap gap-4 text-sm text-gray-600">
                   <div className="flex items-center gap-1">
                     <MapPin className="w-4 h-4" />
@@ -217,6 +240,12 @@ export default function BookingForm({ room, user, onBack, onSubmit, isSubmitting
                     Capacity: {room.seating_capacity} people
                   </div>
                 </div>
+                {isEditMode && editData?.send_back_reason && (
+                  <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                    <p className="text-xs font-medium text-amber-800 mb-1">Sent Back Reason:</p>
+                    <p className="text-sm text-amber-700">{editData.send_back_reason}</p>
+                  </div>
+                )}
               </div>
             </div>
           </CardContent>
@@ -592,7 +621,7 @@ export default function BookingForm({ room, user, onBack, onSubmit, isSubmitting
                   Cancel
                 </Button>
                 <Button type="submit" disabled={isSubmitting} className="bg-blue-600 hover:bg-blue-700">
-                  {isSubmitting ? 'Submitting...' : 'Submit Booking Request'}
+                  {isSubmitting ? 'Submitting...' : isEditMode ? 'Update & Resubmit Booking' : 'Submit Booking Request'}
                 </Button>
               </div>
             </CardContent>
