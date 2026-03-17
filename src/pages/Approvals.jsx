@@ -462,27 +462,27 @@ export default function Approvals() {
               <div className="p-8 text-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto" />
               </div>
-            ) : filteredClaims.length === 0 ? (
+            ) : filteredClaims.length === 0 && filteredTransport.length === 0 ? (
               <div className="p-12 text-center">
                 <CheckCircle className="w-16 h-16 mx-auto text-green-300 mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  {tab === 'pending' ? 'All caught up!' : 'No processed claims'}
+                  {tab === 'pending' ? 'All caught up!' : 'No processed items'}
                 </h3>
                 <p className="text-gray-500">
-                  {tab === 'pending' 
-                    ? 'There are no claims waiting for your approval.'
-                    : 'Claims you process will appear here.'}
+                  {tab === 'pending'
+                    ? 'There are no items waiting for your approval.'
+                    : 'Items you process will appear here.'}
                 </p>
               </div>
             ) : (
               <Table>
                 <TableHeader>
                   <TableRow className="bg-gray-50">
-                    <TableHead>Claim #</TableHead>
+                    <TableHead>Claim / Request #</TableHead>
                     <TableHead>Employee</TableHead>
-                    <TableHead>Purpose</TableHead>
+                    <TableHead>Purpose / Justification</TableHead>
                     <TableHead>Amount</TableHead>
-                    <TableHead>Type</TableHead>
+                    <TableHead>Request Type</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>SLA</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
@@ -490,6 +490,14 @@ export default function Approvals() {
                 </TableHeader>
                 <TableBody>
                   <AnimatePresence>
+                    {canApproveTransport && (
+                      <TransportApprovalRows
+                        requests={filteredTransport}
+                        tab={tab}
+                        userRole={userRole}
+                        onAction={(req, action) => handleTransportAction(req, action)}
+                      />
+                    )}
                     {filteredClaims.map((claim, index) => (
                       <motion.tr
                         key={claim.id}
