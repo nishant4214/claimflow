@@ -21,7 +21,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { format, parseISO, differenceInDays } from 'date-fns';
+import { format, parseISO, differenceInDays, addDays } from 'date-fns';
 import { 
   Search, CheckCircle, XCircle, ArrowLeft, Eye,
   Clock, AlertTriangle, AlertCircle, IndianRupee, Filter
