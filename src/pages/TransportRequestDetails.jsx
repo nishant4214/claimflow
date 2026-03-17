@@ -164,7 +164,7 @@ export default function TransportRequestDetails() {
         <Link to={createPageUrl(from)}>
           <Button variant="ghost" className="mb-6 text-gray-600 hover:text-gray-900 -ml-2">
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to {from === 'Approvals' ? 'Approvals' : 'My Requests'}
+            {from === 'Approvals' ? 'Back to Approvals' : from === 'TransportAccess' ? 'Back to My Requests' : 'Back'}
           </Button>
         </Link>
 
