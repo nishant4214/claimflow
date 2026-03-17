@@ -53,6 +53,8 @@ export default function Approvals() {
   const [search, setSearch] = useState('');
   const [selectedClaim, setSelectedClaim] = useState(null);
   const [actionType, setActionType] = useState(null);
+  const [selectedTransport, setSelectedTransport] = useState(null);
+  const [transportActionType, setTransportActionType] = useState(null);
   const [tab, setTab] = useState('pending');
   const queryClient = useQueryClient();
 
