@@ -526,11 +526,11 @@ export default function Approvals() {
                         </TableCell>
                         <TableCell>
                           <Badge variant="outline" className={
-                            claim.claim_type === 'sales_promotion' 
-                              ? 'border-purple-200 text-purple-700 bg-purple-50' 
+                            claim.claim_type === 'sales_promotion'
+                              ? 'border-purple-200 text-purple-700 bg-purple-50'
                               : 'border-blue-200 text-blue-700 bg-blue-50'
                           }>
-                            {claim.claim_type === 'sales_promotion' ? 'Sales' : 'Normal'}
+                            Claim ({claim.claim_type === 'sales_promotion' ? 'Sales' : 'Normal'})
                           </Badge>
                         </TableCell>
                         <TableCell>
