@@ -168,6 +168,8 @@ export default function Approvals() {
       action === 'approve' ? 'Transport request approved' :
       action === 'reject' ? 'Transport request rejected' : 'Transport request sent back'
     );
+    setSelectedTransport(null);
+    setTransportActionType(null);
   };
 
   // Filter claims based on role and workflow
