@@ -4,7 +4,7 @@ import { Clock, CheckCircle, XCircle, AlertCircle, UserCheck } from "lucide-reac
 
 const statusConfig = {
   pending_manager: { label: 'Pending - Manager Approval', color: 'bg-blue-100 text-blue-700', icon: Clock },
-  pending_lead: { label: 'Pending - Lead Approval', color: 'bg-purple-100 text-purple-700', icon: UserCheck },
+  pending_lead: { label: 'Pending - Admin Head Approval', color: 'bg-purple-100 text-purple-700', icon: UserCheck },
   approved: { label: 'Approved', color: 'bg-green-100 text-green-700', icon: CheckCircle },
   rejected: { label: 'Rejected', color: 'bg-red-100 text-red-700', icon: XCircle },
   sent_back: { label: 'Clarification Required', color: 'bg-amber-100 text-amber-700', icon: AlertCircle },

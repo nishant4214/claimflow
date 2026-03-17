@@ -121,7 +121,7 @@ export default function TransportTimeline({ request }) {
         />
 
         <TimelineStep
-          label="Functional Lead Approval"
+          label="Admin Head Approval"
           status={leadStatus}
           timestamp={leadEntry?.timestamp}
           byName={leadEntry?.by_name}

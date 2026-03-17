@@ -50,7 +50,7 @@ function timelineSteps(req) {
       skippedReason: isManagerSkipped ? 'Skipped (created by manager/admin)' : null,
     },
     {
-      label: 'Functional Lead Approval',
+      label: 'Admin Head Approval',
       entry: lead,
       status: lead
         ? lead.action?.includes('reject') || lead.action?.includes('sent_back')
@@ -154,7 +154,7 @@ export default function TransportRequestDetails() {
     ? formatDistanceStrict(new Date(), parseISO(submittedEntry.timestamp))
     : null;
 
-  const stageLabelMap = { manager: 'Manager', lead: 'Lead', completed: 'Completed' };
+  const stageLabelMap = { manager: 'Manager', lead: 'Admin Head', completed: 'Completed' };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50">
