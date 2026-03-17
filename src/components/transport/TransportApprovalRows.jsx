@@ -65,7 +65,12 @@ export default function TransportApprovalRows({ requests, tab, userRole, onActio
       </TableCell>
       <TableCell>
         <div className="flex items-center justify-end gap-2">
-          {/* View button placeholder — inline in row */}
+          {/* View button */}
+          <Link to={createPageUrl(`TransportRequestDetails?id=${req.id}&from=Approvals`)}>
+            <Button size="sm" variant="ghost" className="text-gray-500 hover:text-blue-600">
+              <Eye className="w-4 h-4" />
+            </Button>
+          </Link>
           {tab === 'pending' && (
             <>
               <Button
