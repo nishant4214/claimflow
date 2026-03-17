@@ -73,6 +73,101 @@ export default function Approvals() {
     enabled: !!user && !!roleConfig,
   });
 
+  // Transport requests approvals
+  const canApproveTransport = TRANSPORT_APPROVER_ROLES.includes(userRole);
+  const { data: allTransportRequests = [] } = useQuery({
+    queryKey: ['transport-approvals', userRole],
+    queryFn: () => base44.entities.TransportRequest.list('-created_date'),
+    enabled: !!user && canApproveTransport,
+    refetchInterval: 10000,
+  });
+
+  const pendingTransportRequests = allTransportRequests.filter(req => {
+    if (userRole === 'manager') return req.status === 'pending_manager' && req.stage === 'manager';
+    if (userRole === 'functional_lead') return req.status === 'pending_lead' && req.stage === 'lead';
+    if (userRole === 'admin_head' || userRole === 'admin') {
+      return req.status === 'pending_manager' || req.status === 'pending_lead';
+    }
+    return false;
+  });
+
+  const processedTransportRequests = allTransportRequests.filter(req =>
+    ['approved', 'rejected', 'sent_back'].includes(req.status)
+  );
+
+  const updateTransportMutation = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.TransportRequest.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['transport-approvals']);
+      queryClient.invalidateQueries(['transport-requests']);
+    },
+  });
+
+  const handleTransportAction = async (req, action, remarks = '') => {
+    let newStatus, newStage, historyAction;
+    const now = new Date().toISOString();
+
+    if (action === 'approve') {
+      if (req.stage === 'manager') {
+        newStatus = 'pending_lead';
+        newStage = 'lead';
+        historyAction = 'manager_approved';
+      } else if (req.stage === 'lead') {
+        newStatus = 'approved';
+        newStage = 'completed';
+        historyAction = 'lead_approved';
+      }
+    } else if (action === 'reject') {
+      newStatus = 'rejected';
+      newStage = 'completed';
+      historyAction = req.stage === 'manager' ? 'manager_rejected' : 'lead_rejected';
+    } else if (action === 'send_back') {
+      newStatus = 'sent_back';
+      newStage = req.stage;
+      historyAction = req.stage === 'manager' ? 'manager_sent_back' : 'lead_sent_back';
+    }
+
+    const newHistoryEntry = {
+      action: historyAction,
+      by_name: user.full_name,
+      by_email: user.email,
+      by_role: userRole,
+      remarks: remarks || (action === 'approve' ? 'Approved' : action === 'reject' ? 'Rejected' : 'Sent back for clarification'),
+      timestamp: now,
+    };
+
+    const updateData = {
+      status: newStatus,
+      stage: newStage,
+      history: [...(req.history || []), newHistoryEntry],
+      ...(action === 'reject' && { rejection_reason: remarks }),
+      ...(action === 'send_back' && { send_back_reason: remarks }),
+      ...(action === 'approve' && req.stage === 'manager' && { approved_by_manager: user.full_name }),
+      ...(action === 'approve' && req.stage === 'lead' && { approved_by_lead: user.full_name, effective_date: format(new Date(), 'yyyy-MM-dd') }),
+    };
+
+    await updateTransportMutation.mutateAsync({ id: req.id, data: updateData });
+
+    // Notify requester
+    await createNotificationMutation.mutateAsync({
+      recipient_email: req.employee_email,
+      notification_type: action === 'approve' ? 'claim_approved' : action === 'reject' ? 'claim_rejected' : 'claim_sent_back',
+      title: action === 'approve'
+        ? (newStatus === 'approved' ? 'Transport Access Approved' : 'Transport Request - Manager Approved')
+        : action === 'reject' ? 'Transport Request Rejected' : 'Transport Request - Clarification Required',
+      message: action === 'approve' && newStatus === 'approved'
+        ? `Your transport access request ${req.tar_number} for ${req.transport_type} has been fully approved by ${user.full_name}.`
+        : action === 'approve'
+        ? `Your transport request ${req.tar_number} has been approved by ${user.full_name} and moved to Lead Approval.`
+        : `Your transport request ${req.tar_number} has been ${action === 'reject' ? 'rejected' : 'sent back'}. ${remarks ? 'Reason: ' + remarks : ''}`,
+    });
+
+    toast.success(
+      action === 'approve' ? 'Transport request approved' :
+      action === 'reject' ? 'Transport request rejected' : 'Transport request sent back'
+    );
+  };
+
   // Filter claims based on role and workflow
   const pendingClaims = allClaims.filter(claim => {
     if (!roleConfig) return false;
