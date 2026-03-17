@@ -46,7 +46,7 @@ const ROLE_STAGES = {
 };
 
 // Roles that can approve transport requests
-const TRANSPORT_APPROVER_ROLES = ['manager', 'functional_lead', 'admin_head', 'admin'];
+const TRANSPORT_APPROVER_ROLES = ['manager', 'admin_head', 'admin'];
 
 export default function Approvals() {
   const [user, setUser] = useState(null);
@@ -86,10 +86,8 @@ export default function Approvals() {
 
   const pendingTransportRequests = allTransportRequests.filter(req => {
     if (userRole === 'manager') return req.status === 'pending_manager' && req.stage === 'manager';
-    if (userRole === 'functional_lead') return req.status === 'pending_lead' && req.stage === 'lead';
-    if (userRole === 'admin_head' || userRole === 'admin') {
-      return req.status === 'pending_manager' || req.status === 'pending_lead';
-    }
+    if (userRole === 'admin_head') return req.status === 'pending_lead' && req.stage === 'lead';
+    if (userRole === 'admin') return req.status === 'pending_manager' || req.status === 'pending_lead';
     return false;
   });
 
