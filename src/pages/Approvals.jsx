@@ -35,6 +35,7 @@ import SLAIndicator from '../components/claims/SLAIndicator';
 import ApprovalActionModal from '../components/approvals/ApprovalActionModal';
 import ExportButton from '../components/export/ExportButton';
 import { logCriticalAction } from '../components/session/SessionLogger';
+import TransportApprovalRows from '../components/transport/TransportApprovalRows';
 
 const ROLE_STAGES = {
   junior_admin: { statuses: ['submitted'], stage: 'verification', nextStatus: 'verified' },

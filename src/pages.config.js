@@ -72,6 +72,7 @@ import SubmitClaim from './pages/SubmitClaim';
 import SubmitFeedback from './pages/SubmitFeedback';
 import TestCredentials from './pages/TestCredentials';
 import UserManagement from './pages/UserManagement';
+import TransportAccess from './pages/TransportAccess';
 import WorkflowConfig from './pages/WorkflowConfig';
 import __Layout from './Layout.jsx';
 

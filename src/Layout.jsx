@@ -19,7 +19,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { 
   LayoutDashboard, FileText, Plus, CheckSquare, 
   Wallet, Settings, Tag, GitBranch, BarChart3, 
-  Bell, User, Users, LogOut, Menu, ChevronRight, X, Upload, Calendar
+  Bell, User, Users, LogOut, Menu, ChevronRight, X, Upload, Calendar, Car
 } from "lucide-react";
 
 const roleMenuConfig = {
