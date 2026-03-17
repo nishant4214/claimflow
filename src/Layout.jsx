@@ -68,7 +68,6 @@ const roleMenuConfig = {
     { name: 'Transport Access', icon: Car, page: 'TransportAccess' },
     { name: 'Notifications', icon: Bell, page: 'Notifications' },
   ],
-  // Note: functional_lead role key is kept as-is in DB; display name updated to "Admin Head" in UI
   cro: [
     { name: 'Dashboard', icon: LayoutDashboard, page: 'Dashboard' },
     { name: 'Approvals', icon: CheckSquare, page: 'Approvals' },
@@ -204,7 +203,7 @@ export default function Layout({ children, currentPageName }) {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-semibold text-gray-900 truncate">{user?.full_name || 'User'}</p>
-                <p className="text-xs text-gray-500 capitalize truncate">{userRole === 'functional_lead' ? 'Admin Head' : userRole.replace('_', ' ')}</p>
+                <p className="text-xs text-gray-500 capitalize truncate">{userRole.replace('_', ' ')}</p>
               </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -246,7 +245,7 @@ export default function Layout({ children, currentPageName }) {
             </div>
             <div>
               <p className="font-semibold text-gray-900 text-sm">{user?.full_name || 'User'}</p>
-              <p className="text-xs text-gray-500 capitalize">{userRole === 'functional_lead' ? 'Admin Head' : userRole.replace('_', ' ')}</p>
+              <p className="text-xs text-gray-500 capitalize">{userRole.replace('_', ' ')}</p>
             </div>
           </div>
           
@@ -283,7 +282,7 @@ export default function Layout({ children, currentPageName }) {
                       </div>
                       <div className="flex-1">
                         <p className="font-medium text-gray-900">{user?.full_name || 'User'}</p>
-                        <p className="text-xs text-gray-500 capitalize">{userRole === 'functional_lead' ? 'Admin Head' : userRole.replace('_', ' ')}</p>
+                        <p className="text-xs text-gray-500 capitalize">{userRole.replace('_', ' ')}</p>
                       </div>
                     </div>
                   </div>

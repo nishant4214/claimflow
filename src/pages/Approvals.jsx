@@ -160,7 +160,7 @@ export default function Approvals() {
       message: action === 'approve' && newStatus === 'approved'
         ? `Your transport access request ${req.tar_number} for ${req.transport_type} has been fully approved by ${user.full_name}.`
         : action === 'approve'
-        ? `Your transport request ${req.tar_number} has been approved by ${user.full_name} and moved to Admin Head Approval.`
+        ? `Your transport request ${req.tar_number} has been approved by ${user.full_name} and moved to Lead Approval.`
         : `Your transport request ${req.tar_number} has been ${action === 'reject' ? 'rejected' : 'sent back'}. ${remarks ? 'Reason: ' + remarks : ''}`,
     });
 
@@ -419,7 +419,7 @@ export default function Approvals() {
                 <div>
                   <p className="text-sm text-gray-500">Your Role</p>
                   <p className="text-lg font-semibold text-blue-600 capitalize">
-                    {userRole === 'functional_lead' ? 'Admin Head' : userRole.replace('_', ' ')}
+                    {userRole.replace('_', ' ')}
                   </p>
                 </div>
               </div>

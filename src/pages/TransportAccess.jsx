@@ -230,7 +230,7 @@ export default function TransportAccess() {
                           <div><span className="font-medium">Approved by Manager:</span> {selectedRequest.approved_by_manager}</div>
                         )}
                         {selectedRequest.approved_by_lead && (
-                          <div><span className="font-medium">Approved by Admin Head:</span> {selectedRequest.approved_by_lead}</div>
+                          <div><span className="font-medium">Approved by Lead:</span> {selectedRequest.approved_by_lead}</div>
                         )}
                       </div>
                     </div>

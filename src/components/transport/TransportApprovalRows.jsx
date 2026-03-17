@@ -81,17 +81,14 @@ export default function TransportApprovalRows({ requests, tab, userRole, onActio
               >
                 <CheckCircle className="w-4 h-4" />
               </Button>
-              {/* Only manager stage can send back; admin head (lead stage) can only approve or reject */}
-              {req.stage === 'manager' && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="text-amber-600 border-amber-200 hover:bg-amber-50"
-                  onClick={() => onAction(req, 'send_back')}
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                </Button>
-              )}
+              <Button
+                size="sm"
+                variant="outline"
+                className="text-amber-600 border-amber-200 hover:bg-amber-50"
+                onClick={() => onAction(req, 'send_back')}
+              >
+                <ArrowLeft className="w-4 h-4" />
+              </Button>
               <Button
                 size="sm"
                 variant="outline"

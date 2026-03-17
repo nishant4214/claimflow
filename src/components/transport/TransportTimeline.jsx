@@ -41,7 +41,7 @@ function TimelineStep({ label, status, timestamp, byName, byRole, remarks, isSki
         )}
         {byName && (
           <p className="text-xs text-gray-500">
-            By: {byName} {byRole ? `(${byRole === 'functional_lead' ? 'Admin Head' : byRole.replace('_', ' ')})` : ''}
+            By: {byName} {byRole ? `(${byRole.replace('_', ' ')})` : ''}
           </p>
         )}
         {remarks && remarks !== 'Request submitted' && remarks !== 'Manager approval skipped (created by manager/admin)' && (

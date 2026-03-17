@@ -108,7 +108,7 @@ function TimelineStep({ step }) {
             {entry.by_name && (
               <p className="text-xs text-gray-500">
                 By: {entry.by_name}
-                {entry.by_role ? ` (${entry.by_role === 'functional_lead' ? 'Admin Head' : entry.by_role.replace('_', ' ')})` : ''}
+                {entry.by_role ? ` (${entry.by_role.replace('_', ' ')})` : ''}
               </p>
             )}
             {entry.remarks && (
@@ -290,7 +290,7 @@ export default function TransportRequestDetails() {
                   </div>
                   <div className="flex items-center gap-2 text-sm text-gray-600">
                     <User className="w-4 h-4 text-gray-400" />
-                    {req.created_by_role === 'functional_lead' ? 'Admin Head' : (req.created_by_role?.replace('_', ' ') || 'Employee')}
+                    {req.created_by_role?.replace('_', ' ') || 'Employee'}
                   </div>
                 </div>
               </CardContent>
