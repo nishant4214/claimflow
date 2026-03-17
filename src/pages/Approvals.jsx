@@ -213,9 +213,19 @@ export default function Approvals() {
            claim.purpose?.toLowerCase().includes(searchLower);
   });
 
-  // Stats based on current tab
+  const displayedTransport = tab === 'pending' ? pendingTransportRequests : processedTransportRequests;
+
+  const filteredTransport = displayedTransport.filter(req => {
+    if (!search) return true;
+    const s = search.toLowerCase();
+    return req.tar_number?.toLowerCase().includes(s) ||
+           req.employee_name?.toLowerCase().includes(s) ||
+           req.business_justification?.toLowerCase().includes(s);
+  });
+
+  // Stats based on current tab (claims + transport combined)
   const currentStats = {
-    total: displayedClaims.length,
+    total: displayedClaims.length + (canApproveTransport ? displayedTransport.length : 0),
     urgent: displayedClaims.filter(c => getSLAStatus(c) === 'urgent').length,
     totalAmount: displayedClaims.reduce((sum, c) => sum + (c.amount || 0), 0),
   };
