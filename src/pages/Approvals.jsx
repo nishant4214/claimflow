@@ -431,7 +431,7 @@ export default function Approvals() {
                 <TabsList>
                   <TabsTrigger value="pending" className="gap-2">
                     <Clock className="w-4 h-4" />
-                    Pending ({pendingClaims.length})
+                    Pending ({pendingClaims.length + (canApproveTransport ? pendingTransportRequests.length : 0)})
                   </TabsTrigger>
                   <TabsTrigger value="processed">
                     Processed
