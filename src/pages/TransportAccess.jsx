@@ -9,8 +9,10 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow 
 } from "@/components/ui/table";
 import { format, parseISO } from 'date-fns';
-import { Car, Plus, FileText, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { Car, Plus, FileText, CheckCircle, XCircle, Clock, Eye } from 'lucide-react';
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
 import TransportRequestForm from '../components/transport/TransportRequestForm';
 import TransportStatusBadge from '../components/transport/TransportStatusBadge';
 import TransportTimeline from '../components/transport/TransportTimeline';

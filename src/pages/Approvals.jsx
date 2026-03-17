@@ -77,12 +77,21 @@ export default function Approvals() {
 
   // Transport requests approvals
   const canApproveTransport = TRANSPORT_APPROVER_ROLES.includes(userRole);
-  const { data: allTransportRequests = [] } = useQuery({
+  const { data: allTransportRequests = [], refetch: refetchTransport } = useQuery({
     queryKey: ['transport-approvals', userRole],
     queryFn: () => base44.entities.TransportRequest.list('-created_date'),
     enabled: !!user && canApproveTransport,
-    refetchInterval: 10000,
+    refetchInterval: 5000,
   });
+
+  // Real-time subscription for transport requests
+  useEffect(() => {
+    if (!canApproveTransport) return;
+    const unsubscribe = base44.entities.TransportRequest.subscribe(() => {
+      refetchTransport();
+    });
+    return () => unsubscribe();
+  }, [canApproveTransport]);
 
   const pendingTransportRequests = allTransportRequests.filter(req => {
     if (userRole === 'manager') return req.status === 'pending_manager' && req.stage === 'manager';
