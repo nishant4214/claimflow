@@ -30,6 +30,7 @@ export default function TransportAccess() {
   const [showForm, setShowForm] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   useEffect(() => {
     base44.auth.me().then(setUser);
@@ -37,12 +38,21 @@ export default function TransportAccess() {
 
   const userRole = user?.portal_role || user?.role || 'employee';
 
-  const { data: myRequests = [], isLoading } = useQuery({
+  const { data: myRequests = [], isLoading, refetch: refetchRequests } = useQuery({
     queryKey: ['transport-requests', user?.email],
     queryFn: () => base44.entities.TransportRequest.filter({ employee_email: user.email }, '-created_date'),
     enabled: !!user?.email,
-    refetchInterval: 10000,
+    refetchInterval: 5000,
   });
+
+  // Real-time subscription
+  useEffect(() => {
+    if (!user?.email) return;
+    const unsubscribe = base44.entities.TransportRequest.subscribe(() => {
+      refetchRequests();
+    });
+    return () => unsubscribe();
+  }, [user?.email]);
 
   const stats = {
     total: myRequests.length,
