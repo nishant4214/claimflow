@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Eye, CheckCircle, XCircle, ArrowLeft, Car } from "lucide-react";
 import { format, parseISO, differenceInDays } from 'date-fns';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
 import TransportStatusBadge from './TransportStatusBadge';
 
 // Derive SLA-like indicator from createdAt (7 days SLA for transport)
