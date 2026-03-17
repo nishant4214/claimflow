@@ -108,7 +108,7 @@ function TimelineStep({ step }) {
             {entry.by_name && (
               <p className="text-xs text-gray-500">
                 By: {entry.by_name}
-                {entry.by_role ? ` (${entry.by_role.replace('_', ' ')})` : ''}
+                {entry.by_role ? ` (${entry.by_role === 'functional_lead' ? 'Admin Head' : entry.by_role.replace('_', ' ')})` : ''}
               </p>
             )}
             {entry.remarks && (
