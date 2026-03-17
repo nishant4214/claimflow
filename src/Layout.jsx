@@ -68,6 +68,7 @@ const roleMenuConfig = {
     { name: 'Transport Access', icon: Car, page: 'TransportAccess' },
     { name: 'Notifications', icon: Bell, page: 'Notifications' },
   ],
+  // Note: functional_lead role key is kept as-is in DB; display name updated to "Admin Head" in UI
   cro: [
     { name: 'Dashboard', icon: LayoutDashboard, page: 'Dashboard' },
     { name: 'Approvals', icon: CheckSquare, page: 'Approvals' },
