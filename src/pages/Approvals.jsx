@@ -609,7 +609,7 @@ export default function Approvals() {
         </Card>
       </div>
 
-      {/* Action Modal */}
+      {/* Claim Action Modal */}
       <ApprovalActionModal
         isOpen={!!selectedClaim && !!actionType}
         onClose={() => {
@@ -620,6 +620,19 @@ export default function Approvals() {
         action={actionType}
         claimNumber={selectedClaim?.claim_number}
         isLoading={updateClaimMutation.isPending}
+      />
+
+      {/* Transport Action Modal */}
+      <ApprovalActionModal
+        isOpen={!!selectedTransport && !!transportActionType}
+        onClose={() => {
+          setSelectedTransport(null);
+          setTransportActionType(null);
+        }}
+        onConfirm={(remarks) => handleTransportAction(selectedTransport, transportActionType, remarks)}
+        action={transportActionType}
+        claimNumber={selectedTransport?.tar_number}
+        isLoading={updateTransportMutation.isPending}
       />
     </div>
   );
