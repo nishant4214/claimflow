@@ -45,6 +45,9 @@ const ROLE_STAGES = {
   cfo: { statuses: ['cro_approved'], stage: 'cfo_approval', nextStatus: 'cfo_approved' },
 };
 
+// Roles that can approve transport requests
+const TRANSPORT_APPROVER_ROLES = ['manager', 'functional_lead', 'admin_head', 'admin'];
+
 export default function Approvals() {
   const [user, setUser] = useState(null);
   const [search, setSearch] = useState('');
