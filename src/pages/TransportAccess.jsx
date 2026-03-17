@@ -178,10 +178,10 @@ export default function TransportAccess() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => setSelectedRequest(req)}
-                          className="gap-1"
+                          onClick={() => navigate(createPageUrl(`TransportRequestDetails?id=${req.id}&from=TransportAccess`))}
+                          className="gap-1 text-gray-500 hover:text-blue-600"
                         >
-                          <FileText className="w-4 h-4" />
+                          <Eye className="w-4 h-4" />
                           View
                         </Button>
                       </TableCell>
