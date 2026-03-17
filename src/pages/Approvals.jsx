@@ -158,7 +158,7 @@ export default function Approvals() {
       message: action === 'approve' && newStatus === 'approved'
         ? `Your transport access request ${req.tar_number} for ${req.transport_type} has been fully approved by ${user.full_name}.`
         : action === 'approve'
-        ? `Your transport request ${req.tar_number} has been approved by ${user.full_name} and moved to Lead Approval.`
+        ? `Your transport request ${req.tar_number} has been approved by ${user.full_name} and moved to Admin Head Approval.`
         : `Your transport request ${req.tar_number} has been ${action === 'reject' ? 'rejected' : 'sent back'}. ${remarks ? 'Reason: ' + remarks : ''}`,
     });
 
