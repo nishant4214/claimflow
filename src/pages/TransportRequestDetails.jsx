@@ -133,11 +133,21 @@ export default function TransportRequestDetails() {
     base44.auth.me().then(setUser).catch(() => base44.auth.redirectToLogin());
   }, []);
 
-  const { data: req, isLoading } = useQuery({
+  const { data: req, isLoading, refetch } = useQuery({
     queryKey: ['transport-detail', requestId],
     queryFn: () => base44.entities.TransportRequest.filter({ id: requestId }).then((r) => r[0]),
     enabled: !!requestId,
+    refetchInterval: 5000,
   });
+
+  // Real-time subscription for live status updates
+  useEffect(() => {
+    if (!requestId) return;
+    const unsubscribe = base44.entities.TransportRequest.subscribe((event) => {
+      if (event.id === requestId) refetch();
+    });
+    return () => unsubscribe();
+  }, [requestId]);
 
   if (isLoading || !req) {
     return (
