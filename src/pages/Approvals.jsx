@@ -419,7 +419,7 @@ export default function Approvals() {
                 <div>
                   <p className="text-sm text-gray-500">Your Role</p>
                   <p className="text-lg font-semibold text-blue-600 capitalize">
-                    {userRole.replace('_', ' ')}
+                    {userRole === 'functional_lead' ? 'Admin Head' : userRole.replace('_', ' ')}
                   </p>
                 </div>
               </div>

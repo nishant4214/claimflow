@@ -290,7 +290,7 @@ export default function TransportRequestDetails() {
                   </div>
                   <div className="flex items-center gap-2 text-sm text-gray-600">
                     <User className="w-4 h-4 text-gray-400" />
-                    {req.created_by_role?.replace('_', ' ') || 'Employee'}
+                    {req.created_by_role === 'functional_lead' ? 'Admin Head' : (req.created_by_role?.replace('_', ' ') || 'Employee')}
                   </div>
                 </div>
               </CardContent>
