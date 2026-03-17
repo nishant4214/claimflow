@@ -204,7 +204,7 @@ export default function Layout({ children, currentPageName }) {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-semibold text-gray-900 truncate">{user?.full_name || 'User'}</p>
-                <p className="text-xs text-gray-500 capitalize truncate">{userRole.replace('_', ' ')}</p>
+                <p className="text-xs text-gray-500 capitalize truncate">{userRole === 'functional_lead' ? 'Admin Head' : userRole.replace('_', ' ')}</p>
               </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
