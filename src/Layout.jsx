@@ -62,6 +62,12 @@ const roleMenuConfig = {
     { name: 'Reports', icon: BarChart3, page: 'Reports' },
     { name: 'Notifications', icon: Bell, page: 'Notifications' },
   ],
+  functional_lead: [
+    { name: 'Dashboard', icon: LayoutDashboard, page: 'Dashboard' },
+    { name: 'Approvals', icon: CheckSquare, page: 'Approvals' },
+    { name: 'Transport Access', icon: Car, page: 'TransportAccess' },
+    { name: 'Notifications', icon: Bell, page: 'Notifications' },
+  ],
   cro: [
     { name: 'Dashboard', icon: LayoutDashboard, page: 'Dashboard' },
     { name: 'Approvals', icon: CheckSquare, page: 'Approvals' },
@@ -90,6 +96,7 @@ const roleMenuConfig = {
     { name: 'Approvals', icon: CheckSquare, page: 'Approvals' },
     { name: 'Finance', icon: Wallet, page: 'Finance' },
     { name: 'Conference Rooms', icon: Calendar, page: 'ConferenceRooms' },
+    { name: 'Transport Access', icon: Car, page: 'TransportAccess' },
     { name: 'Room Feedback', icon: BarChart3, page: 'RoomFeedbackDashboard' },
     { name: 'Housekeeping', icon: Settings, page: 'HousekeepingDashboard' },
     { name: 'Manage Rooms', icon: Settings, page: 'AdminRooms' },
