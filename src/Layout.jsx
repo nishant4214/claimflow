@@ -28,6 +28,7 @@ const roleMenuConfig = {
     { name: 'Submit Claim', icon: Plus, page: 'SubmitClaim' },
     { name: 'My Claims', icon: FileText, page: 'MyClaims' },
     { name: 'Conference Rooms', icon: Calendar, page: 'ConferenceRooms' },
+    { name: 'Transport Access', icon: Car, page: 'TransportAccess' },
     { name: 'Notifications', icon: Bell, page: 'Notifications' },
   ],
   junior_admin: [
@@ -44,6 +45,7 @@ const roleMenuConfig = {
     { name: 'Approvals', icon: CheckSquare, page: 'Approvals' },
     { name: 'My Claims', icon: FileText, page: 'MyClaims' },
     { name: 'Conference Rooms', icon: Calendar, page: 'ConferenceRooms' },
+    { name: 'Transport Access', icon: Car, page: 'TransportAccess' },
     { name: 'Notifications', icon: Bell, page: 'Notifications' },
   ],
   admin_head: [
@@ -51,6 +53,7 @@ const roleMenuConfig = {
     { name: 'Approvals', icon: CheckSquare, page: 'Approvals' },
     { name: 'My Claims', icon: FileText, page: 'MyClaims' },
     { name: 'Conference Rooms', icon: Calendar, page: 'ConferenceRooms' },
+    { name: 'Transport Access', icon: Car, page: 'TransportAccess' },
     { name: 'Room Feedback', icon: BarChart3, page: 'RoomFeedbackDashboard' },
     { name: 'Manage Rooms', icon: Settings, page: 'AdminRooms' },
     { name: 'Bulk Upload', icon: Upload, page: 'BulkUpload' },

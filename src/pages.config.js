@@ -102,6 +102,7 @@ export const PAGES = {
     "SubmitClaim": SubmitClaim,
     "SubmitFeedback": SubmitFeedback,
     "TestCredentials": TestCredentials,
+    "TransportAccess": TransportAccess,
     "UserManagement": UserManagement,
     "WorkflowConfig": WorkflowConfig,
 }
