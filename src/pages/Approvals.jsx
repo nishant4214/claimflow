@@ -499,7 +499,10 @@ export default function Approvals() {
                         requests={filteredTransport}
                         tab={tab}
                         userRole={userRole}
-                        onAction={(req, action) => handleTransportAction(req, action)}
+                        onAction={(req, action) => {
+                          setSelectedTransport(req);
+                          setTransportActionType(action);
+                        }}
                       />
                     )}
                     {filteredClaims.map((claim, index) => (
