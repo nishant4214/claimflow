@@ -646,7 +646,7 @@ function BillDetailCard({ bill, index, errors, onChange }) {
             <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-sm font-bold text-blue-700">{index + 1}</div>
             <div>
               <p className="font-medium text-sm">{bill.purpose || `Bill ${index + 1}`}</p>
-              {bill.amount ? <p className="text-xs text-gray-400">₹{parseFloat(bill.amount).toLocaleString('en-IN')}</p> : null}
+              {bill.amount ? <p className="text-xs text-gray-400">{getCurrencySymbol(bill.currency)}{parseFloat(bill.amount).toLocaleString('en-IN')}</p> : null}
             </div>
             {bill.ocr_extracted && (
               <Badge className="bg-purple-50 text-purple-700 border-purple-200 text-xs px-2 py-0.5 ml-1">
