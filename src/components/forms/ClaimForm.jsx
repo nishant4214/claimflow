@@ -707,7 +707,7 @@ function BillDetailCard({ bill, index, errors, onChange }) {
                   maxLength={3}
                 />
                 <div className="relative flex-1">
-                  <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-400 font-medium">{getCurrencySymbol(bill.currency)}</span>
                   <Input type="number" placeholder="0.00" value={bill.amount || ''} onChange={e => onChange('amount', e.target.value)} className={`pl-9 ${errors[`bill_${index}_amount`] ? 'border-red-500' : ''}`} />
                 </div>
               </div>
