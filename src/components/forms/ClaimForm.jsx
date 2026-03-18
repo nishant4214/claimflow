@@ -220,11 +220,12 @@ export default function ClaimForm({ user, onSubmit, initialData, isLoading, isEd
   };
 
   const removeBill = (index) => {
-    setFormData(prev => ({
-      ...prev,
-      bills: prev.bills.filter((_, i) => i !== index),
-      document_urls: prev.document_urls.filter((_, i) => i !== index),
-    }));
+    setFormData(prev => {
+      const newBills = prev.bills.filter((_, i) => i !== index);
+      // Rebuild document_urls from remaining bills (deduplicated)
+      const newUrls = [...new Set(newBills.map(b => b.document_url).filter(Boolean))];
+      return { ...prev, bills: newBills, document_urls: newUrls };
+    });
   };
 
   const validateStep = (s) => {
