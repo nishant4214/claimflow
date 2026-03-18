@@ -138,7 +138,7 @@ export default function ClaimForm({ user, onSubmit, initialData, isLoading, isEd
 
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
       newUrls.push(file_url);
-      newBills.push({ document_url: file_url, purpose: '', bill_number: '', bill_date: '', amount: '', payment_mode: 'Cash', ocr_extracted: false });
+      newBills.push({ document_url: file_url, purpose: '', bill_number: '', bill_date: '', amount: '', currency: 'INR', payment_mode: 'Cash', ocr_extracted: false });
     }
 
     setFormData(prev => ({
