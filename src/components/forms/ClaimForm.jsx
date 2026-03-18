@@ -344,7 +344,7 @@ export default function ClaimForm({ user, onSubmit, initialData, isLoading, isEd
                       <div className="flex flex-col items-center">
                         <Sparkles className="w-10 h-10 text-purple-600 animate-pulse mb-3" />
                         <p className="text-sm font-medium text-purple-700">Extracting bill data with OCR...</p>
-                        <p className="text-xs text-gray-500 mt-1">Processing bill {ocrProgress.current} of {ocrProgress.total}</p>
+                        <p className="text-xs text-gray-500 mt-1">Processing file {ocrProgress.current} of {ocrProgress.total} — detecting all bills inside</p>
                         <div className="mt-3 w-48 h-2 bg-gray-200 rounded-full overflow-hidden">
                           <div className="h-full bg-purple-500 rounded-full transition-all duration-300" style={{ width: `${(ocrProgress.current / ocrProgress.total) * 100}%` }} />
                         </div>
