@@ -21,35 +21,57 @@ import { toast } from "sonner";
 const PAYMENT_MODES = ['Cash', 'Card', 'UPI', 'Bank Transfer'];
 
 // ── OCR helper ────────────────────────────────────────────────────────────────
+// Returns an array of bill objects (handles multi-bill PDFs)
 async function extractBillData(fileUrl) {
   try {
     const result = await base44.integrations.Core.InvokeLLM({
-      prompt: `You are a bill/invoice OCR extractor. Analyze this document and extract the following fields. 
-      Return ONLY a JSON object with these exact keys:
-      - purpose: string (what the bill is for, e.g. "Hotel Stay", "Flight Ticket", "Meal", "Taxi")
-      - bill_number: string (invoice/receipt number, or null if not found)
-      - bill_date: string in YYYY-MM-DD format (date on the bill, or null if not found)
-      - amount: number (total amount, numeric only, no currency symbols)
-      - currency: string (ISO 4217 currency code found on the bill, e.g. "INR", "USD", "EUR", "GBP". Default to "INR" if unclear or not found)
-      - payment_mode: string - must be one of: "Cash", "Card", "UPI", "Bank Transfer" (infer from context, default "Cash" if unclear)
-      
-      If a field cannot be determined, use null.`,
+      prompt: `You are an expert bill/invoice OCR extractor. Carefully analyze this document.
+
+IMPORTANT: A single PDF/image may contain MULTIPLE separate bills or receipts. Each distinct bill/receipt/invoice is a separate transaction with its own amount, date, and purpose.
+
+Identify ALL individual bills/receipts in the document and return them as an array.
+
+For EACH bill extract:
+- purpose: string (what this specific bill is for, e.g. "Hotel Stay", "Flight Ticket", "Dinner", "Taxi Ride", "Fuel", "Stationery")
+- bill_number: string (invoice/receipt number for this specific bill, or null)
+- bill_date: string in YYYY-MM-DD format (date on this specific bill, or null)
+- amount: number (total amount for this specific bill, numeric only, no currency symbols)
+- currency: string (ISO 4217 currency code, e.g. "INR", "USD", "EUR". Default "INR" if unclear)
+- payment_mode: string — must be exactly one of: "Cash", "Card", "UPI", "Bank Transfer" (infer from context, default "Cash")
+
+Return a JSON object with a single key "bills" containing an array. Even if there is only one bill, return it as an array with one item.`,
       file_urls: [fileUrl],
       response_json_schema: {
         type: "object",
         properties: {
-          purpose: { type: "string" },
-          bill_number: { type: "string" },
-          bill_date: { type: "string" },
-          amount: { type: "number" },
-          currency: { type: "string" },
-          payment_mode: { type: "string" }
+          bills: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                purpose: { type: "string" },
+                bill_number: { type: "string" },
+                bill_date: { type: "string" },
+                amount: { type: "number" },
+                currency: { type: "string" },
+                payment_mode: { type: "string" }
+              }
+            }
+          }
         }
       }
     });
-    return result;
+    // Normalize: always return array
+    if (result && Array.isArray(result.bills) && result.bills.length > 0) {
+      return result.bills;
+    }
+    // Fallback if LLM returned flat object
+    if (result && result.purpose) {
+      return [result];
+    }
+    return [{ purpose: '', bill_number: '', bill_date: '', amount: '', currency: 'INR', payment_mode: 'Cash' }];
   } catch (e) {
-    return { purpose: '', bill_number: '', bill_date: '', amount: '', payment_mode: 'Cash' };
+    return [{ purpose: '', bill_number: '', bill_date: '', amount: '', currency: 'INR', payment_mode: 'Cash' }];
   }
 }
 
