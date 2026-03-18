@@ -521,7 +521,7 @@ export default function ClaimForm({ user, onSubmit, initialData, isLoading, isEd
                         <div>
                           <p className="font-medium text-sm">{bill.purpose || 'Untitled bill'}</p>
                           <p className="text-xs text-gray-400">
-                            {bill.bill_number ? `#${bill.bill_number}` : 'No bill no.'} &bull; {bill.bill_date || 'No date'} &bull; {bill.payment_mode}
+                            {bill.bill_number ? `#${bill.bill_number}` : 'No bill no.'} &bull; {bill.bill_date || 'No date'} &bull; {bill.payment_mode} &bull; {bill.currency || 'INR'}
                           </p>
                         </div>
                       </div>
