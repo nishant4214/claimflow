@@ -30,6 +30,7 @@ async function extractBillData(fileUrl) {
       - bill_number: string (invoice/receipt number, or null if not found)
       - bill_date: string in YYYY-MM-DD format (date on the bill, or null if not found)
       - amount: number (total amount, numeric only, no currency symbols)
+      - currency: string (ISO 4217 currency code found on the bill, e.g. "INR", "USD", "EUR", "GBP". Default to "INR" if unclear or not found)
       - payment_mode: string - must be one of: "Cash", "Card", "UPI", "Bank Transfer" (infer from context, default "Cash" if unclear)
       
       If a field cannot be determined, use null.`,
@@ -41,6 +42,7 @@ async function extractBillData(fileUrl) {
           bill_number: { type: "string" },
           bill_date: { type: "string" },
           amount: { type: "number" },
+          currency: { type: "string" },
           payment_mode: { type: "string" }
         }
       }
