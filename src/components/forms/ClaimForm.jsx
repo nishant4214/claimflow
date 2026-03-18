@@ -643,11 +643,25 @@ function BillDetailCard({ bill, index, errors, onChange }) {
             </div>
 
             <div className="space-y-1">
-              <Label className="text-xs">Amount (₹) <span className="text-red-500">*</span></Label>
-              <div className="relative">
-                <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
-                <Input type="number" placeholder="0.00" value={bill.amount || ''} onChange={e => onChange('amount', e.target.value)} className={`pl-9 ${errors[`bill_${index}_amount`] ? 'border-red-500' : ''}`} />
+              <Label className="text-xs">Amount <span className="text-red-500">*</span></Label>
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Currency"
+                  value={bill.currency || 'INR'}
+                  onChange={e => onChange('currency', e.target.value.toUpperCase())}
+                  className="w-20 text-center font-mono text-sm uppercase"
+                  maxLength={3}
+                />
+                <div className="relative flex-1">
+                  <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                  <Input type="number" placeholder="0.00" value={bill.amount || ''} onChange={e => onChange('amount', e.target.value)} className={`pl-9 ${errors[`bill_${index}_amount`] ? 'border-red-500' : ''}`} />
+                </div>
               </div>
+              {bill.currency && bill.currency !== 'INR' && (
+                <p className="text-xs text-amber-600 flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3" /> Foreign currency ({bill.currency}) — conversion to INR may apply
+                </p>
+              )}
               {errors[`bill_${index}_amount`] && <p className="text-xs text-red-500">{errors[`bill_${index}_amount`]}</p>}
             </div>
           </div>
