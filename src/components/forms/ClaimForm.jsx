@@ -174,23 +174,48 @@ export default function ClaimForm({ user, onSubmit, initialData, isLoading, isEd
     // Auto-run OCR
     if (newBills.length > 0) {
       setExtractingOcr(true);
-      setOcrProgress({ current: 0, total: newBills.length });
-      const startIdx = formData.bills.length;
+      setOcrProgress({ current: 0, total: newUrls.length });
 
+      // Process each uploaded file, potentially expanding into multiple bills
+      const allExtractedBills = [];
       for (let i = 0; i < newUrls.length; i++) {
         setOcrProgress({ current: i + 1, total: newUrls.length });
-        const extracted = await extractBillData(newUrls[i]);
-        setFormData(prev => {
-          const bills = [...prev.bills];
-          const idx = startIdx + i;
-          if (bills[idx]) {
-            bills[idx] = { ...bills[idx], ...extracted, document_url: newUrls[i], ocr_extracted: true };
-          }
-          return { ...prev, bills };
+        const extractedArray = await extractBillData(newUrls[i]);
+        // Each extracted bill references the same source document
+        extractedArray.forEach(extracted => {
+          allExtractedBills.push({
+            document_url: newUrls[i],
+            purpose: extracted.purpose || '',
+            bill_number: extracted.bill_number || '',
+            bill_date: extracted.bill_date || '',
+            amount: extracted.amount || '',
+            currency: extracted.currency || 'INR',
+            payment_mode: extracted.payment_mode || 'Cash',
+            ocr_extracted: true,
+          });
         });
       }
+
+      // Replace the placeholder bills (created during upload) with OCR-expanded bills
+      setFormData(prev => {
+        // Keep any pre-existing bills, then add all new OCR-expanded ones
+        const existingBills = prev.bills.filter(b => !newUrls.includes(b.document_url));
+        const existingUrls = existingBills.map(b => b.document_url);
+        return {
+          ...prev,
+          bills: [...existingBills, ...allExtractedBills],
+          document_urls: [...existingUrls, ...newUrls],
+        };
+      });
+
       setExtractingOcr(false);
-      toast.success('OCR extraction complete — review bill details below');
+      const totalExtracted = allExtractedBills.length;
+      const totalFiles = newUrls.length;
+      if (totalExtracted > totalFiles) {
+        toast.success(`OCR complete — found ${totalExtracted} bills across ${totalFiles} file(s)`);
+      } else {
+        toast.success('OCR extraction complete — review bill details below');
+      }
     }
   };
 
