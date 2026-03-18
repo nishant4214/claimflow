@@ -579,7 +579,7 @@ export default function ClaimForm({ user, onSubmit, initialData, isLoading, isEd
                           </p>
                         </div>
                       </div>
-                      <p className="font-semibold text-gray-900">₹{parseFloat(bill.amount || 0).toLocaleString('en-IN')}</p>
+                      <p className="font-semibold text-gray-900">{getCurrencySymbol(bill.currency)}{parseFloat(bill.amount || 0).toLocaleString('en-IN')}</p>
                     </div>
                   ))}
                 </div>
