@@ -15,6 +15,12 @@ import {
   CalendarIcon, Upload, FileText, AlertCircle,
   Loader2, CheckCircle, X, IndianRupee, Info, Sparkles, ChevronDown, ChevronUp
 } from "lucide-react";
+
+const CURRENCY_SYMBOLS = {
+  INR: '₹', USD: '$', EUR: '€', GBP: '£', JPY: '¥', AED: 'د.إ',
+  SGD: 'S$', AUD: 'A$', CAD: 'C$', CHF: 'Fr', CNY: '¥', HKD: 'HK$',
+};
+const getCurrencySymbol = (code) => CURRENCY_SYMBOLS[code?.toUpperCase()] || code || '₹';
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 
