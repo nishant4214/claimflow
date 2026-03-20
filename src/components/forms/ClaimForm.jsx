@@ -521,7 +521,7 @@ export default function ClaimForm({ user, onSubmit, initialData, isLoading, isEd
                   <p className="text-sm text-gray-500">Review and correct OCR-extracted data for each bill</p>
                 </div>
                 <Badge variant="outline" className="text-blue-700 border-blue-200 bg-blue-50">
-                  {formData.bills.length} bill(s) · Total ₹{totalAmount.toLocaleString('en-IN')}
+                  {formData.bills.length} bill(s) · Total {getCurrencySymbol(formData.bills?.[0]?.currency)}{totalAmount.toLocaleString('en-IN')}
                 </Badge>
               </div>
 
