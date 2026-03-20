@@ -560,7 +560,7 @@ export default function ClaimForm({ user, onSubmit, initialData, isLoading, isEd
                     </div>
                     <div>
                       <p className="text-gray-500">Total Amount</p>
-                      <p className="font-bold text-xl text-blue-700">₹{totalAmount.toLocaleString('en-IN')}</p>
+                      <p className="font-bold text-xl text-blue-700">{getCurrencySymbol(formData.bills?.[0]?.currency)}{totalAmount.toLocaleString('en-IN')}</p>
                     </div>
                   </div>
                 </div>
