@@ -191,73 +191,94 @@ export default function NewClaim() {
             </div>
           </div>
         ) : (
-          <div className="flex-1 overflow-auto p-6">
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="mb-6 bg-white border shadow-sm">
-                <TabsTrigger value="form" className="flex items-center gap-1.5">
-                  <FileText className="w-3.5 h-3.5" /> Claim Details
-                </TabsTrigger>
-                <TabsTrigger value="documents" className="flex items-center gap-1.5">
-                  <Upload className="w-3.5 h-3.5" /> Upload Bills
-                  {documents.length > 0 && (
-                    <span className="ml-1 bg-blue-600 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded-full leading-none">{documents.length}</span>
-                  )}
-                </TabsTrigger>
-                <TabsTrigger value="payment" className="flex items-center gap-1.5">
-                  <CreditCard className="w-3.5 h-3.5" /> Payment Details
-                </TabsTrigger>
-              </TabsList>
+          <div className="flex-1 flex flex-col overflow-hidden">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
+              {/* Sticky tab bar */}
+              <div className="sticky top-0 z-10 bg-white border-b px-6 py-3 flex-shrink-0">
+                <TabsList className="bg-gray-100">
+                  <TabsTrigger value="form" className="flex items-center gap-1.5">
+                    <FileText className="w-3.5 h-3.5" /> Claim Details
+                  </TabsTrigger>
+                  <TabsTrigger value="documents" className="flex items-center gap-1.5">
+                    <Upload className="w-3.5 h-3.5" /> Upload Bills
+                    {documents.length > 0 && (
+                      <span className="ml-1 bg-blue-600 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded-full leading-none">{documents.length}</span>
+                    )}
+                  </TabsTrigger>
+                  <TabsTrigger value="payment" className="flex items-center gap-1.5">
+                    <CreditCard className="w-3.5 h-3.5" /> Payment Details
+                  </TabsTrigger>
+                </TabsList>
+              </div>
 
-              <TabsContent value="form" className="mt-0 animate-in fade-in-0 duration-200">
-                <ClaimDynamicForm
-                  category={selectedSubHead}
-                  headName={selectedHead}
-                  formData={formData}
-                  onChange={setFormData}
-                  documents={documents}
-                />
-              </TabsContent>
+              {/* Scrollable tab content */}
+              <div className="flex-1 overflow-auto">
+                <TabsContent value="form" className="mt-0 animate-in fade-in-0 duration-200">
+                  <div className="flex justify-center p-8">
+                    <ClaimDynamicForm
+                      category={selectedSubHead}
+                      headName={selectedHead}
+                      formData={formData}
+                      onChange={setFormData}
+                      documents={documents}
+                    />
+                  </div>
+                </TabsContent>
 
-              <TabsContent value="documents" className="mt-0 animate-in fade-in-0 duration-200">
-                <ClaimDocumentOCR
-                  category={selectedSubHead}
-                  headName={selectedHead}
-                  documents={documents}
-                  onChange={setDocuments}
-                />
-              </TabsContent>
+                <TabsContent value="documents" className="mt-0 animate-in fade-in-0 duration-200">
+                  <div className="flex justify-center p-8">
+                    <div className="w-full max-w-3xl space-y-4">
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-800">
+                        <p className="font-semibold mb-1">What to upload:</p>
+                        <ul className="space-y-0.5 text-xs text-blue-700 list-disc ml-4">
+                          <li><strong>Bill:</strong> Original invoice or receipt from the vendor (e.g. restaurant bill, flight ticket, hotel invoice)</li>
+                          <li><strong>Receipt:</strong> Payment proof such as UPI screenshot, card slip, or online payment confirmation</li>
+                        </ul>
+                      </div>
+                      <ClaimDocumentOCR
+                        category={selectedSubHead}
+                        headName={selectedHead}
+                        documents={documents}
+                        onChange={setDocuments}
+                      />
+                    </div>
+                  </div>
+                </TabsContent>
 
-              <TabsContent value="payment" className="mt-0 animate-in fade-in-0 duration-200">
-                <div className="max-w-lg bg-white rounded-xl border shadow-sm p-6 space-y-4">
-                  <h3 className="font-semibold text-gray-900 text-base">Payment Details</h3>
-                  <div className="space-y-1">
-                    <Label>Payment Mode</Label>
-                    <Select value={paymentDetails.payment_mode} onValueChange={v => setPaymentDetails(p => ({ ...p, payment_mode: v }))}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        {['Cash', 'Card', 'UPI', 'Bank Transfer'].map(m => (
-                          <SelectItem key={m} value={m}>{m}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                <TabsContent value="payment" className="mt-0 animate-in fade-in-0 duration-200">
+                  <div className="flex justify-center p-8">
+                    <div className="w-full max-w-lg bg-white rounded-xl border shadow-sm p-6 space-y-4">
+                      <h3 className="font-semibold text-gray-900 text-base">Payment Details</h3>
+                      <div className="space-y-1">
+                        <Label>Payment Mode</Label>
+                        <Select value={paymentDetails.payment_mode} onValueChange={v => setPaymentDetails(p => ({ ...p, payment_mode: v }))}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            {['Cash', 'Card', 'UPI', 'Bank Transfer'].map(m => (
+                              <SelectItem key={m} value={m}>{m}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-1">
+                        <Label>Reference Number</Label>
+                        <Input placeholder="TXN / UTR / Cheque number" value={paymentDetails.reference_number}
+                          onChange={e => setPaymentDetails(p => ({ ...p, reference_number: e.target.value }))} />
+                      </div>
+                      <div className="space-y-1">
+                        <Label>Payment Date</Label>
+                        <Input type="date" value={paymentDetails.payment_date}
+                          onChange={e => setPaymentDetails(p => ({ ...p, payment_date: e.target.value }))} />
+                      </div>
+                      <div className="space-y-1">
+                        <Label>Remarks</Label>
+                        <Input placeholder="Optional notes..." value={paymentDetails.remarks}
+                          onChange={e => setPaymentDetails(p => ({ ...p, remarks: e.target.value }))} />
+                      </div>
+                    </div>
                   </div>
-                  <div className="space-y-1">
-                    <Label>Reference Number</Label>
-                    <Input placeholder="TXN / UTR / Cheque number" value={paymentDetails.reference_number}
-                      onChange={e => setPaymentDetails(p => ({ ...p, reference_number: e.target.value }))} />
-                  </div>
-                  <div className="space-y-1">
-                    <Label>Payment Date</Label>
-                    <Input type="date" value={paymentDetails.payment_date}
-                      onChange={e => setPaymentDetails(p => ({ ...p, payment_date: e.target.value }))} />
-                  </div>
-                  <div className="space-y-1">
-                    <Label>Remarks</Label>
-                    <Input placeholder="Optional notes..." value={paymentDetails.remarks}
-                      onChange={e => setPaymentDetails(p => ({ ...p, remarks: e.target.value }))} />
-                  </div>
-                </div>
-              </TabsContent>
+                </TabsContent>
+              </div>
             </Tabs>
           </div>
         )}

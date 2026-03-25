@@ -15,13 +15,7 @@ const OWN_VEHICLE_RATES = {
   'Bike - EV': 3,
 };
 
-// ─── FORM RENDERER BY SUB-HEAD ────────────────────────────────────
-function FieldRow({ children, span2 = false }) {
-  return (
-    <div className={span2 ? 'col-span-2' : ''}>{children}</div>
-  );
-}
-
+// ─── BASE COMPONENTS ──────────────────────────────────────────────
 function Field({ label, required, autofilled, children }) {
   return (
     <div className="space-y-1">
@@ -51,10 +45,12 @@ function TextInput({ field, value, onChange, type = 'text', placeholder, autofil
   );
 }
 
-function SelectInput({ field, value, onChange, options }) {
+function SelectInput({ field, value, onChange, options, placeholder }) {
   return (
     <Select value={value || ''} onValueChange={v => onChange(field, v)}>
-      <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Select..." /></SelectTrigger>
+      <SelectTrigger className="h-9 text-sm">
+        <SelectValue placeholder={placeholder || 'Select...'} />
+      </SelectTrigger>
       <SelectContent>
         {options.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
       </SelectContent>
@@ -62,26 +58,38 @@ function SelectInput({ field, value, onChange, options }) {
   );
 }
 
-// ─── SUB-FORM COMPONENTS ──────────────────────────────────────────
+function AutoCalcDisplay({ label, value, color = 'blue' }) {
+  const colors = {
+    blue: 'bg-blue-50 border-blue-200 text-blue-800',
+    green: 'bg-green-50 border-green-200 text-green-800',
+  };
+  return (
+    <div className="space-y-1">
+      <Label className="text-xs flex items-center gap-1">
+        <Calculator className="w-3 h-3" /> {label}
+      </Label>
+      <div className={`h-9 flex items-center px-3 border rounded-md text-sm font-bold ${colors[color]}`}>
+        {value}
+      </div>
+    </div>
+  );
+}
 
+// ─── TRAVEL FORMS ─────────────────────────────────────────────────
 function TravelModeForm({ formData, onChange, autoFill }) {
   return (
     <div className="grid grid-cols-2 gap-4">
-      <Field label="Mode of Transport" required>
-        <SelectInput field="mode_type" value={formData.mode_type} onChange={onChange}
-          options={['Rail', 'Bus', 'Auto', 'Ola', 'Uber', 'Metro', 'Ferry']} />
-      </Field>
       <Field label="Travel Date" required>
         <TextInput field="travel_date" value={formData.travel_date} onChange={onChange} type="date" autofilled={autoFill('travel_date')} />
       </Field>
       <Field label="From" required>
-        <TextInput field="from_location" value={formData.from_location} onChange={onChange} placeholder="Departure city/station" autofilled={autoFill('from_location')} />
+        <TextInput field="from_location" value={formData.from_location} onChange={onChange} placeholder="Departure city / station" autofilled={autoFill('from_location')} />
       </Field>
       <Field label="To" required>
-        <TextInput field="to_location" value={formData.to_location} onChange={onChange} placeholder="Arrival city/station" autofilled={autoFill('to_location')} />
+        <TextInput field="to_location" value={formData.to_location} onChange={onChange} placeholder="Arrival city / station" autofilled={autoFill('to_location')} />
       </Field>
       <Field label="Bill / Ticket / Ride ID">
-        <TextInput field="bill_number" value={formData.bill_number} onChange={onChange} placeholder="Ticket or Ride ID" autofilled={autoFill('bill_number')} />
+        <TextInput field="bill_number" value={formData.bill_number} onChange={onChange} placeholder="Ticket number or Ride ID" autofilled={autoFill('bill_number')} />
       </Field>
       <Field label="Amount (₹)" required>
         <TextInput field="amount" value={formData.amount} onChange={onChange} type="number" placeholder="0.00" autofilled={autoFill('amount')} />
@@ -118,17 +126,9 @@ function OwnVehicleForm({ formData, onChange }) {
       <Field label="Distance (KM)" required>
         <TextInput field="distance_km" value={formData.distance_km} onChange={onChange} type="number" placeholder="0" />
       </Field>
-      <div className="space-y-1">
-        <Label className="text-xs flex items-center gap-1"><Calculator className="w-3 h-3" /> Rate per KM (₹)</Label>
-        <div className="h-9 flex items-center px-3 bg-gray-50 border rounded-md text-sm font-medium text-green-700">
-          {rate > 0 ? `₹${rate}/km` : '— (select vehicle type)'}
-        </div>
-      </div>
-      <div className="col-span-2 space-y-1">
-        <Label className="text-xs flex items-center gap-1"><Calculator className="w-3 h-3" /> Auto-Calculated Amount (₹)</Label>
-        <div className="h-9 flex items-center px-3 bg-green-50 border border-green-200 rounded-md text-sm font-bold text-green-800">
-          ₹{formData.amount || '0.00'}
-        </div>
+      <AutoCalcDisplay label="Rate per KM (₹)" value={rate > 0 ? `₹${rate}/km` : '— select vehicle type'} color="blue" />
+      <div className="col-span-2">
+        <AutoCalcDisplay label="Auto-Calculated Amount (₹)" value={`₹${formData.amount || '0.00'}`} color="green" />
       </div>
     </div>
   );
@@ -143,11 +143,11 @@ function AirTravelForm({ formData, onChange, autoFill }) {
       <Field label="Travel Date" required>
         <TextInput field="travel_date" value={formData.travel_date} onChange={onChange} type="date" autofilled={autoFill('travel_date')} />
       </Field>
-      <Field label="From (City/Airport)" required>
-        <TextInput field="from_location" value={formData.from_location} onChange={onChange} placeholder="BOM, DEL..." autofilled={autoFill('from_location')} />
+      <Field label="From (City / Airport)" required>
+        <TextInput field="from_location" value={formData.from_location} onChange={onChange} placeholder="e.g. BOM, DEL" autofilled={autoFill('from_location')} />
       </Field>
-      <Field label="To (City/Airport)" required>
-        <TextInput field="to_location" value={formData.to_location} onChange={onChange} placeholder="BOM, DEL..." autofilled={autoFill('to_location')} />
+      <Field label="To (City / Airport)" required>
+        <TextInput field="to_location" value={formData.to_location} onChange={onChange} placeholder="e.g. BOM, DEL" autofilled={autoFill('to_location')} />
       </Field>
       <Field label="PNR / Booking ID">
         <TextInput field="bill_number" value={formData.bill_number} onChange={onChange} placeholder="PNR number" autofilled={autoFill('bill_number')} />
@@ -159,23 +159,22 @@ function AirTravelForm({ formData, onChange, autoFill }) {
   );
 }
 
+// ─── FOOD FORMS ───────────────────────────────────────────────────
 function IndividualMealForm({ formData, onChange, autoFill }) {
   return (
     <div className="grid grid-cols-2 gap-4">
       <Field label="Meal Type" required>
         <SelectInput field="meal_type" value={formData.meal_type} onChange={onChange}
-          options={['Breakfast', 'Lunch', 'Dinner', 'Snacks', 'Tea/Coffee']} />
+          placeholder="e.g. Lunch, Dinner..."
+          options={['Breakfast', 'Lunch', 'Dinner', 'Snacks', 'Tea / Coffee']} />
       </Field>
       <Field label="Date" required>
         <TextInput field="expense_date" value={formData.expense_date} onChange={onChange} type="date" autofilled={autoFill('expense_date')} />
       </Field>
-      <Field label="Vendor / Restaurant Name">
-        <TextInput field="vendor_name" value={formData.vendor_name} onChange={onChange} placeholder="Restaurant name" autofilled={autoFill('vendor_name')} />
-      </Field>
       <Field label="Location (City / Area)">
-        <TextInput field="location" value={formData.location} onChange={onChange} placeholder="City / Area (if applicable)" />
+        <TextInput field="location" value={formData.location} onChange={onChange} placeholder="City or area where you ate (optional)" />
       </Field>
-      <Field label="Amount (Rs.)" required>
+      <Field label="Amount (₹)" required>
         <TextInput field="amount" value={formData.amount} onChange={onChange} type="number" placeholder="0.00" autofilled={autoFill('amount')} />
       </Field>
     </div>
@@ -186,21 +185,21 @@ function ExternalClientMealForm({ formData, onChange, autoFill }) {
   return (
     <div className="grid grid-cols-2 gap-4">
       <Field label="Client Name" required>
-        <TextInput field="client_name" value={formData.client_name} onChange={onChange} placeholder="Client / Company name" />
+        <TextInput field="client_name" value={formData.client_name} onChange={onChange} placeholder="Name of client or company" />
       </Field>
       <Field label="Purpose" required>
-        <TextInput field="purpose" value={formData.purpose} onChange={onChange} placeholder="Meeting purpose" />
+        <TextInput field="purpose" value={formData.purpose} onChange={onChange} placeholder="e.g. Business meeting, product discussion" />
+      </Field>
+      <Field label="No. of People" required>
+        <TextInput field="no_of_people" value={formData.no_of_people} onChange={onChange} type="number" placeholder="Total number of people" />
       </Field>
       <Field label="Restaurant Name">
-        <TextInput field="vendor_name" value={formData.vendor_name} onChange={onChange} placeholder="Restaurant name" autofilled={autoFill('vendor_name')} />
+        <TextInput field="vendor_name" value={formData.vendor_name} onChange={onChange} placeholder="Name of the restaurant or venue" autofilled={autoFill('vendor_name')} />
       </Field>
       <Field label="Date" required>
         <TextInput field="expense_date" value={formData.expense_date} onChange={onChange} type="date" autofilled={autoFill('expense_date')} />
       </Field>
-      <Field label="No. of People" required>
-        <TextInput field="no_of_people" value={formData.no_of_people} onChange={onChange} type="number" placeholder="2" />
-      </Field>
-      <Field label="Amount (Rs.)" required>
+      <Field label="Amount (₹)" required>
         <TextInput field="amount" value={formData.amount} onChange={onChange} type="number" placeholder="0.00" autofilled={autoFill('amount')} />
       </Field>
     </div>
@@ -219,17 +218,17 @@ function TeamLunchForm({ formData, onChange, autoFill }) {
 
   return (
     <div className="grid grid-cols-2 gap-4">
-      <Field label="Team Name" required>
-        <TextInput field="team_name" value={formData.team_name} onChange={onChange} placeholder="Team name" />
+      <Field label="Team Name / Employee Code" required>
+        <TextInput field="team_name" value={formData.team_name} onChange={onChange} placeholder="Team name or your employee code" />
       </Field>
       <Field label="Date" required>
         <TextInput field="expense_date" value={formData.expense_date} onChange={onChange} type="date" autofilled={autoFill('expense_date')} />
       </Field>
-      <Field label="Venue / Restaurant">
-        <TextInput field="vendor_name" value={formData.vendor_name} onChange={onChange} placeholder="Venue name" autofilled={autoFill('vendor_name')} />
-      </Field>
       <Field label="No. of Employees" required>
-        <TextInput field="no_of_employees" value={formData.no_of_employees} onChange={onChange} type="number" placeholder="Enter count" />
+        <TextInput field="no_of_employees" value={formData.no_of_employees} onChange={onChange} type="number" placeholder="How many employees attended" />
+      </Field>
+      <Field label="Venue / Restaurant">
+        <TextInput field="vendor_name" value={formData.vendor_name} onChange={onChange} placeholder="Name of venue or restaurant" autofilled={autoFill('vendor_name')} />
       </Field>
       {numEmployees > 0 && (
         <div className="col-span-2">
@@ -240,31 +239,24 @@ function TeamLunchForm({ formData, onChange, autoFill }) {
               return (
                 <div key={idx} className="flex gap-2 items-center">
                   <span className="text-xs text-gray-400 w-6 text-right flex-shrink-0">{idx + 1}.</span>
-                  <Input
-                    value={emp.code || ''}
-                    onChange={e => updateEmployee(idx, 'code', e.target.value)}
-                    placeholder="Employee Code"
-                    className="h-8 text-sm flex-1"
-                  />
-                  <Input
-                    value={emp.name || ''}
-                    onChange={e => updateEmployee(idx, 'name', e.target.value)}
-                    placeholder="Employee Name"
-                    className="h-8 text-sm flex-1"
-                  />
+                  <Input value={emp.code || ''} onChange={e => updateEmployee(idx, 'code', e.target.value)}
+                    placeholder="Employee Code" className="h-8 text-sm flex-1" />
+                  <Input value={emp.name || ''} onChange={e => updateEmployee(idx, 'name', e.target.value)}
+                    placeholder="Employee Name" className="h-8 text-sm flex-1" />
                 </div>
               );
             })}
           </div>
         </div>
       )}
-      <Field label="Total Amount (Rs.)" required>
+      <Field label="Total Amount (₹)" required>
         <TextInput field="amount" value={formData.amount} onChange={onChange} type="number" placeholder="0.00" autofilled={autoFill('amount')} />
       </Field>
     </div>
   );
 }
 
+// ─── HOTEL FORM ───────────────────────────────────────────────────
 function HotelForm({ formData, onChange, autoFill }) {
   useEffect(() => {
     if (formData.check_in && formData.check_out) {
@@ -289,12 +281,7 @@ function HotelForm({ formData, onChange, autoFill }) {
       <Field label="Check-out Date" required>
         <TextInput field="check_out" value={formData.check_out} onChange={onChange} type="date" autofilled={autoFill('check_out')} />
       </Field>
-      <div className="space-y-1">
-        <Label className="text-xs flex items-center gap-1"><Calculator className="w-3 h-3" /> Nights (Auto)</Label>
-        <div className="h-9 flex items-center px-3 bg-blue-50 border border-blue-200 rounded-md text-sm font-bold text-blue-800">
-          {formData.nights || '0'} night(s)
-        </div>
-      </div>
+      <AutoCalcDisplay label="Nights (Auto)" value={`${formData.nights || '0'} night(s)`} color="blue" />
       <Field label="Booking ID">
         <TextInput field="bill_number" value={formData.bill_number} onChange={onChange} placeholder="Booking reference" autofilled={autoFill('bill_number')} />
       </Field>
@@ -305,6 +292,7 @@ function HotelForm({ formData, onChange, autoFill }) {
   );
 }
 
+// ─── OTHER FORMS ──────────────────────────────────────────────────
 function OfficeExpenseForm({ formData, onChange, autoFill, subType }) {
   return (
     <div className="grid grid-cols-2 gap-4">
@@ -326,13 +314,8 @@ function OfficeExpenseForm({ formData, onChange, autoFill, subType }) {
       </Field>
       <div className="col-span-2 space-y-1">
         <Label className="text-xs">Description</Label>
-        <Textarea
-          value={formData.purpose || ''}
-          onChange={e => onChange('purpose', e.target.value)}
-          placeholder="Description / purpose"
-          rows={2}
-          className="text-sm"
-        />
+        <Textarea value={formData.purpose || ''} onChange={e => onChange('purpose', e.target.value)}
+          placeholder="Description / purpose" rows={2} className="text-sm" />
       </div>
     </div>
   );
@@ -364,12 +347,7 @@ function TorchFuelForm({ formData, onChange, autoFill }) {
       <Field label="Rate per Liter (₹)" required>
         <TextInput field="rate_per_liter" value={formData.rate_per_liter} onChange={onChange} type="number" placeholder="0.00" />
       </Field>
-      <div className="space-y-1">
-        <Label className="text-xs flex items-center gap-1"><Calculator className="w-3 h-3" /> Total Amount (₹)</Label>
-        <div className="h-9 flex items-center px-3 bg-green-50 border border-green-200 rounded-md text-sm font-bold text-green-800">
-          ₹{formData.amount || '0.00'}
-        </div>
-      </div>
+      <AutoCalcDisplay label="Total Amount (₹)" value={`₹${formData.amount || '0.00'}`} color="green" />
     </div>
   );
 }
@@ -399,12 +377,7 @@ function GymForm({ formData, onChange, autoFill }) {
       <Field label="End Date" required>
         <TextInput field="gym_end" value={formData.gym_end} onChange={onChange} type="date" />
       </Field>
-      <div className="space-y-1">
-        <Label className="text-xs flex items-center gap-1"><Calculator className="w-3 h-3" /> Duration (Months)</Label>
-        <div className="h-9 flex items-center px-3 bg-blue-50 border border-blue-200 rounded-md text-sm font-bold text-blue-800">
-          {formData.duration_months || '0'} month(s)
-        </div>
-      </div>
+      <AutoCalcDisplay label="Duration (Months)" value={`${formData.duration_months || '0'} month(s)`} color="blue" />
       <Field label="Amount (₹)" required>
         <TextInput field="amount" value={formData.amount} onChange={onChange} type="number" placeholder="0.00" autofilled={autoFill('amount')} />
       </Field>
@@ -458,13 +431,8 @@ function DefaultForm({ formData, onChange, autoFill }) {
       </Field>
       <div className="col-span-2 space-y-1">
         <Label className="text-xs">Purpose / Description <span className="text-red-500">*</span></Label>
-        <Textarea
-          value={formData.purpose || ''}
-          onChange={e => onChange('purpose', e.target.value)}
-          placeholder="Describe the expense"
-          rows={2}
-          className="text-sm"
-        />
+        <Textarea value={formData.purpose || ''} onChange={e => onChange('purpose', e.target.value)}
+          placeholder="Describe the expense" rows={2} className="text-sm" />
       </div>
     </div>
   );
@@ -477,7 +445,7 @@ function selectForm(headName, subTitle, formData, onChange, autoFill) {
 
   if (h.includes('travel')) {
     if (s.includes('own vehicle')) return <OwnVehicleForm formData={formData} onChange={onChange} />;
-    if (s.includes('air')) return <AirTravelForm formData={formData} onChange={onChange} autoFill={autoFill} />;
+    if (s.includes('air') || s.includes('flight')) return <AirTravelForm formData={formData} onChange={onChange} autoFill={autoFill} />;
     return <TravelModeForm formData={formData} onChange={onChange} autoFill={autoFill} />;
   }
 
@@ -529,10 +497,10 @@ export default function ClaimDynamicForm({ category, headName, formData, onChang
   };
 
   return (
-    <div className="max-w-2xl bg-white rounded-xl border shadow-sm p-6">
-      <div className="flex items-center justify-between mb-5">
+    <div className="w-full max-w-2xl mx-auto bg-white rounded-xl border shadow-sm p-6">
+      <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="font-bold text-gray-900">{headName} — {category?.title}</h3>
+          <h3 className="font-bold text-gray-900 text-base">{headName} — {category?.title}</h3>
           <p className="text-xs text-gray-500 mt-0.5">Fill in the expense details below</p>
         </div>
         {category?.policy_limit && (
@@ -545,7 +513,7 @@ export default function ClaimDynamicForm({ category, headName, formData, onChang
 
       {selectForm(headName, category?.title, formData, handleChange, autoFill)}
 
-      <div className="mt-4 grid grid-cols-2 gap-4 border-t pt-4">
+      <div className="mt-5 grid grid-cols-2 gap-4 border-t pt-5">
         <div className="space-y-1">
           <Label className="text-xs">Expense Period From</Label>
           <Input type="date" value={formData.date_from || ''} onChange={e => handleChange('date_from', e.target.value)} className="h-9 text-sm" />
