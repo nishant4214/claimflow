@@ -340,7 +340,13 @@ export default function NewClaim() {
                         category={activeEntry.subHead}
                         headName={activeEntry.head}
                         documents={activeEntry.documents}
-                        onChange={(docs) => updateActiveEntry({ documents: docs })}
+                        onChange={(updater) => {
+                          setEntries(prev => prev.map(e => {
+                            if (e.id !== activeEntryId) return e;
+                            const newDocs = typeof updater === 'function' ? updater(e.documents) : updater;
+                            return { ...e, documents: newDocs };
+                          }));
+                        }}
                       />
                     </div>
                   </div>
