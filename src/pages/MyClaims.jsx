@@ -268,12 +268,31 @@ export default function MyClaims() {
             </CardContent>
           </Card>
         ) : (
-          <div className="space-y-4">
-            <AnimatePresence>
-              {filteredClaims.map((claim, index) => (
-                <ClaimCard key={claim.id} claim={claim} />
-              ))}
-            </AnimatePresence>
+          <div className="relative">
+            {/* Timeline vertical line */}
+            <div className="absolute left-5 top-8 bottom-8 w-0.5 bg-gradient-to-b from-blue-200 via-blue-100 to-transparent hidden sm:block" />
+            <div className="space-y-0">
+              <AnimatePresence>
+                {filteredClaims.map((claim, index) => (
+                  <div key={claim.id} className="relative flex items-start gap-4 pb-4">
+                    {/* Timeline dot */}
+                    <div className="hidden sm:flex flex-col items-center flex-shrink-0 mt-5">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center z-10 border-2 shadow-sm text-xs font-bold ${
+                        claim.status === 'paid' ? 'bg-green-100 border-green-400 text-green-700'
+                        : claim.status === 'rejected' ? 'bg-red-100 border-red-400 text-red-700'
+                        : claim.status === 'submitted' ? 'bg-blue-100 border-blue-400 text-blue-700'
+                        : 'bg-gray-100 border-gray-300 text-gray-500'
+                      }`}>
+                        {index + 1}
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <ClaimCard claim={claim} />
+                    </div>
+                  </div>
+                ))}
+              </AnimatePresence>
+            </div>
           </div>
         )}
       </div>

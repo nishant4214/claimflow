@@ -28,7 +28,7 @@ const roleMenuConfig = {
     { name: 'Submit Claim', icon: Plus, page: 'SubmitClaim' },
     { name: 'My Claims', icon: FileText, page: 'MyClaims' },
     { name: 'Conference Rooms', icon: Calendar, page: 'ConferenceRooms' },
-    { name: 'Transport Access', icon: Car, page: 'TransportAccess' },
+    { name: 'OLA/Uber Request', icon: Car, page: 'TransportAccess' },
     { name: 'Notifications', icon: Bell, page: 'Notifications' },
   ],
   junior_admin: [
@@ -45,7 +45,7 @@ const roleMenuConfig = {
     { name: 'Approvals', icon: CheckSquare, page: 'Approvals' },
     { name: 'My Claims', icon: FileText, page: 'MyClaims' },
     { name: 'Conference Rooms', icon: Calendar, page: 'ConferenceRooms' },
-    { name: 'Transport Access', icon: Car, page: 'TransportAccess' },
+    { name: 'OLA/Uber Request', icon: Car, page: 'TransportAccess' },
     { name: 'Notifications', icon: Bell, page: 'Notifications' },
   ],
   admin_head: [
@@ -53,7 +53,7 @@ const roleMenuConfig = {
     { name: 'Approvals', icon: CheckSquare, page: 'Approvals' },
     { name: 'My Claims', icon: FileText, page: 'MyClaims' },
     { name: 'Conference Rooms', icon: Calendar, page: 'ConferenceRooms' },
-    { name: 'Transport Access', icon: Car, page: 'TransportAccess' },
+    { name: 'OLA/Uber Request', icon: Car, page: 'TransportAccess' },
     { name: 'Room Feedback', icon: BarChart3, page: 'RoomFeedbackDashboard' },
     { name: 'Manage Rooms', icon: Settings, page: 'AdminRooms' },
     { name: 'Bulk Upload', icon: Upload, page: 'BulkUpload' },
@@ -65,7 +65,7 @@ const roleMenuConfig = {
   functional_lead: [
     { name: 'Dashboard', icon: LayoutDashboard, page: 'Dashboard' },
     { name: 'Approvals', icon: CheckSquare, page: 'Approvals' },
-    { name: 'Transport Access', icon: Car, page: 'TransportAccess' },
+    { name: 'OLA/Uber Request', icon: Car, page: 'TransportAccess' },
     { name: 'Notifications', icon: Bell, page: 'Notifications' },
   ],
   cro: [
@@ -96,7 +96,7 @@ const roleMenuConfig = {
     { name: 'Approvals', icon: CheckSquare, page: 'Approvals' },
     { name: 'Finance', icon: Wallet, page: 'Finance' },
     { name: 'Conference Rooms', icon: Calendar, page: 'ConferenceRooms' },
-    { name: 'Transport Access', icon: Car, page: 'TransportAccess' },
+    { name: 'OLA/Uber Request', icon: Car, page: 'TransportAccess' },
     { name: 'Room Feedback', icon: BarChart3, page: 'RoomFeedbackDashboard' },
     { name: 'Housekeeping', icon: Settings, page: 'HousekeepingDashboard' },
     { name: 'Manage Rooms', icon: Settings, page: 'AdminRooms' },
@@ -149,7 +149,6 @@ export default function Layout({ children, currentPageName }) {
   const menuItems = roleMenuConfig[userRole] || roleMenuConfig.employee;
   const unreadCount = notifications.length;
 
-  // Initialize session logging
   useSessionLogger(user, currentPageName);
 
   const handleLogout = async () => {
@@ -195,7 +194,6 @@ export default function Layout({ children, currentPageName }) {
       {/* Desktop Sidebar */}
       <aside className="fixed left-0 top-0 z-40 h-screen w-64 bg-white border-r border-gray-200 hidden lg:block">
         <div className="flex flex-col h-full">
-          {/* User Profile Header */}
           <div className="p-6 border-b">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold text-lg">
@@ -227,7 +225,6 @@ export default function Layout({ children, currentPageName }) {
             </div>
           </div>
 
-          {/* Navigation */}
           <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
             {menuItems.map((item) => (
               <NavLink key={item.page} item={item} />
