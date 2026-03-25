@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, AlertTriangle, Send, Loader2 } from 'lucide-react';
+import { ArrowLeft, AlertTriangle, Send, Loader2, FileText, Upload, CreditCard } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import ClaimCategorySidebar from '@/components/claims/ClaimCategorySidebar';
 import ClaimDynamicForm from '@/components/claims/ClaimDynamicForm';
@@ -183,7 +183,9 @@ export default function NewClaim() {
         {!selectedSubHead ? (
           <div className="flex-1 flex items-center justify-center">
             <div className="text-center text-gray-400">
-              <div className="text-6xl mb-4">📋</div>
+              <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-4">
+                <FileText className="w-8 h-8 text-gray-300" />
+              </div>
               <p className="text-xl font-semibold text-gray-600">Select a Category</p>
               <p className="text-sm mt-1">Choose a Head and Sub Head from the left panel to begin</p>
             </div>
@@ -192,14 +194,21 @@ export default function NewClaim() {
           <div className="flex-1 overflow-auto p-6">
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList className="mb-6 bg-white border shadow-sm">
-                <TabsTrigger value="form">📝 Claim Details</TabsTrigger>
-                <TabsTrigger value="documents">
-                  📎 Upload Bills {documents.length > 0 && `(${documents.length})`}
+                <TabsTrigger value="form" className="flex items-center gap-1.5">
+                  <FileText className="w-3.5 h-3.5" /> Claim Details
                 </TabsTrigger>
-                <TabsTrigger value="payment">💳 Payment Details</TabsTrigger>
+                <TabsTrigger value="documents" className="flex items-center gap-1.5">
+                  <Upload className="w-3.5 h-3.5" /> Upload Bills
+                  {documents.length > 0 && (
+                    <span className="ml-1 bg-blue-600 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded-full leading-none">{documents.length}</span>
+                  )}
+                </TabsTrigger>
+                <TabsTrigger value="payment" className="flex items-center gap-1.5">
+                  <CreditCard className="w-3.5 h-3.5" /> Payment Details
+                </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="form">
+              <TabsContent value="form" className="mt-0 animate-in fade-in-0 duration-200">
                 <ClaimDynamicForm
                   category={selectedSubHead}
                   headName={selectedHead}
@@ -209,7 +218,7 @@ export default function NewClaim() {
                 />
               </TabsContent>
 
-              <TabsContent value="documents">
+              <TabsContent value="documents" className="mt-0 animate-in fade-in-0 duration-200">
                 <ClaimDocumentOCR
                   category={selectedSubHead}
                   headName={selectedHead}
@@ -218,7 +227,7 @@ export default function NewClaim() {
                 />
               </TabsContent>
 
-              <TabsContent value="payment">
+              <TabsContent value="payment" className="mt-0 animate-in fade-in-0 duration-200">
                 <div className="max-w-lg bg-white rounded-xl border shadow-sm p-6 space-y-4">
                   <h3 className="font-semibold text-gray-900 text-base">Payment Details</h3>
                   <div className="space-y-1">

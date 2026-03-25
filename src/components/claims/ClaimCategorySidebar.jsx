@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
-import { ChevronDown, ChevronRight, Briefcase, Globe, MapPin } from 'lucide-react';
+import { ChevronDown, ChevronRight, Briefcase, Globe, MapPin, Plane, Utensils, Hotel, Monitor, Flame, TrendingUp, Folder } from 'lucide-react';
 
 const HEAD_ICONS = {
-  'Travel Expenses': '✈️',
-  'Food Expenses': '🍽️',
-  'Hotel Accommodation': '🏨',
-  'Office Expenses': '🖥️',
-  'Torch Bearer': '🔥',
-  'Sales Promotion': '📢',
-  'default': '📁'
+  'Travel Expenses': Plane,
+  'Food Expenses': Utensils,
+  'Hotel Accommodation': Hotel,
+  'Office Expenses': Monitor,
+  'Torch Bearer': Flame,
+  'Sales Promotion': TrendingUp,
+  'default': Folder
 };
 
 export default function ClaimCategorySidebar({ headGroups, selectedHead, selectedSubHead, onSelect, travelType, onTravelTypeChange }) {
@@ -60,7 +60,7 @@ export default function ClaimCategorySidebar({ headGroups, selectedHead, selecte
         {heads.map(head => {
           const isExpanded = expandedHeads[head] !== false;
           const isActive = selectedHead === head;
-          const icon = HEAD_ICONS[head] || HEAD_ICONS['default'];
+          const IconComponent = HEAD_ICONS[head] || HEAD_ICONS['default'];
           const subHeads = headGroups[head];
 
           return (
@@ -77,7 +77,7 @@ export default function ClaimCategorySidebar({ headGroups, selectedHead, selecte
                 }}
               >
                 <span className="flex items-center gap-2">
-                  <span>{icon}</span>
+                  <IconComponent className="w-4 h-4 flex-shrink-0" />
                   <span className="leading-tight">{head}</span>
                 </span>
                 {subHeads.length > 1 && (
@@ -87,8 +87,11 @@ export default function ClaimCategorySidebar({ headGroups, selectedHead, selecte
                 )}
               </button>
 
-              {isExpanded && subHeads.length > 1 && (
-                <div className="bg-gray-50 overflow-hidden">
+              <div
+                className="overflow-hidden transition-all duration-200"
+                style={{ maxHeight: isExpanded && subHeads.length > 1 ? `${subHeads.length * 40}px` : '0px', opacity: isExpanded && subHeads.length > 1 ? 1 : 0 }}
+              >
+                <div className="bg-gray-50">
                   {subHeads.map(sub => (
                     <button
                       key={sub.id}
@@ -103,7 +106,7 @@ export default function ClaimCategorySidebar({ headGroups, selectedHead, selecte
                     </button>
                   ))}
                 </div>
-              )}
+              </div>
             </div>
           );
         })}
