@@ -172,10 +172,10 @@ function IndividualMealForm({ formData, onChange, autoFill }) {
       <Field label="Vendor / Restaurant Name">
         <TextInput field="vendor_name" value={formData.vendor_name} onChange={onChange} placeholder="Restaurant name" autofilled={autoFill('vendor_name')} />
       </Field>
-      <Field label="Location">
-        <TextInput field="location" value={formData.location} onChange={onChange} placeholder="City / Area" />
+      <Field label="Location (City / Area)">
+        <TextInput field="location" value={formData.location} onChange={onChange} placeholder="City / Area (if applicable)" />
       </Field>
-      <Field label="Amount (₹)" required>
+      <Field label="Amount (Rs.)" required>
         <TextInput field="amount" value={formData.amount} onChange={onChange} type="number" placeholder="0.00" autofilled={autoFill('amount')} />
       </Field>
     </div>
@@ -200,7 +200,7 @@ function ExternalClientMealForm({ formData, onChange, autoFill }) {
       <Field label="No. of People" required>
         <TextInput field="no_of_people" value={formData.no_of_people} onChange={onChange} type="number" placeholder="2" />
       </Field>
-      <Field label="Amount (₹)" required>
+      <Field label="Amount (Rs.)" required>
         <TextInput field="amount" value={formData.amount} onChange={onChange} type="number" placeholder="0.00" autofilled={autoFill('amount')} />
       </Field>
     </div>
@@ -208,10 +208,19 @@ function ExternalClientMealForm({ formData, onChange, autoFill }) {
 }
 
 function TeamLunchForm({ formData, onChange, autoFill }) {
+  const numEmployees = parseInt(formData.no_of_employees) || 0;
+
+  const updateEmployee = (idx, field, val) => {
+    const employees = Array.isArray(formData.employees) ? [...formData.employees] : [];
+    if (!employees[idx]) employees[idx] = { code: '', name: '' };
+    employees[idx] = { ...employees[idx], [field]: val };
+    onChange('employees', employees);
+  };
+
   return (
     <div className="grid grid-cols-2 gap-4">
-      <Field label="Team Name / Employee Code" required>
-        <TextInput field="team_name" value={formData.team_name} onChange={onChange} placeholder="Team name or employee code" />
+      <Field label="Team Name" required>
+        <TextInput field="team_name" value={formData.team_name} onChange={onChange} placeholder="Team name" />
       </Field>
       <Field label="Date" required>
         <TextInput field="expense_date" value={formData.expense_date} onChange={onChange} type="date" autofilled={autoFill('expense_date')} />
@@ -220,9 +229,36 @@ function TeamLunchForm({ formData, onChange, autoFill }) {
         <TextInput field="vendor_name" value={formData.vendor_name} onChange={onChange} placeholder="Venue name" autofilled={autoFill('vendor_name')} />
       </Field>
       <Field label="No. of Employees" required>
-        <TextInput field="no_of_people" value={formData.no_of_people} onChange={onChange} type="number" placeholder="Number of employees" />
+        <TextInput field="no_of_employees" value={formData.no_of_employees} onChange={onChange} type="number" placeholder="Enter count" />
       </Field>
-      <Field label="Total Amount (₹)" required>
+      {numEmployees > 0 && (
+        <div className="col-span-2">
+          <Label className="text-xs mb-2 block">Employee Details ({numEmployees} members) <span className="text-red-500">*</span></Label>
+          <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+            {Array.from({ length: numEmployees }).map((_, idx) => {
+              const emp = (formData.employees || [])[idx] || {};
+              return (
+                <div key={idx} className="flex gap-2 items-center">
+                  <span className="text-xs text-gray-400 w-6 text-right flex-shrink-0">{idx + 1}.</span>
+                  <Input
+                    value={emp.code || ''}
+                    onChange={e => updateEmployee(idx, 'code', e.target.value)}
+                    placeholder="Employee Code"
+                    className="h-8 text-sm flex-1"
+                  />
+                  <Input
+                    value={emp.name || ''}
+                    onChange={e => updateEmployee(idx, 'name', e.target.value)}
+                    placeholder="Employee Name"
+                    className="h-8 text-sm flex-1"
+                  />
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+      <Field label="Total Amount (Rs.)" required>
         <TextInput field="amount" value={formData.amount} onChange={onChange} type="number" placeholder="0.00" autofilled={autoFill('amount')} />
       </Field>
     </div>

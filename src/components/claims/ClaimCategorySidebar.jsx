@@ -14,6 +14,11 @@ const HEAD_ICONS = {
 export default function ClaimCategorySidebar({ headGroups, selectedHead, selectedSubHead, onSelect, travelType, onTravelTypeChange }) {
   const [expandedHeads, setExpandedHeads] = useState({});
 
+  // Auto-expand selected head
+  React.useEffect(() => {
+    if (selectedHead) setExpandedHeads(prev => ({ ...prev, [selectedHead]: true }));
+  }, [selectedHead]);
+
   const toggleHead = (head) => {
     setExpandedHeads(prev => ({ ...prev, [head]: !prev[head] }));
   };
@@ -83,18 +88,18 @@ export default function ClaimCategorySidebar({ headGroups, selectedHead, selecte
               </button>
 
               {isExpanded && subHeads.length > 1 && (
-                <div className="bg-gray-50">
+                <div className="bg-gray-50 overflow-hidden">
                   {subHeads.map(sub => (
                     <button
                       key={sub.id}
-                      className={`w-full text-left px-8 py-2 text-xs transition-colors ${
+                      className={`w-full text-left px-8 py-2 text-xs transition-colors border-l-2 ml-0 ${
                         selectedSubHead?.id === sub.id
-                          ? 'bg-blue-100 text-blue-800 font-semibold'
-                          : 'text-gray-600 hover:bg-blue-50 hover:text-blue-700'
+                          ? 'border-l-blue-500 bg-blue-50 text-blue-800 font-semibold'
+                          : 'border-l-transparent text-gray-600 hover:bg-blue-50 hover:text-blue-700 hover:border-l-blue-300'
                       }`}
                       onClick={() => onSelect(head, sub)}
                     >
-                      ▸ {sub.title}
+                      {sub.title}
                     </button>
                   ))}
                 </div>
