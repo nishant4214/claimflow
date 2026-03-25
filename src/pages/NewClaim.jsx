@@ -65,13 +65,13 @@ export default function NewClaim() {
     return sum + amt;
   }, 0);
 
-  const criticalFlags = entries.some(e => e.documents.some(doc =>
+  const criticalFlags = entries.some(e => Array.isArray(e.documents) && e.documents.some(doc =>
     (doc.validation?.authenticityScore || 100) < 50 ||
     doc.validation?.flags?.includes('INVALID_STRUCTURE') ||
     doc.validation?.flags?.includes('POSSIBLE_FAKE')
   ));
 
-  const hasAnyWarnings = entries.some(e => e.documents.some(doc => doc.validation?.flags?.length > 0));
+  const hasAnyWarnings = entries.some(e => Array.isArray(e.documents) && e.documents.some(doc => doc.validation?.flags?.length > 0));
 
   const handleCategorySelect = (head, subHead) => {
     // Check if this exact subHead is already added
