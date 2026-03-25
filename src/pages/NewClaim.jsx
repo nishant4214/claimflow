@@ -32,6 +32,7 @@ export default function NewClaim() {
   const [activeTab, setActiveTab] = useState('form');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [overrideWarnings, setOverrideWarnings] = useState(false);
+  const [travelType, setTravelType] = useState('Domestic');
 
   useEffect(() => {
     const init = async () => {
@@ -127,6 +128,8 @@ export default function NewClaim() {
         selectedHead={selectedHead}
         selectedSubHead={selectedSubHead}
         onSelect={handleCategorySelect}
+        travelType={travelType}
+        onTravelTypeChange={setTravelType}
       />
 
       <div className="flex-1 flex flex-col overflow-hidden">

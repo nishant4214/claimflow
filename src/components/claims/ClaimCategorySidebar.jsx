@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDown, ChevronRight, Briefcase } from 'lucide-react';
+import { ChevronDown, ChevronRight, Briefcase, Globe, MapPin } from 'lucide-react';
 
 const HEAD_ICONS = {
   'Travel Expenses': '✈️',
@@ -11,7 +11,7 @@ const HEAD_ICONS = {
   'default': '📁'
 };
 
-export default function ClaimCategorySidebar({ headGroups, selectedHead, selectedSubHead, onSelect }) {
+export default function ClaimCategorySidebar({ headGroups, selectedHead, selectedSubHead, onSelect, travelType, onTravelTypeChange }) {
   const [expandedHeads, setExpandedHeads] = useState({});
 
   const toggleHead = (head) => {
@@ -27,6 +27,29 @@ export default function ClaimCategorySidebar({ headGroups, selectedHead, selecte
           <Briefcase className="w-4 h-4" /> Expense Categories
         </p>
       </div>
+
+      {/* Travel Type Selector */}
+      {heads.some(h => h.toLowerCase().includes('travel')) && (
+        <div className="px-3 py-2 border-b bg-gray-50">
+          <p className="text-[10px] text-gray-500 uppercase font-semibold mb-1.5">Travel Type</p>
+          <div className="flex gap-1">
+            {['Domestic', 'International'].map(t => (
+              <button
+                key={t}
+                onClick={() => onTravelTypeChange(t)}
+                className={`flex-1 text-xs py-1 px-2 rounded font-medium transition-colors flex items-center justify-center gap-1 ${
+                  travelType === t
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-white border text-gray-600 hover:bg-blue-50'
+                }`}
+              >
+                {t === 'Domestic' ? <MapPin className="w-3 h-3" /> : <Globe className="w-3 h-3" />}
+                {t}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       <nav className="flex-1 py-2">
         {heads.map(head => {
