@@ -267,32 +267,47 @@ export default function NewClaim() {
         ) : (
           <div className="flex-1 flex flex-col overflow-hidden">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
-              {/* Sticky tab bar */}
-              <div className="sticky top-0 z-10 bg-white border-b px-6 py-3 flex-shrink-0">
-                <TabsList className="bg-gray-100">
-                  <TabsTrigger value="form" className="flex items-center gap-1.5">
-                    <FileText className="w-3.5 h-3.5" /> Claim Details
-                  </TabsTrigger>
-                  <TabsTrigger value="documents" className="flex items-center gap-1.5">
-                    <Upload className="w-3.5 h-3.5" /> Upload Bills
-                    {activeEntry.documents.length > 0 && (
-                      <span className="ml-1 bg-blue-600 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded-full leading-none">
-                        {activeEntry.documents.length}
-                      </span>
-                    )}
-                  </TabsTrigger>
-                  <TabsTrigger value="payment" className="flex items-center gap-1.5">
-                    <CreditCard className="w-3.5 h-3.5" /> Payment Details
-                  </TabsTrigger>
-                  <TabsTrigger value="review" className="flex items-center gap-1.5">
-                    <ClipboardList className="w-3.5 h-3.5" /> Review & Submit
-                    {entries.length > 1 && (
-                      <span className="ml-1 bg-green-600 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded-full leading-none">
-                        {entries.length}
-                      </span>
-                    )}
-                  </TabsTrigger>
-                </TabsList>
+              {/* Sticky stepper bar */}
+              <div className="sticky top-0 z-10 bg-white border-b px-6 py-4 flex-shrink-0">
+                <div className="flex items-center gap-0">
+                  {[
+                    { value: 'form', num: 1, label: 'Claim Details', sub: 'Expense details' },
+                    { value: 'documents', num: 2, label: 'Upload Bills', sub: 'Attach documents' },
+                    { value: 'payment', num: 3, label: 'Payment Details', sub: 'Mode & reference' },
+                    { value: 'review', num: 4, label: 'Review & Submit', sub: 'Confirm & submit' },
+                  ].map((step, idx) => {
+                    const isActive = activeTab === step.value;
+                    const tabOrder = ['form','documents','payment','review'];
+                    const isDone = tabOrder.indexOf(activeTab) > idx;
+                    return (
+                      <React.Fragment key={step.value}>
+                        <button
+                          onClick={() => setActiveTab(step.value)}
+                          className="flex items-center gap-3 group"
+                        >
+                          <div className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold border-2 transition-all ${
+                            isActive ? 'bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-200'
+                            : isDone ? 'bg-blue-100 border-blue-300 text-blue-700'
+                            : 'bg-white border-gray-200 text-gray-400'
+                          }`}>{step.num}</div>
+                          <div className="text-left hidden sm:block">
+                            <p className={`text-xs font-semibold leading-tight ${
+                              isActive ? 'text-gray-900' : isDone ? 'text-blue-700' : 'text-gray-400'
+                            }`}>{step.label}</p>
+                            <p className={`text-[10px] leading-tight ${
+                              isActive ? 'text-gray-500' : 'text-gray-400'
+                            }`}>{step.sub}</p>
+                          </div>
+                        </button>
+                        {idx < 3 && (
+                          <div className={`flex-1 mx-3 h-0.5 rounded ${
+                            isDone ? 'bg-blue-300' : 'bg-gray-200'
+                          }`} style={{minWidth:'24px'}} />
+                        )}
+                      </React.Fragment>
+                    );
+                  })}
+                </div>
               </div>
 
               {/* Scrollable tab content */}
