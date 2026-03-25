@@ -336,7 +336,8 @@ function DropZone({ label, iconComponent: Icon, docType, onFiles, dragOverType, 
   );
 }
 
-export default function ClaimDocumentOCR({ category, headName, documents, onChange }) {
+export default function ClaimDocumentOCR({ category, headName, documents: documentsProp, onChange }) {
+  const documents = Array.isArray(documentsProp) ? documentsProp : [];
   const [analyzing, setAnalyzing] = useState({});
   const [dragOverType, setDragOverType] = useState(null);
 
@@ -365,7 +366,7 @@ export default function ClaimDocumentOCR({ category, headName, documents, onChan
       });
     }
 
-    onChange(prev => [...prev, ...newDocs]);
+    onChange(prev => [...(Array.isArray(prev) ? prev : []), ...newDocs]);
 
     for (let i = 0; i < newDocs.length; i++) {
       const doc = newDocs[i];
@@ -394,17 +395,17 @@ export default function ClaimDocumentOCR({ category, headName, documents, onChan
         rate_per_liter: extractedData.ratePerLiter || '',
       };
 
-      onChange(prev => prev.map(d =>
+      onChange(prev => (Array.isArray(prev) ? prev : []).map(d =>
         d.id === doc.id ? { ...d, status: 'done', extractedData, validation, formData } : d
       ));
       setAnalyzing(prev => { const n = { ...prev }; delete n[doc.id]; return n; });
     }
   };
 
-  const removeDoc = (id) => onChange(prev => prev.filter(d => d.id !== id));
+  const removeDoc = (id) => onChange(prev => (Array.isArray(prev) ? prev : []).filter(d => d.id !== id));
 
   const updateDocField = (docId, key, val) => {
-    onChange(prev => prev.map(d => d.id === docId ? { ...d, formData: { ...d.formData, [key]: val } } : d));
+    onChange(prev => (Array.isArray(prev) ? prev : []).map(d => d.id === docId ? { ...d, formData: { ...d.formData, [key]: val } } : d));
   };
 
   const retryUpload = (id) => {
