@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import {
   Upload, Trash2, Eye, Sparkles, AlertTriangle,
   Loader2, ShieldAlert, ShieldCheck, FileText, Image,
-  RotateCcw, AlertCircle, Info, PenLine, Receipt
+  RotateCcw, AlertCircle, Info, PenLine, Receipt, CheckCircle2, ExternalLink
 } from 'lucide-react';
 
 const FLAG_STYLES = {
@@ -256,6 +256,22 @@ function DocumentCard({ doc, onRemove, onUpdateField, onRetry, onMarkException, 
         <div className="px-4 py-2 bg-purple-50 border-b flex items-center gap-2 text-xs text-purple-800">
           <Info className="w-3.5 h-3.5" />
           <span>Marked as exception — flagged for admin review. Reason: <em>{doc.validation.exceptionReason}</em></span>
+        </div>
+      )}
+
+      {/* Upload Success Banner */}
+      {doc.status === 'done' && !isCritical && (
+        <div className="px-4 py-2.5 bg-green-50 border-b border-green-200 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-green-600 flex-shrink-0" />
+            <span className="text-xs font-semibold text-green-700">Document uploaded & analyzed successfully</span>
+          </div>
+          {doc.fileUrl && (
+            <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer"
+              className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 font-medium underline underline-offset-2">
+              <ExternalLink className="w-3.5 h-3.5" /> View Document
+            </a>
+          )}
         </div>
       )}
 
