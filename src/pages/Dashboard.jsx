@@ -152,7 +152,7 @@ export default function Dashboard() {
             </p>
           </div>
           {activeTab === 'claims' && (
-            <Link to={createPageUrl('SubmitClaim')}>
+            <Link to="/claims/new">
               <Button size="lg" className="bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-600/25">
                 <Plus className="w-5 h-5 mr-2" />
                 New Claim

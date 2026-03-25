@@ -127,7 +127,7 @@ export default function MyClaims() {
           </div>
           <div className="flex items-center gap-3">
             <ExportButton data={filteredClaims} filename="my_claims" />
-            <Link to={createPageUrl('SubmitClaim')}>
+            <Link to="/claims/new">
               <Button size="lg" className="bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-600/25">
                 <Plus className="w-5 h-5 mr-2" />
                 New Claim
@@ -258,7 +258,7 @@ export default function MyClaims() {
                   Clear Filters
                 </Button>
               ) : (
-                <Link to={createPageUrl('SubmitClaim')}>
+                <Link to="/claims/new">
                   <Button className="bg-blue-600 hover:bg-blue-700">
                     <Plus className="w-4 h-4 mr-2" />
                     Submit Your First Claim

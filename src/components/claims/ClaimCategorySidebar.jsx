@@ -1,0 +1,85 @@
+import React, { useState } from 'react';
+import { ChevronDown, ChevronRight, Briefcase } from 'lucide-react';
+
+const HEAD_ICONS = {
+  'Travel Expenses': '✈️',
+  'Food Expenses': '🍽️',
+  'Hotel Accommodation': '🏨',
+  'Office Expenses': '🖥️',
+  'Torch Bearer': '🔥',
+  'Sales Promotion': '📢',
+  'default': '📁'
+};
+
+export default function ClaimCategorySidebar({ headGroups, selectedHead, selectedSubHead, onSelect }) {
+  const [expandedHeads, setExpandedHeads] = useState({});
+
+  const toggleHead = (head) => {
+    setExpandedHeads(prev => ({ ...prev, [head]: !prev[head] }));
+  };
+
+  const heads = Object.keys(headGroups);
+
+  return (
+    <aside className="w-56 bg-white border-r flex-shrink-0 overflow-y-auto flex flex-col">
+      <div className="px-4 py-3 border-b bg-blue-600">
+        <p className="text-white font-semibold text-sm flex items-center gap-2">
+          <Briefcase className="w-4 h-4" /> Expense Categories
+        </p>
+      </div>
+
+      <nav className="flex-1 py-2">
+        {heads.map(head => {
+          const isExpanded = expandedHeads[head] !== false;
+          const isActive = selectedHead === head;
+          const icon = HEAD_ICONS[head] || HEAD_ICONS['default'];
+          const subHeads = headGroups[head];
+
+          return (
+            <div key={head}>
+              <button
+                className={`w-full flex items-center justify-between px-4 py-2.5 text-left transition-colors text-sm font-medium ${
+                  isActive ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-gray-50'
+                }`}
+                onClick={() => {
+                  toggleHead(head);
+                  if (subHeads.length === 1) {
+                    onSelect(head, subHeads[0]);
+                  }
+                }}
+              >
+                <span className="flex items-center gap-2">
+                  <span>{icon}</span>
+                  <span className="leading-tight">{head}</span>
+                </span>
+                {subHeads.length > 1 && (
+                  isExpanded
+                    ? <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
+                    : <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
+                )}
+              </button>
+
+              {isExpanded && subHeads.length > 1 && (
+                <div className="bg-gray-50">
+                  {subHeads.map(sub => (
+                    <button
+                      key={sub.id}
+                      className={`w-full text-left px-8 py-2 text-xs transition-colors ${
+                        selectedSubHead?.id === sub.id
+                          ? 'bg-blue-100 text-blue-800 font-semibold'
+                          : 'text-gray-600 hover:bg-blue-50 hover:text-blue-700'
+                      }`}
+                      onClick={() => onSelect(head, sub)}
+                    >
+                      ▸ {sub.title}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </nav>
+    </aside>
+  );
+}

@@ -8,6 +8,7 @@ import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import TransportRequestDetails from './pages/TransportRequestDetails';
+import NewClaim from './pages/NewClaim';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -66,6 +67,10 @@ const AuthenticatedApp = () => {
             <TransportRequestDetails />
           </LayoutWrapper>
         }
+      />
+      <Route
+        path="/claims/new"
+        element={<NewClaim />}
       />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
