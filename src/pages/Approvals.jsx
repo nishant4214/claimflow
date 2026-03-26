@@ -157,6 +157,23 @@ export default function Approvals() {
 
     await updateTransportMutation.mutateAsync({ id: req.id, data: updateData });
 
+    // Send email to requester
+    await base44.integrations.Core.SendEmail({
+      to: req.employee_email,
+      subject: action === 'approve'
+        ? (newStatus === 'approved'
+            ? `Transport Access Request ${req.tar_number} - Fully Approved`
+            : `Transport Access Request ${req.tar_number} - Manager Approved`)
+        : action === 'reject'
+        ? `Transport Access Request ${req.tar_number} - Rejected`
+        : `Transport Access Request ${req.tar_number} - Clarification Required`,
+      body: action === 'approve' && newStatus === 'approved'
+        ? `Dear ${req.employee_name},\n\nYour OLA/Uber transport access request ${req.tar_number} for ${req.transport_type} has been fully approved by ${user.full_name}.\n\nYour access is now active. Effective Date: ${format(new Date(), 'dd MMM yyyy')}.\n\nBest regards,\nClaim Management System`
+        : action === 'approve'
+        ? `Dear ${req.employee_name},\n\nYour OLA/Uber transport access request ${req.tar_number} for ${req.transport_type} has been approved by ${user.full_name} (Manager) and forwarded to Admin Head for final approval.\n\nBest regards,\nClaim Management System`
+        : `Dear ${req.employee_name},\n\nYour OLA/Uber transport access request ${req.tar_number} for ${req.transport_type} has been ${action === 'reject' ? 'rejected' : 'sent back for clarification'} by ${user.full_name}.\n\n${remarks ? 'Reason: ' + remarks : ''}\n\nBest regards,\nClaim Management System`,
+    });
+
     // Notify requester
     await createNotificationMutation.mutateAsync({
       recipient_email: req.employee_email,
