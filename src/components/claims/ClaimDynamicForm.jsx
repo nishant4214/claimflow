@@ -481,6 +481,28 @@ export default function ClaimDynamicForm({ category, headName, formData, onChang
 
   const handleChange = (key, val) => onChange({ ...formData, [key]: val });
 
+  // Auto-fill form fields from OCR data when documents arrive
+  useEffect(() => {
+    if (!autofillSource || Object.keys(autofillSource).length === 0) return;
+    const patch = {};
+    const map = {
+      vendor_name: autofillSource.vendorName,
+      amount: autofillSource.totalAmount ? String(autofillSource.totalAmount) : undefined,
+      expense_date: autofillSource.billDate,
+      travel_date: autofillSource.billDate,
+      check_in: autofillSource.checkIn,
+      check_out: autofillSource.checkOut,
+      bill_number: autofillSource.billNumber,
+      from_location: autofillSource.from,
+      to_location: autofillSource.to,
+      purpose: autofillSource.purpose,
+    };
+    Object.entries(map).forEach(([key, val]) => {
+      if (val && !formData[key]) patch[key] = val;
+    });
+    if (Object.keys(patch).length > 0) onChange({ ...formData, ...patch });
+  }, [documents?.[0]?.extractedData]);
+
   const autoFill = (key) => {
     const map = {
       vendor_name: autofillSource.vendorName,

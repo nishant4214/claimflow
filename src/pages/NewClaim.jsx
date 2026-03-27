@@ -83,6 +83,19 @@ export default function NewClaim() {
 
   const hasAnyWarnings = entries.some(e => Array.isArray(e.documents) && e.documents.some(doc => doc.validation?.flags?.length > 0));
 
+  // Auto-fill payment details from first document OCR when available
+  useEffect(() => {
+    const firstDoc = entries.flatMap(e => e.documents).find(d => d.extractedData);
+    if (!firstDoc) return;
+    const ocr = firstDoc.extractedData;
+    setPaymentDetails(prev => ({
+      ...prev,
+      payment_mode: (ocr.paymentMode && !prev._ocr_filled) ? ocr.paymentMode : prev.payment_mode,
+      payment_date: (ocr.billDate && !prev._ocr_filled) ? ocr.billDate : prev.payment_date,
+      _ocr_filled: true,
+    }));
+  }, [entries]);
+
   const handleCategorySelect = (head, subHead) => {
     // Check if this exact subHead is already added
     const existing = entries.find(e => e.subHead?.id === subHead.id);
