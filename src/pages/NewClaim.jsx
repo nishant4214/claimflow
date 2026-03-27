@@ -31,10 +31,13 @@ export default function NewClaim() {
   const [entries, setEntries] = useState([]);           // array of claim entries
   const [activeEntryId, setActiveEntryId] = useState(null);
 
+  const [expensePeriod, setExpensePeriod] = useState({ date_from: '', date_to: '' });
+  const periodSet = !!(expensePeriod.date_from && expensePeriod.date_to);
+
   const [paymentDetails, setPaymentDetails] = useState({
     payment_mode: 'Cash', reference_number: '', payment_date: '', remarks: ''
   });
-  const [activeTab, setActiveTab] = useState('form');
+  const [activeTab, setActiveTab] = useState('documents');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [overrideWarnings, setOverrideWarnings] = useState(false);
 
@@ -84,7 +87,7 @@ export default function NewClaim() {
     const newEntry = makeEntry(head, subHead);
     setEntries(prev => [...prev, newEntry]);
     setActiveEntryId(newEntry.id);
-    setActiveTab('form');
+    setActiveTab('documents');
   };
 
   const handleRemoveEntry = (id, e) => {
@@ -126,8 +129,8 @@ export default function NewClaim() {
         claim_type: entry.subHead.is_sales_promotion ? 'sales_promotion' : 'normal',
         is_torch_bearer: entry.subHead.is_torch_bearer || false,
         amount: parseFloat(entry.formData?.amount) || 0,
-        expense_date_from: entry.formData?.date_from || dates[0] || new Date().toISOString().split('T')[0],
-        expense_date_to: entry.formData?.date_to || dates[dates.length - 1] || new Date().toISOString().split('T')[0],
+        expense_date_from: expensePeriod.date_from || dates[0] || new Date().toISOString().split('T')[0],
+        expense_date_to: expensePeriod.date_to || dates[dates.length - 1] || new Date().toISOString().split('T')[0],
         purpose: entry.formData?.purpose || entry.subHead.title,
         payment_mode: paymentDetails.payment_mode,
         description: paymentDetails.remarks,
@@ -244,14 +247,45 @@ export default function NewClaim() {
         {/* Body */}
         {entries.length === 0 ? (
           <div className="flex-1 flex items-center justify-center">
-            <div className="text-center text-gray-400">
-              <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-4">
-                <FileText className="w-8 h-8 text-gray-300" />
+            {!periodSet ? (
+              <div className="w-full max-w-md bg-white rounded-xl border shadow-sm p-8 mx-4">
+                <div className="mb-6">
+                  <h2 className="text-xl font-bold text-gray-900">Expense Period</h2>
+                  <p className="text-sm text-gray-500 mt-1">Set the period for this claim before selecting categories</p>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <Label className="text-xs font-medium">From Date <span className="text-red-500">*</span></Label>
+                    <Input type="date" value={expensePeriod.date_from}
+                      onChange={e => setExpensePeriod(p => ({ ...p, date_from: e.target.value }))} className="h-9 text-sm" />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs font-medium">To Date <span className="text-red-500">*</span></Label>
+                    <Input type="date" value={expensePeriod.date_to}
+                      onChange={e => setExpensePeriod(p => ({ ...p, date_to: e.target.value }))} className="h-9 text-sm" />
+                  </div>
+                </div>
+                <Button
+                  className="w-full mt-6 bg-blue-600 hover:bg-blue-700"
+                  disabled={!expensePeriod.date_from || !expensePeriod.date_to}
+                >
+                  <ChevronRight className="w-4 h-4 mr-2" /> Continue to Select Category
+                </Button>
               </div>
-              <p className="text-xl font-semibold text-gray-600">Select a Category</p>
-              <p className="text-sm mt-1">Choose a Head and Sub Head from the left panel to begin</p>
-              <p className="text-xs text-gray-400 mt-1">You can add multiple categories in one claim</p>
-            </div>
+            ) : (
+              <div className="text-center text-gray-400">
+                <div className="mb-3 text-xs text-blue-600 font-medium bg-blue-50 border border-blue-200 rounded-lg px-4 py-2 inline-block">
+                  Period: {expensePeriod.date_from} → {expensePeriod.date_to}
+                  <button onClick={() => setExpensePeriod({ date_from: '', date_to: '' })} className="ml-2 text-gray-400 hover:text-red-500">✕</button>
+                </div>
+                <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-4">
+                  <FileText className="w-8 h-8 text-gray-300" />
+                </div>
+                <p className="text-xl font-semibold text-gray-600">Select a Category</p>
+                <p className="text-sm mt-1">Choose a Head and Sub Head from the left panel to begin</p>
+                <p className="text-xs text-gray-400 mt-1">You can add multiple categories in one claim</p>
+              </div>
+            )}
           </div>
         ) : !activeEntry ? (
           // No active entry selected (e.g. after clicking "Add Category")
@@ -271,13 +305,13 @@ export default function NewClaim() {
               <div className="sticky top-0 z-10 bg-white border-b px-6 py-4 flex-shrink-0">
                 <div className="flex items-center gap-0">
                   {[
-                    { value: 'form', num: 1, label: 'Claim Details', sub: 'Expense details' },
-                    { value: 'documents', num: 2, label: 'Upload Bills', sub: 'Attach documents' },
+                    { value: 'documents', num: 1, label: 'Upload Bills', sub: 'Attach & scan docs' },
+                    { value: 'form', num: 2, label: 'Claim Details', sub: 'Expense details' },
                     { value: 'payment', num: 3, label: 'Payment Details', sub: 'Mode & reference' },
                     { value: 'review', num: 4, label: 'Review & Submit', sub: 'Confirm & submit' },
                   ].map((step, idx) => {
                     const isActive = activeTab === step.value;
-                    const tabOrder = ['form','documents','payment','review'];
+                    const tabOrder = ['documents','form','payment','review'];
                     const isDone = tabOrder.indexOf(activeTab) > idx;
                     return (
                       <React.Fragment key={step.value}>
@@ -312,19 +346,6 @@ export default function NewClaim() {
 
               {/* Scrollable tab content */}
               <div className="flex-1 overflow-auto">
-                <TabsContent value="form" className="mt-0 animate-in fade-in-0 duration-200">
-                  <div className="flex justify-center p-8">
-                    <ClaimDynamicForm
-                      key={activeEntry.id}
-                      category={activeEntry.subHead}
-                      headName={activeEntry.head}
-                      formData={activeEntry.formData}
-                      onChange={(fd) => updateActiveEntry({ formData: fd })}
-                      documents={activeEntry.documents}
-                    />
-                  </div>
-                </TabsContent>
-
                 <TabsContent value="documents" className="mt-0 animate-in fade-in-0 duration-200">
                   <div className="flex justify-center p-8">
                     <div className="w-full max-w-3xl space-y-4">
@@ -348,7 +369,27 @@ export default function NewClaim() {
                           }));
                         }}
                       />
+                      {activeEntry.documents.length > 0 && (
+                        <div className="flex justify-end mt-4">
+                          <Button onClick={() => setActiveTab('form')} className="bg-blue-600 hover:bg-blue-700">
+                            Next: Claim Details <ChevronRight className="w-4 h-4 ml-1" />
+                          </Button>
+                        </div>
+                      )}
                     </div>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="form" className="mt-0 animate-in fade-in-0 duration-200">
+                  <div className="flex justify-center p-8">
+                    <ClaimDynamicForm
+                      key={activeEntry.id}
+                      category={activeEntry.subHead}
+                      headName={activeEntry.head}
+                      formData={activeEntry.formData}
+                      onChange={(fd) => updateActiveEntry({ formData: fd })}
+                      documents={activeEntry.documents}
+                    />
                   </div>
                 </TabsContent>
 
@@ -388,18 +429,27 @@ export default function NewClaim() {
                 </TabsContent>
 
                 <TabsContent value="review" className="mt-0 animate-in fade-in-0 duration-200">
-                  <ClaimReviewPanel
-                    entries={entries}
-                    paymentDetails={paymentDetails}
-                    user={user}
-                  />
+                  <div className="flex justify-center pt-6 pb-0">
+                    <div className="w-full max-w-3xl bg-blue-50 border border-blue-200 rounded-lg px-4 py-2 flex items-center gap-3 text-sm text-blue-800">
+                      <span className="font-semibold">Expense Period:</span>
+                      <span>{expensePeriod.date_from} → {expensePeriod.date_to}</span>
+                    </div>
+                  </div>
+                  {entries.some(e => e.subHead?.policy_limit && parseFloat(e.formData?.amount) > e.subHead.policy_limit) && (
+                    <div className="flex justify-center pt-3">
+                      <div className="w-full max-w-3xl space-y-2">
+                        {entries.filter(e => e.subHead?.policy_limit && parseFloat(e.formData?.amount) > e.subHead.policy_limit).map(e => (
+                          <div key={e.id} className="flex items-center gap-2 bg-red-50 border border-red-200 rounded-lg px-4 py-2 text-sm text-red-700">
+                            <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+                            <span><strong>{e.head} — {e.subHead.title}:</strong> Amount ₹{parseFloat(e.formData.amount).toLocaleString('en-IN')} exceeds policy limit of ₹{e.subHead.policy_limit.toLocaleString('en-IN')}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  <ClaimReviewPanel entries={entries} paymentDetails={paymentDetails} user={user} />
                   <div className="flex justify-center pb-10">
-                    <Button
-                      onClick={handleSubmit}
-                      disabled={!canSubmit}
-                      size="lg"
-                      className="bg-blue-600 hover:bg-blue-700 px-10"
-                    >
+                    <Button onClick={handleSubmit} disabled={!canSubmit} size="lg" className="bg-blue-600 hover:bg-blue-700 px-10">
                       {isSubmitting
                         ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Submitting...</>
                         : <><Send className="w-4 h-4 mr-2" />Submit {entries.length > 1 ? `${entries.length} Claims` : 'Claim'}</>
@@ -407,6 +457,7 @@ export default function NewClaim() {
                     </Button>
                   </div>
                 </TabsContent>
+
               </div>
             </Tabs>
           </div>

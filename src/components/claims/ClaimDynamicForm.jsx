@@ -513,16 +513,6 @@ export default function ClaimDynamicForm({ category, headName, formData, onChang
 
       {selectForm(headName, category?.title, formData, handleChange, autoFill)}
 
-      <div className="mt-5 grid grid-cols-2 gap-4 border-t pt-5">
-        <div className="space-y-1">
-          <Label className="text-xs">Expense Period From</Label>
-          <Input type="date" value={formData.date_from || ''} onChange={e => handleChange('date_from', e.target.value)} className="h-9 text-sm" />
-        </div>
-        <div className="space-y-1">
-          <Label className="text-xs">Expense Period To</Label>
-          <Input type="date" value={formData.date_to || ''} onChange={e => handleChange('date_to', e.target.value)} className="h-9 text-sm" />
-        </div>
-      </div>
     </div>
   );
 }
