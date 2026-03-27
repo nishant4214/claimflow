@@ -117,6 +117,7 @@ function DocumentCard({ doc, onRemove, onUpdateField, onRetry, onMarkException, 
   const [exceptionRemarks, setExceptionRemarks] = useState('');
 
   const isAnalyzing = doc.status === 'uploading' || doc.status === 'analyzing';
+  const isError = doc.status === 'error';
   const flags = doc.validation?.flags || [];
   const authScore = doc.validation?.authenticityScore;
   const confScore = doc.validation?.confidenceScore;
@@ -151,6 +152,11 @@ function DocumentCard({ doc, onRemove, onUpdateField, onRetry, onMarkException, 
               <p className="text-xs text-blue-600 flex items-center gap-1 mt-0.5">
                 <Loader2 className="w-3 h-3 animate-spin" />
                 {doc.status === 'uploading' ? 'Uploading...' : 'Analyzing document...'}
+              </p>
+            )}
+            {isError && (
+              <p className="text-xs text-red-500 flex items-center gap-1 mt-0.5">
+                <AlertCircle className="w-3 h-3" /> {doc.error || 'Upload failed. Please retry.'}
               </p>
             )}
           </div>
@@ -389,31 +395,46 @@ export default function ClaimDocumentOCR({ category, headName, documents: docume
       const file = Array.from(files)[i];
       setAnalyzing(prev => ({ ...prev, [doc.id]: 'uploading' }));
 
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      onChange(prev => prev.map(d => d.id === doc.id ? { ...d, fileUrl: file_url, status: 'analyzing' } : d));
-      setAnalyzing(prev => ({ ...prev, [doc.id]: 'analyzing' }));
+      try {
+        const { file_url } = await base44.integrations.Core.UploadFile({ file });
+        onChange(prev => prev.map(d => d.id === doc.id ? { ...d, fileUrl: file_url, status: 'analyzing' } : d));
+        setAnalyzing(prev => ({ ...prev, [doc.id]: 'analyzing' }));
 
-      const { extractedData, validation } = await runOCRAndValidation(file_url, category?.title || '');
+        let extractedData = {}, validation = { flags: [], confidenceScore: 100, authenticityScore: 100, isValidStructure: true };
+        try {
+          const ocrResult = await runOCRAndValidation(file_url, category?.title || '');
+          extractedData = ocrResult.extractedData;
+          validation = ocrResult.validation;
+        } catch (ocrErr) {
+          console.warn('OCR failed, proceeding without auto-fill:', ocrErr);
+          validation = { flags: ['LOW_CONFIDENCE'], confidenceScore: 0, authenticityScore: 0, isValidStructure: false };
+        }
 
-      const formData = {
-        vendor_name: extractedData.vendorName || '',
-        restaurant_name: extractedData.restaurantName || extractedData.vendorName || '',
-        bill_number: extractedData.billNumber || '',
-        bill_date: extractedData.billDate || '',
-        amount: extractedData.totalAmount || '',
-        currency: extractedData.currency || 'INR',
-        purpose: extractedData.vendorName || category?.title || '',
-        from_location: extractedData.from || '',
-        to_location: extractedData.to || '',
-        check_in: extractedData.checkIn || '',
-        check_out: extractedData.checkOut || '',
-        quantity: extractedData.quantity || '',
-        rate_per_liter: extractedData.ratePerLiter || '',
-      };
+        const formData = {
+          vendor_name: extractedData.vendorName || '',
+          restaurant_name: extractedData.restaurantName || extractedData.vendorName || '',
+          bill_number: extractedData.billNumber || '',
+          bill_date: extractedData.billDate || '',
+          amount: extractedData.totalAmount || '',
+          currency: extractedData.currency || 'INR',
+          purpose: extractedData.vendorName || category?.title || '',
+          from_location: extractedData.from || '',
+          to_location: extractedData.to || '',
+          check_in: extractedData.checkIn || '',
+          check_out: extractedData.checkOut || '',
+          quantity: extractedData.quantity || '',
+          rate_per_liter: extractedData.ratePerLiter || '',
+        };
 
-      onChange(prev => (Array.isArray(prev) ? prev : []).map(d =>
-        d.id === doc.id ? { ...d, status: 'done', extractedData, validation, formData } : d
-      ));
+        onChange(prev => (Array.isArray(prev) ? prev : []).map(d =>
+          d.id === doc.id ? { ...d, status: 'done', extractedData, validation, formData } : d
+        ));
+      } catch (uploadErr) {
+        console.error('Upload failed:', uploadErr);
+        onChange(prev => (Array.isArray(prev) ? prev : []).map(d =>
+          d.id === doc.id ? { ...d, status: 'error', error: 'Upload failed. Please retry.' } : d
+        ));
+      }
       setAnalyzing(prev => { const n = { ...prev }; delete n[doc.id]; return n; });
     }
   };
