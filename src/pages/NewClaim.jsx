@@ -155,7 +155,7 @@ export default function NewClaim() {
   const canSubmit = !isSubmitting && !(criticalFlags && !overrideWarnings);
 
   return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden">
+    <div className="flex h-[calc(100vh-64px)] lg:h-screen bg-gray-50 overflow-hidden">
       {/* Category Sidebar */}
       <ClaimCategorySidebar
         headGroups={headGroups}

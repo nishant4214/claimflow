@@ -25,7 +25,7 @@ import {
 const roleMenuConfig = {
   employee: [
     { name: 'Dashboard', icon: LayoutDashboard, page: 'Dashboard' },
-    { name: 'Submit Claim', icon: Plus, page: 'SubmitClaim' },
+    { name: 'Submit Claim', icon: Plus, page: 'SubmitClaim', path: '/claims/new' },
     { name: 'My Claims', icon: FileText, page: 'MyClaims' },
     { name: 'Conference Rooms', icon: Calendar, page: 'ConferenceRooms' },
     { name: 'OLA/Uber Request', icon: Car, page: 'TransportAccess' },
@@ -165,7 +165,7 @@ export default function Layout({ children, currentPageName }) {
 
     return (
       <Link
-        to={createPageUrl(item.page)}
+        to={item.path || createPageUrl(item.page)}
         onClick={onClick}
         className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-200 ${
           isActive 

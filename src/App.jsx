@@ -70,7 +70,11 @@ const AuthenticatedApp = () => {
       />
       <Route
         path="/claims/new"
-        element={<NewClaim />}
+        element={
+          <LayoutWrapper currentPageName="NewClaim">
+            <NewClaim />
+          </LayoutWrapper>
+        }
       />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
