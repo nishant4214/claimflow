@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { ChevronDown, ChevronRight, Briefcase, Globe, MapPin, Plane, Utensils, Hotel, Monitor, Flame, TrendingUp, Folder } from 'lucide-react';
 
 const HEAD_ICONS = {
@@ -13,11 +13,29 @@ const HEAD_ICONS = {
 
 export default function ClaimCategorySidebar({ headGroups, selectedHead, selectedSubHead, onSelect, travelType, onTravelTypeChange }) {
   const [expandedHeads, setExpandedHeads] = useState({});
+  const [width, setWidth] = useState(224);
+  const isResizing = useRef(false);
 
-  // Auto-expand selected head
-  React.useEffect(() => {
-    if (selectedHead) setExpandedHeads(prev => ({ ...prev, [selectedHead]: true }));
-  }, [selectedHead]);
+  const startResize = useCallback((e) => {
+    isResizing.current = true;
+    const startX = e.clientX;
+    const startWidth = width;
+
+    const onMove = (e) => {
+      if (!isResizing.current) return;
+      const newWidth = Math.min(360, Math.max(160, startWidth + e.clientX - startX));
+      setWidth(newWidth);
+    };
+
+    const onUp = () => {
+      isResizing.current = false;
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+    };
+
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  }, [width]);
 
   const toggleHead = (head) => {
     setExpandedHeads(prev => ({ ...prev, [head]: !prev[head] }));
@@ -26,7 +44,7 @@ export default function ClaimCategorySidebar({ headGroups, selectedHead, selecte
   const heads = Object.keys(headGroups);
 
   return (
-    <aside className="w-56 bg-white border-r flex-shrink-0 overflow-y-auto flex flex-col">
+    <aside className="bg-white border-r flex-shrink-0 overflow-y-auto flex flex-col relative" style={{ width: `${width}px`, minWidth: '160px', maxWidth: '360px' }}>
       <div className="px-4 py-3 border-b bg-blue-600">
         <p className="text-white font-semibold text-sm flex items-center gap-2">
           <Briefcase className="w-4 h-4" /> Expense Categories
@@ -78,12 +96,12 @@ export default function ClaimCategorySidebar({ headGroups, selectedHead, selecte
               >
                 <span className="flex items-center gap-2">
                   <IconComponent className="w-4 h-4 flex-shrink-0" />
-                  <span className="leading-tight">{head}</span>
+                  <span className="leading-tight truncate">{head}</span>
                 </span>
                 {subHeads.length > 1 && (
                   isExpanded
-                    ? <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
-                    : <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
+                    ? <ChevronDown className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+                    : <ChevronRight className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
                 )}
               </button>
 
@@ -111,6 +129,13 @@ export default function ClaimCategorySidebar({ headGroups, selectedHead, selecte
           );
         })}
       </nav>
+
+      {/* Resize Handle */}
+      <div
+        onMouseDown={startResize}
+        className="absolute top-0 right-0 w-1.5 h-full cursor-col-resize hover:bg-blue-400 transition-colors z-10"
+        title="Drag to resize"
+      />
     </aside>
   );
 }
