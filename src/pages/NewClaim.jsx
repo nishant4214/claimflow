@@ -14,7 +14,7 @@ import ClaimDynamicForm from '@/components/claims/ClaimDynamicForm';
 import ClaimDocumentOCR from '@/components/claims/ClaimDocumentOCR';
 import ClaimReviewPanel from '@/components/claims/ClaimReviewPanel';
 
-// A single claim entry: { id, head, subHead, formData, documents }
+// A single claim entry: { id, head, subHead, formData, documents } — v2
 function makeEntry(head, subHead) {
   return { id: `${Date.now()}-${Math.random()}`, head, subHead, formData: {}, documents: [] };
 }
