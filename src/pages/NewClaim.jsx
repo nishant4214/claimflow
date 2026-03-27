@@ -27,6 +27,13 @@ export default function NewClaim() {
   const [categories, setCategories] = useState([]);
   const [travelType, setTravelType] = useState('Domestic');
 
+  // Generate a unique claim number for this session (used for MainClaim)
+  const [claimNumber] = useState(() => {
+    const year = new Date().getFullYear();
+    const rand = String(Math.floor(Math.random() * 9000) + 1000);
+    return `CLM-${year}-${rand}`;
+  });
+
   // Multi-entry state
   const [entries, setEntries] = useState([]);           // array of claim entries
   const [activeEntryId, setActiveEntryId] = useState(null);
@@ -115,16 +122,38 @@ export default function NewClaim() {
 
     setIsSubmitting(true);
 
+    // Step 1: Create the MainClaim (parent)
+    const totalAmount = entries.reduce((sum, e) => sum + (parseFloat(e.formData?.amount) || 0), 0);
+    const mainClaim = await base44.entities.MainClaim.create({
+      claim_number: claimNumber,
+      employee_name: user?.full_name,
+      employee_email: user?.email,
+      department: user?.department,
+      expense_date_from: expensePeriod.date_from,
+      expense_date_to: expensePeriod.date_to,
+      total_amount: totalAmount,
+      categories_count: entries.length,
+      status: 'submitted',
+      payment_mode: paymentDetails.payment_mode,
+      payment_reference: paymentDetails.reference_number,
+      payment_remarks: paymentDetails.remarks,
+      source: 'Manual',
+    });
+
+    // Step 2: Create CategoryClaims (children) linked to the MainClaim
     for (const entry of entries) {
-      const claimNumber = `CLM-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
       const dates = entry.documents.map(d => d.extractedData?.billDate).filter(Boolean).sort();
 
       await base44.entities.Claim.create({
-        claim_number: claimNumber,
+        main_claim_id: mainClaim.id,
+        main_claim_number: claimNumber,
+        claim_number: `${claimNumber}-${entry.subHead.title?.slice(0,3).toUpperCase()}`,
         employee_name: user?.full_name,
         employee_email: user?.email,
         department: user?.department,
         category_id: entry.subHead.id,
+        head: entry.head,
+        sub_head: entry.subHead.title,
         category_name: `${entry.head} - ${entry.subHead.title}`,
         claim_type: entry.subHead.is_sales_promotion ? 'sales_promotion' : 'normal',
         is_torch_bearer: entry.subHead.is_torch_bearer || false,
@@ -145,12 +174,12 @@ export default function NewClaim() {
           payment_mode: paymentDetails.payment_mode,
           ocr_extracted: !!doc.extractedData,
         })),
-        status: 'submitted',
-        source: 'Manual'
+        status: 'pending',
+        source: 'Manual',
       });
     }
 
-    toast({ title: `${entries.length} claim${entries.length > 1 ? 's' : ''} submitted successfully!` });
+    toast({ title: `Claim ${claimNumber} submitted with ${entries.length} categories!` });
     setIsSubmitting(false);
     navigate('/MyClaims');
   };
@@ -178,7 +207,10 @@ export default function NewClaim() {
             </Button>
             <div>
               <h1 className="text-lg font-bold text-gray-900">New Expense Claim</h1>
-              {user && <p className="text-sm text-gray-500">{user.full_name} · {user.email}</p>}
+              <div className="flex items-center gap-2 mt-0.5">
+                <span className="text-xs font-mono text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded">{claimNumber}</span>
+                {user && <span className="text-sm text-gray-500">{user.full_name}</span>}
+              </div>
             </div>
           </div>
 

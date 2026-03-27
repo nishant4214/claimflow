@@ -1,298 +1,194 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { format } from 'date-fns';
-import { 
-  Plus, Search, CalendarIcon, Filter, 
-  FileText, Download, ArrowLeft, X
-} from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { format, parseISO } from 'date-fns';
+import { Plus, Search, FileText, ArrowLeft, Tag, Calendar, IndianRupee, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import ClaimCard from '../components/claims/ClaimCard';
-import ExportButton from '../components/export/ExportButton';
+
+const STATUS_CONFIG = {
+  draft:              { label: 'Draft',              color: 'bg-gray-100 text-gray-700 border-gray-200' },
+  submitted:          { label: 'Submitted',          color: 'bg-blue-100 text-blue-700 border-blue-200' },
+  partially_approved: { label: 'Partially Approved', color: 'bg-amber-100 text-amber-700 border-amber-200' },
+  approved:           { label: 'Approved',           color: 'bg-green-100 text-green-700 border-green-200' },
+  rejected:           { label: 'Rejected',           color: 'bg-red-100 text-red-700 border-red-200' },
+};
 
 const STATUS_OPTIONS = [
   { value: 'all', label: 'All Status' },
   { value: 'draft', label: 'Draft' },
   { value: 'submitted', label: 'Submitted' },
-  { value: 'verified', label: 'Verified' },
-  { value: 'sent_back', label: 'Sent Back' },
-  { value: 'manager_approved', label: 'Manager Approved' },
-  { value: 'admin_approved', label: 'Admin Approved' },
-  { value: 'cro_approved', label: 'CRO Approved' },
-  { value: 'cfo_approved', label: 'CFO Approved' },
+  { value: 'partially_approved', label: 'Partially Approved' },
+  { value: 'approved', label: 'Approved' },
   { value: 'rejected', label: 'Rejected' },
-  { value: 'paid', label: 'Paid' },
-  { value: 'on_hold', label: 'On Hold' },
 ];
 
-const CLAIM_TYPES = [
-  { value: 'all', label: 'All Types' },
-  { value: 'normal', label: 'Normal Reimbursement' },
-  { value: 'sales_promotion', label: 'Sales Promotion' },
-];
+function MainClaimCard({ claim }) {
+  const navigate = useNavigate();
+  const cfg = STATUS_CONFIG[claim.status] || STATUS_CONFIG.draft;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md hover:border-blue-300 transition-all cursor-pointer"
+      onClick={() => navigate(`/MainClaimDetails?id=${claim.id}`)}
+    >
+      <div className="p-5">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1 flex-wrap">
+              <span className="font-mono font-bold text-gray-900 text-base">{claim.claim_number}</span>
+              <Badge variant="outline" className={`text-xs ${cfg.color}`}>{cfg.label}</Badge>
+            </div>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-500 mt-2">
+              <span className="flex items-center gap-1">
+                <Calendar className="w-3.5 h-3.5" />
+                {claim.expense_date_from && format(parseISO(claim.expense_date_from), 'dd MMM yyyy')}
+                {claim.expense_date_to && ` → ${format(parseISO(claim.expense_date_to), 'dd MMM yyyy')}`}
+              </span>
+              <span className="flex items-center gap-1">
+                <Tag className="w-3.5 h-3.5" />
+                {claim.categories_count || 0} {claim.categories_count === 1 ? 'category' : 'categories'}
+              </span>
+            </div>
+          </div>
+          <div className="flex flex-col items-end gap-2 flex-shrink-0">
+            <div className="flex items-center gap-1">
+              <IndianRupee className="w-4 h-4 text-gray-600" />
+              <span className="text-xl font-bold text-gray-900">
+                {(claim.total_amount || 0).toLocaleString('en-IN')}
+              </span>
+            </div>
+            <div className="flex items-center gap-1 text-blue-600 text-xs font-medium">
+              View Details <ChevronRight className="w-3.5 h-3.5" />
+            </div>
+          </div>
+        </div>
+      </div>
+      {/* Status bar */}
+      <div className={`h-1 rounded-b-xl ${
+        claim.status === 'approved' ? 'bg-green-400'
+        : claim.status === 'rejected' ? 'bg-red-400'
+        : claim.status === 'partially_approved' ? 'bg-amber-400'
+        : claim.status === 'submitted' ? 'bg-blue-400'
+        : 'bg-gray-200'
+      }`} />
+    </motion.div>
+  );
+}
 
 export default function MyClaims() {
   const [user, setUser] = useState(null);
-  const [filters, setFilters] = useState({
-    status: 'all',
-    claim_type: 'all',
-    search: '',
-    dateFrom: null,
-    dateTo: null,
-  });
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
 
   useEffect(() => {
-    const loadUser = async () => {
-      const userData = await base44.auth.me();
-      setUser(userData);
-    };
-    loadUser();
+    base44.auth.me().then(setUser);
   }, []);
 
-  const { data: claims = [], isLoading } = useQuery({
-    queryKey: ['my-claims', user?.email],
-    queryFn: () => base44.entities.Claim.filter({ created_by: user?.email }, '-created_date'),
+  const { data: mainClaims = [], isLoading } = useQuery({
+    queryKey: ['my-main-claims', user?.email],
+    queryFn: () => base44.entities.MainClaim.filter({ employee_email: user?.email }, '-created_date'),
     enabled: !!user?.email,
   });
 
-  const { data: categories = [] } = useQuery({
-    queryKey: ['categories'],
-    queryFn: () => base44.entities.Category.filter({ is_active: true }),
-  });
-
-  const filteredClaims = claims.filter(claim => {
-    if (filters.status !== 'all' && claim.status !== filters.status) return false;
-    if (filters.claim_type !== 'all' && claim.claim_type !== filters.claim_type) return false;
-    if (filters.search) {
-      const search = filters.search.toLowerCase();
-      if (
-        !claim.claim_number?.toLowerCase().includes(search) &&
-        !claim.purpose?.toLowerCase().includes(search) &&
-        !claim.category_name?.toLowerCase().includes(search)
-      ) return false;
+  const filtered = mainClaims.filter(c => {
+    if (statusFilter !== 'all' && c.status !== statusFilter) return false;
+    if (search) {
+      const s = search.toLowerCase();
+      if (!c.claim_number?.toLowerCase().includes(s)) return false;
     }
-    if (filters.dateFrom && new Date(claim.expense_date) < filters.dateFrom) return false;
-    if (filters.dateTo && new Date(claim.expense_date) > filters.dateTo) return false;
     return true;
   });
 
-  const clearFilters = () => {
-    setFilters({
-      status: 'all',
-      claim_type: 'all',
-      search: '',
-      dateFrom: null,
-      dateTo: null,
-    });
-  };
-
-  const hasActiveFilters = filters.status !== 'all' || 
-    filters.claim_type !== 'all' || 
-    filters.search || 
-    filters.dateFrom || 
-    filters.dateTo;
-
-  const totalAmount = filteredClaims.reduce((sum, c) => sum + (c.amount || 0), 0);
+  const totalAmount = filtered.reduce((sum, c) => sum + (c.total_amount || 0), 0);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div>
             <Link to={createPageUrl('Dashboard')}>
               <Button variant="ghost" className="mb-2 -ml-2 text-gray-600">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to Dashboard
+                <ArrowLeft className="w-4 h-4 mr-2" /> Back to Dashboard
               </Button>
             </Link>
-            <h1 className="text-3xl font-bold text-gray-900">My Claims</h1>
-            <p className="text-gray-500 mt-1">
-              View and manage all your expense claims
-            </p>
+            <h1 className="text-2xl font-bold text-gray-900">My Claims</h1>
+            <p className="text-gray-500 text-sm mt-1">View and manage all your expense claims</p>
           </div>
-          <div className="flex items-center gap-3">
-            <ExportButton data={filteredClaims} filename="my_claims" />
-            <Link to="/claims/new">
-              <Button size="lg" className="bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-600/25">
-                <Plus className="w-5 h-5 mr-2" />
-                New Claim
-              </Button>
-            </Link>
-          </div>
+          <Link to="/claims/new">
+            <Button size="lg" className="bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-600/25">
+              <Plus className="w-5 h-5 mr-2" /> New Claim
+            </Button>
+          </Link>
         </div>
 
         {/* Filters */}
-        <Card className="mb-6 border-0 shadow-sm">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 mb-4">
-              <Filter className="w-4 h-4 text-gray-500" />
-              <span className="font-medium text-gray-700">Filters</span>
-              {hasActiveFilters && (
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={clearFilters}
-                  className="text-xs text-gray-500 hover:text-gray-700"
-                >
-                  <X className="w-3 h-3 mr-1" />
-                  Clear all
-                </Button>
-              )}
-            </div>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-              {/* Search */}
-              <div className="relative lg:col-span-2">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <Input
-                  placeholder="Search by claim #, purpose..."
-                  value={filters.search}
-                  onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
-                  className="pl-10"
-                />
-              </div>
-
-              {/* Status */}
-              <Select 
-                value={filters.status} 
-                onValueChange={(v) => setFilters(prev => ({ ...prev, status: v }))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  {STATUS_OPTIONS.map(opt => (
-                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              {/* Claim Type */}
-              <Select 
-                value={filters.claim_type} 
-                onValueChange={(v) => setFilters(prev => ({ ...prev, claim_type: v }))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Claim Type" />
-                </SelectTrigger>
-                <SelectContent>
-                  {CLAIM_TYPES.map(opt => (
-                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              {/* Date Range */}
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" className="justify-start font-normal">
-                    <CalendarIcon className="w-4 h-4 mr-2" />
-                    {filters.dateFrom && filters.dateTo
-                      ? `${format(filters.dateFrom, 'MMM d')} - ${format(filters.dateTo, 'MMM d')}`
-                      : 'Date range'}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="range"
-                    selected={{ from: filters.dateFrom, to: filters.dateTo }}
-                    onSelect={(range) => setFilters(prev => ({
-                      ...prev,
-                      dateFrom: range?.from || null,
-                      dateTo: range?.to || null,
-                    }))}
-                    numberOfMonths={2}
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Results Summary */}
-        <div className="flex items-center justify-between mb-4">
-          <p className="text-sm text-gray-500">
-            Showing {filteredClaims.length} of {claims.length} claims
-            {filteredClaims.length > 0 && (
-              <span className="ml-2 font-medium text-gray-700">
-                • Total: ₹{totalAmount.toLocaleString('en-IN')}
-              </span>
-            )}
-          </p>
+        <div className="flex flex-col sm:flex-row gap-3 mb-6">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Input
+              placeholder="Search by claim number..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-full sm:w-48">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              {STATUS_OPTIONS.map(o => (
+                <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
-        {/* Claims List */}
+        {/* Summary */}
+        {filtered.length > 0 && (
+          <div className="flex items-center justify-between mb-4 text-sm text-gray-500">
+            <span>Showing {filtered.length} of {mainClaims.length} claims</span>
+            <span className="font-medium text-gray-700">Total: ₹{totalAmount.toLocaleString('en-IN')}</span>
+          </div>
+        )}
+
+        {/* List */}
         {isLoading ? (
           <div className="space-y-4">
-            {[1, 2, 3, 4, 5].map(i => (
-              <div key={i} className="h-28 bg-gray-100 rounded-lg animate-pulse" />
-            ))}
+            {[1,2,3].map(i => <div key={i} className="h-24 bg-gray-100 rounded-xl animate-pulse" />)}
           </div>
-        ) : filteredClaims.length === 0 ? (
+        ) : filtered.length === 0 ? (
           <Card className="border-0 shadow-sm">
             <CardContent className="py-16 text-center">
               <FileText className="w-16 h-16 mx-auto text-gray-300 mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">No claims found</h3>
               <p className="text-gray-500 mb-6">
-                {hasActiveFilters 
-                  ? 'Try adjusting your filters to see more results'
-                  : "You haven't submitted any claims yet"}
+                {mainClaims.length === 0 ? "You haven't submitted any claims yet" : "Try adjusting your filters"}
               </p>
-              {hasActiveFilters ? (
-                <Button variant="outline" onClick={clearFilters}>
-                  Clear Filters
+              <Link to="/claims/new">
+                <Button className="bg-blue-600 hover:bg-blue-700">
+                  <Plus className="w-4 h-4 mr-2" /> Submit Your First Claim
                 </Button>
-              ) : (
-                <Link to="/claims/new">
-                  <Button className="bg-blue-600 hover:bg-blue-700">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Submit Your First Claim
-                  </Button>
-                </Link>
-              )}
+              </Link>
             </CardContent>
           </Card>
         ) : (
-          <div className="relative">
-            {/* Timeline vertical line */}
-            <div className="absolute left-5 top-8 bottom-8 w-0.5 bg-gradient-to-b from-blue-200 via-blue-100 to-transparent hidden sm:block" />
-            <div className="space-y-0">
-              <AnimatePresence>
-                {filteredClaims.map((claim, index) => (
-                  <div key={claim.id} className="relative flex items-start gap-4 pb-4">
-                    {/* Timeline dot */}
-                    <div className="hidden sm:flex flex-col items-center flex-shrink-0 mt-5">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center z-10 border-2 shadow-sm text-xs font-bold ${
-                        claim.status === 'paid' ? 'bg-green-100 border-green-400 text-green-700'
-                        : claim.status === 'rejected' ? 'bg-red-100 border-red-400 text-red-700'
-                        : claim.status === 'submitted' ? 'bg-blue-100 border-blue-400 text-blue-700'
-                        : 'bg-gray-100 border-gray-300 text-gray-500'
-                      }`}>
-                        {index + 1}
-                      </div>
-                    </div>
-                    <div className="flex-1">
-                      <ClaimCard claim={claim} />
-                    </div>
-                  </div>
-                ))}
-              </AnimatePresence>
-            </div>
+          <div className="space-y-4">
+            <AnimatePresence>
+              {filtered.map(claim => (
+                <MainClaimCard key={claim.id} claim={claim} />
+              ))}
+            </AnimatePresence>
           </div>
         )}
       </div>

@@ -1,0 +1,210 @@
+{
+  "name": "Claim",
+  "type": "object",
+  "properties": {
+    "main_claim_id": {
+      "type": "string",
+      "description": "Reference to the parent MainClaim ID"
+    },
+    "main_claim_number": {
+      "type": "string",
+      "description": "Parent MainClaim reference number"
+    },
+    "claim_number": {
+      "type": "string",
+      "description": "Auto-generated claim reference number"
+    },
+    "employee_name": {
+      "type": "string"
+    },
+    "employee_email": {
+      "type": "string"
+    },
+    "department": {
+      "type": "string"
+    },
+    "designation": {
+      "type": "string"
+    },
+    "expense_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Legacy single date"
+    },
+    "expense_date_from": {
+      "type": "string",
+      "format": "date",
+      "description": "Expense period start date"
+    },
+    "expense_date_to": {
+      "type": "string",
+      "format": "date",
+      "description": "Expense period end date"
+    },
+    "purpose": {
+      "type": "string"
+    },
+    "bill_number": {
+      "type": "string"
+    },
+    "bill_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "amount": {
+      "type": "number"
+    },
+    "payment_mode": {
+      "type": "string",
+      "enum": [
+        "Cash",
+        "Card",
+        "UPI",
+        "Bank Transfer"
+      ]
+    },
+    "category_id": {
+      "type": "string"
+    },
+    "category_name": {
+      "type": "string"
+    },
+    "head": {
+      "type": "string",
+      "description": "Expense head/group name"
+    },
+    "sub_head": {
+      "type": "string",
+      "description": "Expense sub-head/category name"
+    },
+    "claim_type": {
+      "type": "string",
+      "enum": [
+        "normal",
+        "sales_promotion"
+      ],
+      "default": "normal"
+    },
+    "description": {
+      "type": "string"
+    },
+    "document_urls": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "bills": {
+      "type": "array",
+      "description": "Per-document bill details with OCR-extracted data",
+      "items": {
+        "type": "object",
+        "properties": {
+          "document_url": {
+            "type": "string"
+          },
+          "purpose": {
+            "type": "string"
+          },
+          "bill_number": {
+            "type": "string"
+          },
+          "bill_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "amount": {
+            "type": "number"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "payment_mode": {
+            "type": "string"
+          },
+          "ocr_extracted": {
+            "type": "boolean",
+            "default": false
+          }
+        }
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "pending",
+        "submitted",
+        "verified",
+        "sent_back",
+        "manager_approved",
+        "admin_approved",
+        "cro_approved",
+        "cfo_approved",
+        "approved",
+        "rejected",
+        "paid",
+        "on_hold"
+      ],
+      "default": "draft"
+    },
+    "current_approver_role": {
+      "type": "string"
+    },
+    "sla_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "is_torch_bearer": {
+      "type": "boolean",
+      "default": false
+    },
+    "is_undeclared": {
+      "type": "boolean",
+      "default": false
+    },
+    "payment_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "payment_reference": {
+      "type": "string"
+    },
+    "rejection_reason": {
+      "type": "string"
+    },
+    "send_back_reason": {
+      "type": "string"
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "Manual",
+        "Bulk Upload"
+      ],
+      "default": "Manual"
+    },
+    "excel_approval_status": {
+      "type": "string",
+      "enum": [
+        "Approved",
+        "Rejected",
+        "N/A"
+      ],
+      "default": "N/A"
+    },
+    "uploaded_by": {
+      "type": "string"
+    },
+    "uploader_role": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "employee_name",
+    "expense_date_from",
+    "purpose",
+    "amount",
+    "category_id"
+  ]
+}
