@@ -28,7 +28,6 @@ export default function AdminRooms() {
   }, []);
 
   const userRole = user?.portal_role;
-  if (user && !['admin_head', 'admin', 'super_admin', 'junior_admin'].includes(userRole)) return null;
 
   const { data: rooms = [], isLoading } = useQuery({
     queryKey: ['conference-rooms-admin'],
@@ -118,6 +117,8 @@ export default function AdminRooms() {
         : [...amenities, amenity],
     });
   };
+
+  if (user && !['admin_head', 'admin', 'super_admin', 'junior_admin'].includes(userRole)) return null;
 
   const availableAmenities = ['Smart TV', 'TV', 'Whiteboard', 'Video Conference', 'Teleconference', 'Projector', 'Coffee Machine', 'Sound System', 'WiFi'];
 
