@@ -11,6 +11,7 @@ import NewClaim from './pages/NewClaim';
 import MainClaimDetails from './pages/MainClaimDetails';
 import SystemSettings from './pages/SystemSettings';
 import EmailTemplateManagement from './pages/EmailTemplateManagement';
+import WorkflowConfig from './pages/WorkflowConfig';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -85,6 +86,14 @@ const AuthenticatedApp = () => {
         element={
           <LayoutWrapper currentPageName="EmailTemplateManagement">
             <EmailTemplateManagement />
+          </LayoutWrapper>
+        }
+      />
+      <Route
+        path="/WorkflowConfig"
+        element={
+          <LayoutWrapper currentPageName="WorkflowConfig">
+            <WorkflowConfig />
           </LayoutWrapper>
         }
       />
