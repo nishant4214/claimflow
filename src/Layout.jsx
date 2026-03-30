@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
+import { getEffectiveUIRole, canSwitchRoles, setViewAsRole, getViewAsRole, ALL_ROLES, ROLE_LABELS, hasRouteAccess } from '@/lib/rbac';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useSessionLogger } from '@/components/session/SessionLogger';
@@ -107,11 +108,29 @@ const roleMenuConfig = {
     { name: 'User Management', icon: User, page: 'UserManagement' },
     { name: 'Notifications', icon: Bell, page: 'Notifications' },
   ],
+  super_admin: [
+    { name: 'Dashboard', icon: LayoutDashboard, page: 'Dashboard' },
+    { name: 'Approvals', icon: CheckSquare, page: 'Approvals' },
+    { name: 'My Claims', icon: FileText, page: 'MyClaims' },
+    { name: 'Finance', icon: Wallet, page: 'Finance' },
+    { name: 'Conference Rooms', icon: Calendar, page: 'ConferenceRooms' },
+    { name: 'OLA/Uber Request', icon: Car, page: 'TransportAccess' },
+    { name: 'Room Feedback', icon: BarChart3, page: 'RoomFeedbackDashboard' },
+    { name: 'Housekeeping', icon: Settings, page: 'HousekeepingDashboard' },
+    { name: 'Manage Rooms', icon: Settings, page: 'AdminRooms' },
+    { name: 'Bulk Upload', icon: Upload, page: 'BulkUpload' },
+    { name: 'Categories', icon: Tag, page: 'AdminCategories' },
+    { name: 'Workflow Config', icon: GitBranch, page: 'WorkflowConfig' },
+    { name: 'Reports', icon: BarChart3, page: 'Reports' },
+    { name: 'User Management', icon: User, page: 'UserManagement' },
+    { name: 'Notifications', icon: Bell, page: 'Notifications' },
+  ],
 };
 
 export default function Layout({ children, currentPageName }) {
   const [user, setUser] = useState(null);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [viewAsRole, setViewAsRoleState] = useState(getViewAsRole());
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -126,7 +145,14 @@ export default function Layout({ children, currentPageName }) {
     loadUser();
   }, []);
 
-  const userRole = user?.portal_role || user?.role || 'employee';
+  const actualRole = user?.portal_role || user?.role || 'employee';
+  const isSuperAdminUser = actualRole === 'super_admin';
+  const userRole = isSuperAdminUser ? (viewAsRole || 'super_admin') : actualRole;
+
+  const handleViewAsChange = (role) => {
+    setViewAsRole(role === 'super_admin' ? null : role);
+    setViewAsRoleState(role === 'super_admin' ? null : role);
+  };
   
   const { data: notifications = [] } = useQuery({
     queryKey: ['notification-count', user?.email],
@@ -196,12 +222,21 @@ export default function Layout({ children, currentPageName }) {
         <div className="flex flex-col h-full">
           <div className="p-6 border-b">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold text-lg">
+              <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold text-lg ${
+                isSuperAdminUser ? 'bg-gradient-to-br from-purple-600 to-purple-700' : 'bg-gradient-to-br from-blue-500 to-blue-600'
+              }`}>
                 {user?.full_name?.charAt(0) || 'U'}
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-semibold text-gray-900 truncate">{user?.full_name || 'User'}</p>
-                <p className="text-xs text-gray-500 capitalize truncate">{userRole.replace('_', ' ')}</p>
+                <p className={`text-xs capitalize truncate font-medium ${
+                  isSuperAdminUser ? 'text-purple-600' : 'text-gray-500'
+                }`}>
+                  {isSuperAdminUser ? '⚡ Super Admin' : userRole.replace(/_/g, ' ')}
+                </p>
+                {isSuperAdminUser && viewAsRole && (
+                  <p className="text-[10px] text-amber-600 font-semibold">Viewing as: {viewAsRole.replace(/_/g, ' ')}</p>
+                )}
               </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -223,6 +258,23 @@ export default function Layout({ children, currentPageName }) {
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
+
+            {/* Super Admin Role Switcher */}
+            {isSuperAdminUser && (
+              <div className="mt-3 pt-3 border-t border-gray-100">
+                <p className="text-[10px] font-semibold text-purple-600 uppercase tracking-wider mb-1.5">View As Role</p>
+                <select
+                  value={viewAsRole || 'super_admin'}
+                  onChange={e => handleViewAsChange(e.target.value)}
+                  className="w-full text-xs border border-purple-200 rounded-lg px-2 py-1.5 bg-purple-50 text-purple-800 font-medium focus:outline-none focus:ring-1 focus:ring-purple-400"
+                >
+                  <option value="super_admin">⚡ Super Admin (Full)</option>
+                  {ALL_ROLES.filter(r => r !== 'super_admin').map(r => (
+                    <option key={r} value={r}>{ROLE_LABELS[r]}</option>
+                  ))}
+                </select>
+              </div>
+            )}
           </div>
 
           <nav className="flex-1 p-4 space-y-1 overflow-y-auto">

@@ -1,0 +1,41 @@
+{
+  "name": "User",
+  "type": "object",
+  "properties": {
+    "role": {
+      "type": "string",
+      "enum": [
+        "user",
+        "admin"
+      ],
+      "default": "user"
+    },
+    "portal_role": {
+      "type": "string",
+      "enum": [
+        "employee",
+        "junior_admin",
+        "manager",
+        "admin_head",
+        "functional_lead",
+        "cro",
+        "cfo",
+        "finance",
+        "admin",
+        "super_admin"
+      ],
+      "default": "employee",
+      "description": "Functional role controlling access and approval permissions"
+    },
+    "department": {
+      "type": "string"
+    },
+    "designation": {
+      "type": "string"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    }
+  }
+}

@@ -131,23 +131,10 @@ export default function UserManagement() {
     toast.success('Demo credentials copied to clipboard');
   };
 
-  const userRole = user?.role;
-  if (userRole !== 'admin') {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50">
-        <div className="max-w-4xl mx-auto px-4 py-16 text-center">
-          <AlertCircle className="w-16 h-16 mx-auto text-amber-500 mb-4" />
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Access Restricted</h1>
-          <p className="text-gray-500">Only admins can manage users.</p>
-          <Link to={createPageUrl('Dashboard')}>
-            <Button className="mt-6" variant="outline">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Go to Dashboard
-            </Button>
-          </Link>
-        </div>
-      </div>
-    );
+  const userPortalRole = user?.portal_role;
+  const canManage = ['admin', 'super_admin'].includes(userPortalRole) || user?.role === 'admin';
+  if (user && !canManage) {
+    return null; // Redirect happens via layout — just render nothing
   }
 
   return (
@@ -279,9 +266,14 @@ export default function UserManagement() {
                     <SelectItem value="junior_admin">Junior Admin (Verify)</SelectItem>
                     <SelectItem value="manager">Manager/HOD (Approve)</SelectItem>
                     <SelectItem value="admin_head">Admin Head (Approve)</SelectItem>
+                    <SelectItem value="functional_lead">Functional Lead</SelectItem>
                     <SelectItem value="cro">CRO (Approve)</SelectItem>
                     <SelectItem value="cfo">CFO (Final Approve)</SelectItem>
                     <SelectItem value="finance">Finance (Process Payment)</SelectItem>
+                    <SelectItem value="admin">Admin</SelectItem>
+                    {(userPortalRole === 'super_admin') && (
+                      <SelectItem value="super_admin">⚡ Super Admin</SelectItem>
+                    )}
                   </SelectContent>
                 </Select>
               </div>
