@@ -271,7 +271,7 @@ export default function UserManagement() {
                     <SelectItem value="cfo">CFO (Final Approve)</SelectItem>
                     <SelectItem value="finance">Finance (Process Payment)</SelectItem>
                     <SelectItem value="admin">Admin</SelectItem>
-                    {(userPortalRole === 'super_admin') && (
+                    {(userPortalRole === 'super_admin' || user?.role === 'super_admin') && (
                       <SelectItem value="super_admin">⚡ Super Admin</SelectItem>
                     )}
                   </SelectContent>
