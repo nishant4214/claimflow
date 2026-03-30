@@ -9,6 +9,7 @@ import {
 import { Download, Search } from "lucide-react";
 import { ROLE_LABELS } from '@/lib/rbac';
 import { format } from 'date-fns';
+import { exportUsersToExcel } from '@/utils/excelExporter';
 
 const ROLE_COLORS = {
   employee: 'bg-gray-100 text-gray-700',
@@ -36,26 +37,8 @@ export default function UserSummaryTable({ users = [], search = '', onSearch, lo
     return manager ? manager.full_name : '—';
   };
 
-  const exportToCSV = () => {
-    const headers = ['Full Name', 'Email', 'Department', 'Designation', 'Portal Role', 'System Access', 'Manager', 'Created Date'];
-    const rows = filteredUsers.map(u => [
-      u.full_name || '—',
-      u.email || '—',
-      u.department || '—',
-      u.designation || '—',
-      ROLE_LABELS[u.portal_role] || (u.portal_role || 'Employee'),
-      u.role || 'user',
-      getManagerName(u.manager_id),
-      u.created_date ? format(new Date(u.created_date), 'dd MMM yyyy') : '—'
-    ]);
-    
-    const csv = [headers, ...rows].map(r => r.map(cell => `"${cell}"`).join(',')).join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `users-${format(new Date(), 'yyyy-MM-dd')}.csv`;
-    a.click();
+  const handleExport = () => {
+    exportUsersToExcel(filteredUsers);
   };
 
   return (
@@ -77,10 +60,10 @@ export default function UserSummaryTable({ users = [], search = '', onSearch, lo
               size="sm" 
               variant="outline" 
               className="gap-2 h-9"
-              onClick={exportToCSV}
+              onClick={handleExport}
               disabled={filteredUsers.length === 0}
             >
-              <Download className="w-4 h-4" /> Export CSV
+              <Download className="w-4 h-4" /> Export Excel
             </Button>
           </div>
         </div>
