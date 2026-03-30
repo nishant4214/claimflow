@@ -96,7 +96,7 @@ export default function TransportAccess() {
             </h1>
             <p className="text-gray-500 mt-1">Manage OLA / Uber transport access requests</p>
           </div>
-          {!isApprover && (
+          {(userRole !== 'functional_lead' && userRole !== 'manager') && (
            <Button
              onClick={() => setShowForm(!showForm)}
              className="gap-2"
@@ -130,14 +130,14 @@ export default function TransportAccess() {
         </div>
 
         {/* Request Form */}
-        {!isApprover && showForm && (
-          <div className="mb-8">
-            <TransportRequestForm
-              user={user}
-              onSuccess={() => setShowForm(false)}
-            />
-          </div>
-        )}
+         {(userRole !== 'functional_lead' && userRole !== 'manager') && showForm && (
+           <div className="mb-8">
+             <TransportRequestForm
+               user={user}
+               onSuccess={() => setShowForm(false)}
+             />
+           </div>
+         )}
 
         {/* Approver View */}
         {isApprover && (
