@@ -83,18 +83,7 @@ export default function NewClaim() {
 
   const hasAnyWarnings = entries.some(e => Array.isArray(e.documents) && e.documents.some(doc => doc.validation?.flags?.length > 0));
 
-  // Auto-fill payment details from first document OCR when available
-  useEffect(() => {
-    const firstDoc = entries.flatMap(e => e.documents).find(d => d.extractedData);
-    if (!firstDoc) return;
-    const ocr = firstDoc.extractedData;
-    setPaymentDetails(prev => ({
-      ...prev,
-      payment_mode: (ocr.paymentMode && !prev._ocr_filled) ? ocr.paymentMode : prev.payment_mode,
-      payment_date: (ocr.billDate && !prev._ocr_filled) ? ocr.billDate : prev.payment_date,
-      _ocr_filled: true,
-    }));
-  }, [entries]);
+  // Auto-fill payment details from OCR — handled via onPaymentData callback now
 
   const handleCategorySelect = (head, subHead) => {
     // Check if this exact subHead is already added
@@ -406,6 +395,14 @@ export default function NewClaim() {
                         category={activeEntry.subHead}
                         headName={activeEntry.head}
                         documents={activeEntry.documents}
+                        onPaymentData={(data) => {
+                          setPaymentDetails(prev => ({
+                            ...prev,
+                            payment_mode: data.payment_mode || prev.payment_mode,
+                            reference_number: data.reference_number || prev.reference_number,
+                            payment_date: data.payment_date || prev.payment_date,
+                          }));
+                        }}
                         onChange={(updater) => {
                           setEntries(prev => prev.map(e => {
                             if (e.id !== activeEntryId) return e;

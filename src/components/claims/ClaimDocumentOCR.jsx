@@ -21,6 +21,7 @@ const FLAG_STYLES = {
   HANDWRITTEN:       { label: 'Handwritten Bill',    color: 'bg-blue-100 text-blue-800 border-blue-300' },
   LOW_QUALITY:       { label: 'Low Quality Document', color: 'bg-orange-100 text-orange-800 border-orange-300' },
   EXCEPTION_CASE:    { label: 'Exception Case',      color: 'bg-purple-100 text-purple-800 border-purple-300' },
+  CROSS_MISMATCH:    { label: 'Bill-Receipt Mismatch', color: 'bg-red-100 text-red-800 border-red-300' },
 };
 
 async function runOCRAndValidation(fileUrl, categoryTitle) {
@@ -33,10 +34,12 @@ Analyze this bill/receipt image carefully and return a JSON object:
     "vendorName": "string or null",
     "billNumber": "string or null",
     "billDate": "YYYY-MM-DD or null",
+    "billTime": "HH:MM or null",
     "totalAmount": "number or null",
     "taxAmount": "number or null",
     "currency": "INR",
     "paymentMode": "Cash/Card/UPI or null",
+    "transactionId": "string or null (UTR/UPI ref/txn ID if visible)",
     "location": "string or null",
     "restaurantName": "string or null",
     "mealType": "string or null",
@@ -68,6 +71,7 @@ Authenticity: 90-100 authentic, 70-89 likely legit, 50-69 suspicious, 0-49 likel
 isHandwritten: true if bill appears handwritten.
 isLowQuality: true if image is blurry, damaged or unreadable.
 confidenceScore: how confident you are in the extraction.
+transactionId: extract ANY transaction reference number visible (UTR, UPI ref, receipt no, authorization code).
 flags: any of LOW_CONFIDENCE, INVALID_STRUCTURE, POSSIBLE_FAKE, ANOMALY, HANDWRITTEN, LOW_QUALITY.
 Category: ${categoryTitle}. Return ONLY valid JSON.`;
 
@@ -103,6 +107,43 @@ Category: ${categoryTitle}. Return ONLY valid JSON.`;
       isExceptionCase: false,
     }
   };
+}
+
+function crossVerify(bill, receipt) {
+  if (!bill?.extractedData || !receipt?.extractedData) return null;
+  const b = bill.extractedData;
+  const r = receipt.extractedData;
+  const checks = [];
+
+  // Amount check
+  const bAmt = parseFloat(b.totalAmount);
+  const rAmt = parseFloat(r.totalAmount);
+  if (!isNaN(bAmt) && !isNaN(rAmt)) {
+    const diff = Math.abs(bAmt - rAmt);
+    const pct = (diff / bAmt) * 100;
+    checks.push({ field: 'Amount', bill: `₹${bAmt}`, receipt: `₹${rAmt}`, match: pct < 1 });
+  }
+
+  // Date check
+  if (b.billDate && r.billDate) {
+    checks.push({ field: 'Date', bill: b.billDate, receipt: r.billDate, match: b.billDate === r.billDate });
+  }
+
+  // Transaction ID check
+  const bTxn = b.transactionId || b.rideId || b.billNumber;
+  const rTxn = r.transactionId || r.rideId || r.billNumber;
+  if (bTxn && rTxn) {
+    checks.push({ field: 'Transaction / Ref ID', bill: bTxn, receipt: rTxn, match: bTxn.toString().toLowerCase().includes(rTxn.toString().toLowerCase()) || rTxn.toString().toLowerCase().includes(bTxn.toString().toLowerCase()) });
+  }
+
+  // Time check
+  if (b.billTime && r.billTime) {
+    checks.push({ field: 'Time', bill: b.billTime, receipt: r.billTime, match: b.billTime === r.billTime });
+  }
+
+  const allMatch = checks.length > 0 && checks.every(c => c.match);
+  const anyMismatch = checks.some(c => !c.match);
+  return { checks, allMatch, anyMismatch };
 }
 
 function getScoreColor(score) {
@@ -312,7 +353,7 @@ function DropZone({ label, iconComponent: Icon, docType, onFiles, dragOverType, 
   );
 }
 
-export default function ClaimDocumentOCR({ category, headName, documents: documentsProp, onChange }) {
+export default function ClaimDocumentOCR({ category, headName, documents: documentsProp, onChange, onPaymentData }) {
   const documents = Array.isArray(documentsProp) ? documentsProp : [];
   const [analyzing, setAnalyzing] = useState({});
   const [dragOverType, setDragOverType] = useState(null);
@@ -380,9 +421,25 @@ export default function ClaimDocumentOCR({ category, headName, documents: docume
           rate_per_liter: extractedData.ratePerLiter || '',
         };
 
-        onChange(prev => (Array.isArray(prev) ? prev : []).map(d =>
-          d.id === doc.id ? { ...d, status: 'done', extractedData, validation, formData } : d
-        ));
+        onChange(prev => {
+          const updated = (Array.isArray(prev) ? prev : []).map(d =>
+            d.id === doc.id ? { ...d, status: 'done', extractedData, validation, formData } : d
+          );
+          // Auto-fill payment details from receipt (or bill if no receipt)
+          if (onPaymentData && (uploadType === 'receipt' || uploadType === 'bill')) {
+            const paymentDoc = updated.find(d => d.uploadType === 'receipt' && d.extractedData) ||
+                               updated.find(d => d.uploadType === 'bill' && d.extractedData);
+            if (paymentDoc?.extractedData) {
+              const ed = paymentDoc.extractedData;
+              onPaymentData({
+                payment_mode: ed.paymentMode || '',
+                reference_number: ed.transactionId || '',
+                payment_date: ed.billDate || '',
+              });
+            }
+          }
+          return updated;
+        });
       } catch (uploadErr) {
         console.error('Upload failed:', uploadErr);
         onChange(prev => (Array.isArray(prev) ? prev : []).map(d =>
@@ -412,6 +469,14 @@ export default function ClaimDocumentOCR({ category, headName, documents: docume
 
   const bills = documents.filter(d => d.uploadType === 'bill');
   const receipts = documents.filter(d => d.uploadType === 'receipt');
+
+  // Cross-verify first bill vs first receipt
+  const crossVerifyResult = bills.length > 0 && receipts.length > 0
+    ? crossVerify(
+        bills.find(d => d.status === 'done'),
+        receipts.find(d => d.status === 'done')
+      )
+    : null;
 
   return (
     <div className="max-w-3xl space-y-5">
@@ -474,6 +539,32 @@ export default function ClaimDocumentOCR({ category, headName, documents: docume
               onMarkException={markException}
             />
           ))}
+        </div>
+      )}
+
+      {/* Cross-verification result */}
+      {crossVerifyResult && crossVerifyResult.checks.length > 0 && (
+        <div className={`rounded-lg border p-4 space-y-2 ${crossVerifyResult.allMatch ? 'bg-green-50 border-green-200' : crossVerifyResult.anyMismatch ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'}`}>
+          <div className="flex items-center gap-2">
+            {crossVerifyResult.allMatch
+              ? <ShieldCheck className="w-4 h-4 text-green-600" />
+              : <ShieldAlert className="w-4 h-4 text-red-500" />}
+            <p className={`text-sm font-semibold ${crossVerifyResult.allMatch ? 'text-green-800' : 'text-red-800'}`}>
+              {crossVerifyResult.allMatch ? 'Bill & Receipt Cross-Verified ✓' : 'Cross-Verification Issues Detected'}
+            </p>
+          </div>
+          <div className="space-y-1">
+            {crossVerifyResult.checks.map((c, i) => (
+              <div key={i} className="flex items-center justify-between text-xs">
+                <span className="text-gray-600 w-32 font-medium">{c.field}</span>
+                <span className="text-gray-500 flex-1">Bill: <strong>{c.bill}</strong></span>
+                <span className="text-gray-500 flex-1">Receipt: <strong>{c.receipt}</strong></span>
+                <span className={`ml-2 font-semibold ${c.match ? 'text-green-600' : 'text-red-600'}`}>
+                  {c.match ? '✓ Match' : '✗ Mismatch'}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
