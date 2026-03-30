@@ -224,14 +224,55 @@ function CategoryClaimCard({ cat, userRole, onAction, isApprover }) {
               {/* Bills */}
               {cat.bills?.length > 0 && (
                 <div>
-                  <p className="text-xs text-gray-400 mb-1.5">Bill Details</p>
-                  <div className="space-y-1.5">
+                  <p className="text-xs font-semibold text-gray-500 mb-2">Bill Details</p>
+                  <div className="space-y-2">
                     {cat.bills.map((bill, i) => (
-                      <div key={i} className="flex items-center justify-between text-xs bg-gray-50 rounded-lg px-3 py-2">
-                        <span className="text-gray-600">{bill.vendor_name || bill.purpose || `Bill ${i+1}`}</span>
-                        <span className="font-semibold text-gray-900">₹{(bill.amount || 0).toLocaleString('en-IN')}</span>
+                      <div key={i} className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+                        <div className="flex items-center justify-between mb-1.5">
+                          <span className="text-sm font-semibold text-gray-800">{bill.purpose || `Bill ${i+1}`}</span>
+                          <span className="text-sm font-bold text-gray-900">₹{(bill.amount || 0).toLocaleString('en-IN')}</span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-gray-500">
+                          {bill.bill_number && (
+                            <span><span className="font-medium text-gray-600">Bill #:</span> {bill.bill_number}</span>
+                          )}
+                          {bill.bill_date && (
+                            <span><span className="font-medium text-gray-600">Date:</span> {bill.bill_date}</span>
+                          )}
+                          {bill.payment_mode && (
+                            <span><span className="font-medium text-gray-600">Payment:</span> {bill.payment_mode}</span>
+                          )}
+                          {bill.currency && bill.currency !== 'INR' && (
+                            <span><span className="font-medium text-gray-600">Currency:</span> {bill.currency}</span>
+                          )}
+                        </div>
+                        {bill.ocr_extracted && (
+                          <span className="inline-flex items-center gap-1 text-[10px] text-teal-600 bg-teal-50 px-1.5 py-0.5 rounded mt-1.5">
+                            ✓ OCR Extracted
+                          </span>
+                        )}
                       </div>
                     ))}
+                  </div>
+                </div>
+              )}
+              {/* Payment Details */}
+              {(cat.payment_mode || cat.payment_reference || cat.bill_number || cat.bill_date) && (
+                <div>
+                  <p className="text-xs font-semibold text-gray-500 mb-2">Payment Details</p>
+                  <div className="bg-blue-50 border border-blue-100 rounded-lg p-3 grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+                    {cat.payment_mode && (
+                      <span><span className="font-medium text-gray-600">Mode:</span> {cat.payment_mode}</span>
+                    )}
+                    {cat.bill_number && (
+                      <span><span className="font-medium text-gray-600">Bill #:</span> {cat.bill_number}</span>
+                    )}
+                    {cat.bill_date && (
+                      <span><span className="font-medium text-gray-600">Bill Date:</span> {cat.bill_date}</span>
+                    )}
+                    {cat.payment_reference && (
+                      <span><span className="font-medium text-gray-600">Ref:</span> {cat.payment_reference}</span>
+                    )}
                   </div>
                 </div>
               )}
