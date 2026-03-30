@@ -12,6 +12,7 @@ import MainClaimDetails from './pages/MainClaimDetails';
 import SystemSettings from './pages/SystemSettings';
 import EmailTemplateManagement from './pages/EmailTemplateManagement';
 import WorkflowConfig from './pages/WorkflowConfig';
+import OLAUberApprovals from './pages/OLAUberApprovals';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -94,6 +95,14 @@ const AuthenticatedApp = () => {
         element={
           <LayoutWrapper currentPageName="WorkflowConfig">
             <WorkflowConfig />
+          </LayoutWrapper>
+        }
+      />
+      <Route
+        path="/OLAUberApprovals"
+        element={
+          <LayoutWrapper currentPageName="OLAUberApprovals">
+            <OLAUberApprovals />
           </LayoutWrapper>
         }
       />
