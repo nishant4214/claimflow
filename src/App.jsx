@@ -9,6 +9,7 @@ import TransportRequestDetails from './pages/TransportRequestDetails';
 import RoleAccessManagement from './pages/RoleAccessManagement';
 import NewClaim from './pages/NewClaim';
 import MainClaimDetails from './pages/MainClaimDetails';
+import SystemSettings from './pages/SystemSettings';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -67,6 +68,14 @@ const AuthenticatedApp = () => {
         element={
           <LayoutWrapper currentPageName="MainClaimDetails">
             <MainClaimDetails />
+          </LayoutWrapper>
+        }
+      />
+      <Route
+        path="/SystemSettings"
+        element={
+          <LayoutWrapper currentPageName="SystemSettings">
+            <SystemSettings />
           </LayoutWrapper>
         }
       />

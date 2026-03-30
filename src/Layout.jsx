@@ -20,7 +20,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { 
   LayoutDashboard, FileText, Plus, CheckSquare, 
   Wallet, Settings, Tag, GitBranch, BarChart3, 
-  Bell, User, Users, LogOut, Menu, ChevronRight, X, Upload, Calendar, Car, Shield, Mail
+  Bell, User, Users, LogOut, Menu, ChevronRight, X, Upload, Calendar, Car, Shield, Mail, Sliders
 } from "lucide-react";
 
 const roleMenuConfig = {
@@ -99,6 +99,7 @@ const roleMenuConfig = {
   ],
   admin: [
     { name: 'Dashboard', icon: LayoutDashboard, page: 'Dashboard' },
+    { name: 'System Settings', icon: Sliders, page: 'SystemSettings', path: '/SystemSettings' },
     { name: 'All Users', icon: Users, page: 'AllUsers', path: '/AllUsers' },
     { name: 'Email Templates', icon: Mail, page: 'EmailTemplateManagement', path: '/EmailTemplateManagement' },
     { name: 'Approvals', icon: CheckSquare, page: 'Approvals' },
