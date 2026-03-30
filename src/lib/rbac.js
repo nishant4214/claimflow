@@ -3,7 +3,7 @@
 
 export const ALL_ROLES = [
   'employee', 'junior_admin', 'manager', 'admin_head',
-  'functional_lead', 'cro', 'cfo', 'finance', 'admin'
+  'functional_lead', 'cro', 'cfo', 'finance', 'admin', 'super_admin'
 ];
 
 export const ROLE_LABELS = {
@@ -16,6 +16,7 @@ export const ROLE_LABELS = {
   cfo: 'CFO',
   finance: 'Finance',
   admin: 'Admin',
+  super_admin: 'Super Admin',
 };
 
 // ─── ROUTE PERMISSIONS ────────────────────────────────────────────────────────
@@ -57,6 +58,10 @@ export const ROLE_PERMISSIONS = {
     routes: ['Dashboard', 'Approvals', 'Finance', 'ConferenceRooms', 'TransportAccess', 'RoomFeedbackDashboard', 'HousekeepingDashboard', 'AdminRooms', 'BulkUpload', 'AdminCategories', 'WorkflowConfig', 'Reports', 'AllUsers', 'RoleAccessManagement', 'UserManagement', 'Notifications', 'MyAccount'],
     actions: ['*'],
   },
+  super_admin: {
+    routes: ['*'],
+    actions: ['*'],
+  },
 };
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
@@ -77,7 +82,7 @@ export function isSuperAdmin(role) {
 }
 
 export function canManageUsers(role) {
-  return role === 'admin';
+  return role === 'admin' || role === 'super_admin';
 }
 
 export function canSwitchRoles(role) {
