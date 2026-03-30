@@ -119,7 +119,6 @@ const roleMenuConfig = {
 export default function Layout({ children, currentPageName }) {
   const [user, setUser] = useState(null);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [viewAsRole, setViewAsRoleState] = useState(getViewAsRole());
   const navigate = useNavigate();
 
   useEffect(() => {
