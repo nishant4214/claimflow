@@ -52,6 +52,7 @@ const roleMenuConfig = {
   ],
   admin_head: [
     { name: 'Dashboard', icon: LayoutDashboard, page: 'Dashboard' },
+    { name: 'Role Management', icon: Users, page: 'RoleAccessManagement' },
     { name: 'Submit Claim', icon: Plus, page: 'SubmitClaim', path: '/claims/new' },
     { name: 'Approvals', icon: CheckSquare, page: 'Approvals' },
     { name: 'My Claims', icon: FileText, page: 'MyClaims' },
