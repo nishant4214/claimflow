@@ -35,7 +35,7 @@ export const ROLE_PERMISSIONS = {
     actions: ['claim:approve_manager', 'claim:view_own'],
   },
   admin_head: {
-    routes: ['Dashboard', 'Approvals', 'MyClaims', 'ConferenceRooms', 'TransportAccess', 'RoomFeedbackDashboard', 'AdminRooms', 'BulkUpload', 'AdminCategories', 'WorkflowConfig', 'Reports', 'Notifications', 'MyAccount'],
+    routes: ['Dashboard', 'Approvals', 'MyClaims', 'ConferenceRooms', 'TransportAccess', 'RoomFeedbackDashboard', 'AdminRooms', 'BulkUpload', 'AdminCategories', 'WorkflowConfig', 'Reports', 'UserManagement', 'RoleAccessManagement', 'Notifications', 'MyAccount'],
     actions: ['claim:approve_admin', 'claim:view_all', 'category:manage', 'workflow:manage'],
   },
   functional_lead: {

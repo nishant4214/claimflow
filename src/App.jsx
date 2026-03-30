@@ -8,6 +8,7 @@ import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import TransportRequestDetails from './pages/TransportRequestDetails';
+import RoleAccessManagement from './pages/RoleAccessManagement';
 import NewClaim from './pages/NewClaim';
 import MainClaimDetails from './pages/MainClaimDetails';
 
@@ -74,6 +75,14 @@ const AuthenticatedApp = () => {
         element={
           <LayoutWrapper currentPageName="NewClaim">
             <NewClaim />
+          </LayoutWrapper>
+        }
+      />
+      <Route
+        path="/RoleAccessManagement"
+        element={
+          <LayoutWrapper currentPageName="RoleAccessManagement">
+            <RoleAccessManagement />
           </LayoutWrapper>
         }
       />
