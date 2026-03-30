@@ -23,12 +23,13 @@ export default function HousekeepingDashboard() {
   }, []);
 
   const userRole = user?.portal_role;
-  if (user && !['junior_admin', 'admin_head', 'admin', 'super_admin'].includes(userRole)) return null;
 
   const { data: bookings = [], isLoading } = useQuery({
     queryKey: ['housekeeping-tasks'],
     queryFn: () => base44.entities.RoomBooking.filter({ status: 'approved' }, '-booking_date'),
   });
+
+  if (user && !['junior_admin', 'admin_head', 'admin', 'super_admin'].includes(userRole)) return null;
 
   const tasksNeedingSetup = bookings.filter(b => b.pre_setup_required && b.booking_date >= format(new Date(), 'yyyy-MM-dd'));
   const tasksNeedingCleanup = bookings.filter(b => b.post_cleanup_required && b.booking_date >= format(new Date(), 'yyyy-MM-dd'));
