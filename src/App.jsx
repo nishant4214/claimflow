@@ -10,6 +10,7 @@ import RoleAccessManagement from './pages/RoleAccessManagement';
 import NewClaim from './pages/NewClaim';
 import MainClaimDetails from './pages/MainClaimDetails';
 import SystemSettings from './pages/SystemSettings';
+import EmailTemplateManagement from './pages/EmailTemplateManagement';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -76,6 +77,14 @@ const AuthenticatedApp = () => {
         element={
           <LayoutWrapper currentPageName="SystemSettings">
             <SystemSettings />
+          </LayoutWrapper>
+        }
+      />
+      <Route
+        path="/EmailTemplateManagement"
+        element={
+          <LayoutWrapper currentPageName="EmailTemplateManagement">
+            <EmailTemplateManagement />
           </LayoutWrapper>
         }
       />
