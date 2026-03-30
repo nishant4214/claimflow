@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
+import OCRDetailsViewer from '../components/claims/OCRDetailsViewer';
 
 const MAIN_STATUS_CONFIG = {
   draft:              { label: 'Draft',              color: 'bg-gray-100 text-gray-700 border-gray-300' },
@@ -221,40 +222,9 @@ function CategoryClaimCard({ cat, userRole, onAction, isApprover }) {
                   </div>
                 </div>
               )}
-              {/* Bills */}
+              {/* OCR Details & Bill Analysis */}
               {cat.bills?.length > 0 && (
-                <div>
-                  <p className="text-xs font-semibold text-gray-500 mb-2">Bill Details</p>
-                  <div className="space-y-2">
-                    {cat.bills.map((bill, i) => (
-                      <div key={i} className="bg-gray-50 border border-gray-200 rounded-lg p-3">
-                        <div className="flex items-center justify-between mb-1.5">
-                          <span className="text-sm font-semibold text-gray-800">{bill.purpose || `Bill ${i+1}`}</span>
-                          <span className="text-sm font-bold text-gray-900">₹{(bill.amount || 0).toLocaleString('en-IN')}</span>
-                        </div>
-                        <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-gray-500">
-                          {bill.bill_number && (
-                            <span><span className="font-medium text-gray-600">Bill #:</span> {bill.bill_number}</span>
-                          )}
-                          {bill.bill_date && (
-                            <span><span className="font-medium text-gray-600">Date:</span> {bill.bill_date}</span>
-                          )}
-                          {bill.payment_mode && (
-                            <span><span className="font-medium text-gray-600">Payment:</span> {bill.payment_mode}</span>
-                          )}
-                          {bill.currency && bill.currency !== 'INR' && (
-                            <span><span className="font-medium text-gray-600">Currency:</span> {bill.currency}</span>
-                          )}
-                        </div>
-                        {bill.ocr_extracted && (
-                          <span className="inline-flex items-center gap-1 text-[10px] text-teal-600 bg-teal-50 px-1.5 py-0.5 rounded mt-1.5">
-                            ✓ OCR Extracted
-                          </span>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                <OCRDetailsViewer bills={cat.bills} />
               )}
               {/* Payment Details */}
               {(cat.payment_mode || cat.payment_reference || cat.bill_number || cat.bill_date) && (
