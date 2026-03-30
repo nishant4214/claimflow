@@ -137,11 +137,7 @@ function FormDataReview({ formData, headName, subTitle }) {
 }
 
 export default function ClaimReviewPanel({ entries, paymentDetails, user }) {
-  const totalAll = entries.reduce((sum, e) => {
-    const entryTotal = e.documents.reduce((s, d) => s + (parseFloat(d.formData?.amount || e.formData?.amount) || 0), 0)
-      || parseFloat(e.formData?.amount) || 0;
-    return sum + entryTotal;
-  }, 0);
+  const totalAll = entries.reduce((sum, e) => sum + (parseFloat(e.formData?.amount) || 0), 0);
 
   const totalDocs = entries.reduce((sum, e) => sum + e.documents.length, 0);
   const hasWarnings = entries.some(e => e.documents.some(d => d.validation?.flags?.length > 0));
@@ -174,8 +170,7 @@ export default function ClaimReviewPanel({ entries, paymentDetails, user }) {
 
       {/* Per-category entries */}
       {entries.map((entry, idx) => {
-        const entryAmount = entry.documents.reduce((s, d) => s + (parseFloat(d.formData?.amount || entry.formData?.amount) || 0), 0)
-          || parseFloat(entry.formData?.amount) || 0;
+        const entryAmount = parseFloat(entry.formData?.amount) || 0;
         return (
           <div key={idx} className="bg-white rounded-xl border shadow-sm overflow-hidden">
             {/* Category header */}
