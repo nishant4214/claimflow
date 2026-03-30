@@ -136,8 +136,17 @@ function FormDataReview({ formData, headName, subTitle }) {
   );
 }
 
+function getEntryAmount(entry) {
+  const bills = entry.documents.filter(d => d.uploadType === 'bill' && d.status === 'done');
+  if (bills.length > 0) {
+    const billTotal = bills.reduce((s, d) => s + (parseFloat(d.extractedData?.totalAmount) || 0), 0);
+    if (billTotal > 0) return billTotal;
+  }
+  return parseFloat(entry.formData?.amount) || 0;
+}
+
 export default function ClaimReviewPanel({ entries, paymentDetails, user }) {
-  const totalAll = entries.reduce((sum, e) => sum + (parseFloat(e.formData?.amount) || 0), 0);
+  const totalAll = entries.reduce((sum, e) => sum + getEntryAmount(e), 0);
 
   const totalDocs = entries.reduce((sum, e) => sum + e.documents.length, 0);
   const hasWarnings = entries.some(e => e.documents.some(d => d.validation?.flags?.length > 0));
@@ -170,7 +179,7 @@ export default function ClaimReviewPanel({ entries, paymentDetails, user }) {
 
       {/* Per-category entries */}
       {entries.map((entry, idx) => {
-        const entryAmount = parseFloat(entry.formData?.amount) || 0;
+        const entryAmount = getEntryAmount(entry);
         return (
           <div key={idx} className="bg-white rounded-xl border shadow-sm overflow-hidden">
             {/* Category header */}
