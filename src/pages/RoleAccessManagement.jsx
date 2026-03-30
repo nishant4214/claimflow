@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
+import UserSummaryTable from '@/components/RoleAccessComponents/UserSummaryTable';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -183,60 +184,36 @@ export default function RoleAccessManagement() {
 
         {/* ── ALL USERS TAB (CRUD) ── */}
         {tab === 'users' && (
-          <Card className="border-0 shadow-sm">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-base">All Users & Full Details</CardTitle>
-                <div className="relative w-64">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <Input placeholder="Search users..." value={search} onChange={e => setSearch(e.target.value)} className="pl-10 h-8 text-sm" />
+          <div className="space-y-6">
+            <UserSummaryTable 
+              users={users} 
+              search={search} 
+              onSearch={setSearch}
+              loading={isLoading}
+            />
+            <Card className="border-0 shadow-sm">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Edit className="w-4 h-4" /> User Actions
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-sm text-gray-600 mb-4">
+                  <p>Click on a user row in the summary above to view details, or use the actions below:</p>
                 </div>
-              </div>
-            </CardHeader>
-            <CardContent className="p-0 overflow-x-auto">
-              {isLoading ? (
-                <div className="py-12 text-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto" /></div>
-              ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow className="bg-gray-50">
-                      <TableHead>User</TableHead>
-                      <TableHead>Department</TableHead>
-                      <TableHead>Portal Role</TableHead>
-                      <TableHead>Manager</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredUsers.map(u => {
-                      const role = u.portal_role || 'employee';
-                      return (
-                        <TableRow key={u.id}>
-                          <TableCell>
-                            <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xs font-semibold">
-                                {u.full_name?.charAt(0) || '?'}
-                              </div>
-                              <div>
-                                <p className="font-medium text-sm text-gray-900">{u.full_name || '—'}</p>
-                                <p className="text-xs text-gray-500">{u.email}</p>
-                                <p className="text-[10px] text-gray-400">{u.designation || '—'}</p>
-                              </div>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <span className="text-sm text-gray-600">{u.department || '—'}</span>
-                          </TableCell>
-                          <TableCell>
-                            <Badge className={`text-xs ${ROLE_COLORS[role] || 'bg-gray-100 text-gray-700'}`}>
-                              {ROLE_LABELS[role] || role}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <span className="text-xs text-gray-600">{getManagerName(u.manager_id)}</span>
-                          </TableCell>
-                          <TableCell className="text-right space-x-2">
-                            <Button size="sm" variant="outline" className="h-7 text-xs gap-1"
+                <div className="space-y-2">
+                  {filteredUsers.length === 0 ? (
+                    <p className="text-xs text-gray-400">No users to display</p>
+                  ) : (
+                    <div className="grid gap-2 max-h-96 overflow-y-auto">
+                      {filteredUsers.map(u => (
+                        <div key={u.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+                          <div className="flex-1">
+                            <p className="font-medium text-sm text-gray-900">{u.full_name}</p>
+                            <p className="text-xs text-gray-500">{u.email}</p>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button size="sm" variant="outline" className="h-8 text-xs gap-1"
                               onClick={() => { 
                                 setEditUser(u); 
                                 setEditRole(u.portal_role || 'employee');
@@ -247,19 +224,19 @@ export default function RoleAccessManagement() {
                               }}>
                               <Edit className="w-3 h-3" /> Edit
                             </Button>
-                            <Button size="sm" variant="destructive" className="h-7 text-xs gap-1"
+                            <Button size="sm" variant="destructive" className="h-8 text-xs gap-1"
                               onClick={() => setDeleteConfirm(u)}>
                               <Trash2 className="w-3 h-3" /> Delete
                             </Button>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
-              )}
-            </CardContent>
-          </Card>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         )}
 
         {/* ── INVITE NEW USER TAB ── */}
