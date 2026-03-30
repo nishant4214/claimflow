@@ -38,7 +38,7 @@ const CAT_STATUS_CONFIG = {
 const ROLE_CAN_ACT = {
   junior_admin: ['pending', 'submitted'],
   manager:      ['verified', 'submitted'],
-  admin_head:   ['manager_approved'],
+  admin_head:   ['pending', 'submitted', 'verified', 'manager_approved', 'cro_approved'],
   cro:          ['manager_approved'],
   cfo:          ['cro_approved'],
 };
