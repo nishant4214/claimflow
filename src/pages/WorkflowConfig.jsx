@@ -141,8 +141,17 @@ export default function WorkflowConfigPage() {
     saveMutation.mutate(workflowData);
   };
 
-  const userRole = user?.portal_role;
-  if (user && !['admin_head', 'admin', 'super_admin'].includes(userRole)) return null;
+  const userRole = user?.portal_role || user?.role;
+  if (user && !['admin_head', 'admin', 'super_admin'].includes(userRole)) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold text-gray-900">Access Denied</h2>
+          <p className="text-gray-600 mt-2">Only admins can access Workflow Configuration</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!workflowData) {
     return (
