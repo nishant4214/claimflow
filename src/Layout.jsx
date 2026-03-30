@@ -53,18 +53,6 @@ const roleMenuConfig = {
   admin_head: [
     { name: 'Dashboard', icon: LayoutDashboard, page: 'Dashboard' },
     { name: 'Approvals', icon: CheckSquare, page: 'Approvals' },
-    { name: 'Submit Claim', icon: Plus, page: 'SubmitClaim', path: '/claims/new' },
-    { name: 'My Claims', icon: FileText, page: 'MyClaims' },
-    { name: 'Email Templates', icon: Mail, page: 'EmailTemplateManagement', path: '/EmailTemplateManagement' },
-    { name: 'Role & Access', icon: Shield, page: 'RoleAccessManagement' },
-    { name: 'Workflow Config', icon: GitBranch, page: 'WorkflowConfig' },
-    { name: 'Categories', icon: Tag, page: 'AdminCategories' },
-    { name: 'Conference Rooms', icon: Calendar, page: 'ConferenceRooms' },
-    { name: 'Manage Rooms', icon: Settings, page: 'AdminRooms' },
-    { name: 'Room Feedback', icon: BarChart3, page: 'RoomFeedbackDashboard' },
-    { name: 'OLA/Uber Request', icon: Car, page: 'TransportAccess' },
-    { name: 'Bulk Upload', icon: Upload, page: 'BulkUpload' },
-    { name: 'Reports', icon: BarChart3, page: 'Reports' },
     { name: 'Notifications', icon: Bell, page: 'Notifications' },
   ],
   functional_lead: [
