@@ -272,6 +272,52 @@ export const users = {
 };
 
 // ============================================================================
+// OCR API - Local OCR Service
+// ============================================================================
+export const ocr = {
+  /**
+   * Extract text from image/PDF using local OCR
+   * Supports: JPEG, PNG, WebP, PDF
+   */
+  extractText: async (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await apiClient.post('/ocr/extract', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data.data;
+  },
+
+  /**
+   * Batch extract text from multiple files
+   */
+  extractBatch: async (files) => {
+    const formData = new FormData();
+    files.forEach((file) => formData.append('files', file));
+    const response = await apiClient.post('/ocr/batch', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data.data;
+  },
+
+  /**
+   * Extract and validate Aadhaar number from document
+   */
+  validateAadhaar: async (text) => {
+    const response = await apiClient.post('/ocr/validate-aadhaar', { text });
+    return response.data.data;
+  },
+
+  /**
+   * Extract and validate PAN number from document
+   */
+  validatePAN: async (text) => {
+    const response = await apiClient.post('/ocr/validate-pan', { text });
+    return response.data.data;
+  },
+};
+
+// ============================================================================
 // MAIN EXPORT - Mimics base44 client structure
 // ============================================================================
 export const base44 = {
@@ -282,6 +328,7 @@ export const base44 = {
   analytics,
   connectors,
   users,
+  ocr,
   asServiceRole: {
     entities: entitiesProxy,
     functions,
