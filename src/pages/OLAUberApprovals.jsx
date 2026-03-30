@@ -104,13 +104,64 @@ export default function OLAUberApprovals() {
 
       await base44.entities.TransportRequest.update(requestId, updateData);
 
-      // Send notification
+      // Send email notification
+      let emailSubject = '';
+      let emailBody = '';
+
+      if (action === 'approved') {
+        emailSubject = `✅ OLA/Uber Request Approved - ${request.tar_number}`;
+        emailBody = `<p>Dear ${request.employee_name},</p>
+          <p>Your OLA/Uber transport access request has been <strong>approved</strong>.</p>
+          <p><strong>Request Details:</strong></p>
+          <ul>
+            <li>Request ID: ${request.tar_number}</li>
+            <li>Transport Type: ${request.transport_type}</li>
+            <li>Approved By: ${user.full_name}</li>
+          </ul>
+          <p>Your access is now active. You can start using OLA/Uber with the approved service.</p>
+          <p>If you have any questions, please contact your administrator.</p>
+          <p>Best regards,<br/>HR Team</p>`;
+      } else if (action === 'rejected') {
+        emailSubject = `❌ OLA/Uber Request Rejected - ${request.tar_number}`;
+        emailBody = `<p>Dear ${request.employee_name},</p>
+          <p>Your OLA/Uber transport access request has been <strong>rejected</strong>.</p>
+          <p><strong>Request Details:</strong></p>
+          <ul>
+            <li>Request ID: ${request.tar_number}</li>
+            <li>Transport Type: ${request.transport_type}</li>
+            <li>Rejection Reason: ${reason || 'Not specified'}</li>
+          </ul>
+          <p>If you believe this is in error or would like to discuss further, please contact your manager or the HR team.</p>
+          <p>Best regards,<br/>HR Team</p>`;
+      } else if (action === 'sent_back') {
+        emailSubject = `🔄 OLA/Uber Request Needs Clarification - ${request.tar_number}`;
+        emailBody = `<p>Dear ${request.employee_name},</p>
+          <p>Your OLA/Uber transport access request has been <strong>sent back for clarification</strong>.</p>
+          <p><strong>Request Details:</strong></p>
+          <ul>
+            <li>Request ID: ${request.tar_number}</li>
+            <li>Transport Type: ${request.transport_type}</li>
+            <li>Clarification Needed: ${reason || 'Please provide additional details'}</li>
+          </ul>
+          <p>Please review the feedback and resubmit your request with the required clarifications.</p>
+          <p>Best regards,<br/>HR Team</p>`;
+      }
+
+      await base44.integrations.Core.SendEmail({
+        to: request.employee_email,
+        subject: emailSubject,
+        body: emailBody,
+        from_name: 'HR Team',
+      });
+
+      // Send in-app notification
       await base44.entities.Notification.create({
         recipient_email: request.employee_email,
         notification_type: action === 'approved' ? 'transport_approved' : 
                           action === 'rejected' ? 'transport_rejected' : 'transport_sent_back',
         title: `Transport Request ${action === 'approved' ? 'Approved' : action === 'rejected' ? 'Rejected' : 'Sent Back'}`,
         message: `Your OLA/Uber request (${request.tar_number}) has been ${action === 'approved' ? 'approved' : action === 'rejected' ? 'rejected' : 'sent back for clarification'}.${reason ? ` Reason: ${reason}` : ''}`,
+        email_sent: true,
       });
     },
     onSuccess: () => {
