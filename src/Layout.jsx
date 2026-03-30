@@ -43,6 +43,7 @@ const roleMenuConfig = {
   ],
   manager: [
     { name: 'Dashboard', icon: LayoutDashboard, page: 'Dashboard' },
+    { name: 'Submit Claim', icon: Plus, page: 'SubmitClaim', path: '/claims/new' },
     { name: 'Approvals', icon: CheckSquare, page: 'Approvals' },
     { name: 'My Claims', icon: FileText, page: 'MyClaims' },
     { name: 'Conference Rooms', icon: Calendar, page: 'ConferenceRooms' },
@@ -51,6 +52,7 @@ const roleMenuConfig = {
   ],
   admin_head: [
     { name: 'Dashboard', icon: LayoutDashboard, page: 'Dashboard' },
+    { name: 'Submit Claim', icon: Plus, page: 'SubmitClaim', path: '/claims/new' },
     { name: 'Approvals', icon: CheckSquare, page: 'Approvals' },
     { name: 'My Claims', icon: FileText, page: 'MyClaims' },
     { name: 'Conference Rooms', icon: Calendar, page: 'ConferenceRooms' },
@@ -71,6 +73,7 @@ const roleMenuConfig = {
   ],
   cro: [
     { name: 'Dashboard', icon: LayoutDashboard, page: 'Dashboard' },
+    { name: 'Submit Claim', icon: Plus, page: 'SubmitClaim', path: '/claims/new' },
     { name: 'Approvals', icon: CheckSquare, page: 'Approvals' },
     { name: 'My Claims', icon: FileText, page: 'MyClaims' },
     { name: 'Conference Rooms', icon: Calendar, page: 'ConferenceRooms' },
@@ -110,6 +113,7 @@ const roleMenuConfig = {
   super_admin: [
     { name: 'Dashboard', icon: LayoutDashboard, page: 'Dashboard' },
     { name: 'Test Credentials', icon: Users, page: 'TestCredentials' },
+    { name: 'Submit Claim', icon: Plus, page: 'SubmitClaim', path: '/claims/new' },
     { name: 'Approvals', icon: CheckSquare, page: 'Approvals' },
     { name: 'My Claims', icon: FileText, page: 'MyClaims' },
     { name: 'Finance', icon: Wallet, page: 'Finance' },
