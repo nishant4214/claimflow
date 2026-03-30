@@ -115,6 +115,25 @@ const roleMenuConfig = {
     { name: 'User Management', icon: User, page: 'UserManagement' },
     { name: 'Notifications', icon: Bell, page: 'Notifications' },
   ],
+  super_admin: [
+    { name: 'Dashboard', icon: LayoutDashboard, page: 'Dashboard' },
+    { name: 'System Settings', icon: Sliders, page: 'SystemSettings', path: '/SystemSettings' },
+    { name: 'Approvals', icon: CheckSquare, page: 'Approvals' },
+    { name: 'Finance', icon: Wallet, page: 'Finance' },
+    { name: 'Email Templates', icon: Mail, page: 'EmailTemplateManagement', path: '/EmailTemplateManagement' },
+    { name: 'RoleAccess Management', icon: Shield, page: 'RoleAccessManagement' },
+    { name: 'Workflow Config', icon: GitBranch, page: 'WorkflowConfig' },
+    { name: 'Categories', icon: Tag, page: 'AdminCategories' },
+    { name: 'Conference Rooms', icon: Calendar, page: 'ConferenceRooms' },
+    { name: 'Manage Rooms', icon: Settings, page: 'AdminRooms' },
+    { name: 'Room Feedback', icon: BarChart3, page: 'RoomFeedbackDashboard' },
+    { name: 'Housekeeping', icon: Settings, page: 'HousekeepingDashboard' },
+    { name: 'OLA/Uber Request', icon: Car, page: 'TransportAccess' },
+    { name: 'Bulk Upload', icon: Upload, page: 'BulkUpload' },
+    { name: 'Reports', icon: BarChart3, page: 'Reports' },
+    { name: 'User Management', icon: User, page: 'UserManagement' },
+    { name: 'Notifications', icon: Bell, page: 'Notifications' },
+  ],
   };
 
 export default function Layout({ children, currentPageName }) {
@@ -135,7 +154,7 @@ export default function Layout({ children, currentPageName }) {
   }, []);
 
   const actualRole = user?.portal_role || user?.role || 'employee';
-  const userRole = actualRole;
+  const userRole = actualRole === 'super_admin' ? 'super_admin' : actualRole;
   
   const { data: notifications = [] } = useQuery({
     queryKey: ['notification-count', user?.email],
