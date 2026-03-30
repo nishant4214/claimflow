@@ -1,0 +1,47 @@
+{
+  "name": "EmailTemplate",
+  "type": "object",
+  "properties": {
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "CLAIM_APPROVED",
+        "CLAIM_REJECTED",
+        "CLAIM_SENT_BACK",
+        "ROOM_APPROVED",
+        "ROOM_REJECTED",
+        "ROOM_SENT_BACK",
+        "TRANSPORT_APPROVED",
+        "TRANSPORT_REJECTED",
+        "TRANSPORT_SENT_BACK"
+      ],
+      "description": "Event type (non-editable key)"
+    },
+    "subject": {
+      "type": "string",
+      "description": "Email subject with placeholders"
+    },
+    "body": {
+      "type": "string",
+      "description": "Email body with placeholders (supports HTML)"
+    },
+    "available_placeholders": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of valid placeholders for this event type",
+      "default": []
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether template is active"
+    }
+  },
+  "required": [
+    "event_type",
+    "subject",
+    "body"
+  ]
+}

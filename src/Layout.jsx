@@ -20,7 +20,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { 
   LayoutDashboard, FileText, Plus, CheckSquare, 
   Wallet, Settings, Tag, GitBranch, BarChart3, 
-  Bell, User, Users, LogOut, Menu, ChevronRight, X, Upload, Calendar, Car, Shield
+  Bell, User, Users, LogOut, Menu, ChevronRight, X, Upload, Calendar, Car, Shield, Mail
 } from "lucide-react";
 
 const roleMenuConfig = {
@@ -54,6 +54,7 @@ const roleMenuConfig = {
    { name: 'Dashboard', icon: LayoutDashboard, page: 'Dashboard' },
    { name: 'All Users', icon: Users, page: 'AllUsers', path: '/AllUsers' },
    { name: 'Role & Access', icon: Shield, page: 'RoleAccessManagement' },
+   { name: 'Email Templates', icon: Mail, page: 'EmailTemplateManagement', path: '/EmailTemplateManagement' },
    { name: 'Submit Claim', icon: Plus, page: 'SubmitClaim', path: '/claims/new' },
     { name: 'Approvals', icon: CheckSquare, page: 'Approvals' },
     { name: 'My Claims', icon: FileText, page: 'MyClaims' },
@@ -99,6 +100,7 @@ const roleMenuConfig = {
   admin: [
     { name: 'Dashboard', icon: LayoutDashboard, page: 'Dashboard' },
     { name: 'All Users', icon: Users, page: 'AllUsers', path: '/AllUsers' },
+    { name: 'Email Templates', icon: Mail, page: 'EmailTemplateManagement', path: '/EmailTemplateManagement' },
     { name: 'Approvals', icon: CheckSquare, page: 'Approvals' },
     { name: 'Finance', icon: Wallet, page: 'Finance' },
     { name: 'Conference Rooms', icon: Calendar, page: 'ConferenceRooms' },

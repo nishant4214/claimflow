@@ -1,5 +1,52 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
+// Inline template renderer to avoid module imports
+function renderTemplate(template, data) {
+  if (!template) return { subject: '', body: '' };
+  const subject = replacePlaceholders(template.subject || '', data);
+  const body = replacePlaceholders(template.body || '', data);
+  return { subject, body };
+}
+
+function replacePlaceholders(text, data) {
+  if (!text || typeof text !== 'string') return '';
+  return text.replace(/\{\{([^}]+)\}\}/g, (match, placeholder) => {
+    const trimmed = placeholder.trim();
+    if (trimmed.includes('?')) {
+      return evaluateExpression(trimmed, data);
+    }
+    const value = getNestedValue(data, trimmed);
+    return value !== undefined && value !== null ? String(value) : '';
+  });
+}
+
+function getNestedValue(obj, path) {
+  return path.split('.').reduce((current, prop) => current?.[prop], obj);
+}
+
+function evaluateExpression(expr, data) {
+  try {
+    let evaluableExpr = expr;
+    const placeholderMatches = expr.match(/[a-zA-Z_][a-zA-Z0-9_]*/g);
+    if (placeholderMatches) {
+      const uniquePlaceholders = [...new Set(placeholderMatches)];
+      uniquePlaceholders.forEach(placeholder => {
+        const value = getNestedValue(data, placeholder);
+        if (typeof value === 'string') {
+          evaluableExpr = evaluableExpr.replace(new RegExp(`\\b${placeholder}\\b`, 'g'), `"${value.replace(/"/g, '\\"')}"`);
+        } else {
+          evaluableExpr = evaluableExpr.replace(new RegExp(`\\b${placeholder}\\b`, 'g'), JSON.stringify(value));
+        }
+      });
+    }
+    const result = Function(`"use strict"; return (${evaluableExpr})`)();
+    return result ? result : '';
+  } catch (e) {
+    console.error('Template expression evaluation failed:', e.message);
+    return '';
+  }
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -15,37 +62,58 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Remarks are mandatory for reject/sent_back' }, { status: 400 });
     }
 
+    // Build event type key
+    const eventTypeMap = {
+      'CLAIM': { approved: 'CLAIM_APPROVED', rejected: 'CLAIM_REJECTED', sent_back: 'CLAIM_SENT_BACK' },
+      'ROOM_BOOKING': { approved: 'ROOM_APPROVED', rejected: 'ROOM_REJECTED', sent_back: 'ROOM_SENT_BACK' },
+      'TRANSPORT_REQUEST': { approved: 'TRANSPORT_APPROVED', rejected: 'TRANSPORT_REJECTED', sent_back: 'TRANSPORT_SENT_BACK' }
+    };
+    const eventType = eventTypeMap[module]?.[status] || `${module}_${status}`;
+
     // Determine recipient
     const recipient = data.employee_email || data.respondent_email;
     if (!recipient) {
       return Response.json({ error: 'Recipient email not found' }, { status: 400 });
     }
 
-    // Build email based on module
+    // Prepare data for template rendering
+    const templateData = {
+      employeeName: data.employee_name,
+      requestId: data.claim_number || data.booking_number || data.tar_number || requestId,
+      status: status.charAt(0).toUpperCase() + status.slice(1),
+      remarks: remarks || 'N/A',
+      date: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
+      module: module,
+      // Claims specific
+      head: data.head || 'N/A',
+      subHead: data.sub_head || '',
+      amount: data.amount || 'N/A',
+      // Room booking specific
+      roomName: data.room_name || 'N/A',
+      bookingDate: data.booking_date || 'N/A',
+      timeSlot: data.start_time && data.end_time ? `${data.start_time} - ${data.end_time}` : 'N/A',
+      // Transport specific
+      pickup: data.pickup_location || 'N/A',
+      drop: data.drop_location || 'N/A',
+      travelDate: data.effective_date || 'N/A'
+    };
+
+    // Fetch template (with fallback to defaults in getEmailTemplate)
     let emailSubject = '';
     let emailBody = '';
 
-    switch (module) {
-      case 'CLAIM':
-        const claimId = data.claim_number || requestId;
-        emailSubject = `Claim ${status === 'approved' ? 'Approved' : status === 'rejected' ? 'Rejected' : 'Sent Back'} – ${claimId}`;
-        emailBody = buildClaimEmail(data, status, remarks, approverName, approverRole);
-        break;
-
-      case 'ROOM_BOOKING':
-        const bookingId = data.booking_number || requestId;
-        emailSubject = `Room Booking ${status === 'approved' ? 'Approved' : status === 'rejected' ? 'Rejected' : 'Sent Back'} – ${bookingId}`;
-        emailBody = buildRoomBookingEmail(data, status, remarks, approverName, approverRole);
-        break;
-
-      case 'TRANSPORT_REQUEST':
-        const tarNumber = data.tar_number || requestId;
-        emailSubject = `Transport Request ${status === 'approved' ? 'Approved' : status === 'rejected' ? 'Rejected' : 'Sent Back'} – ${tarNumber}`;
-        emailBody = buildTransportEmail(data, status, remarks, approverName, approverRole);
-        break;
-
-      default:
-        return Response.json({ error: 'Invalid module type' }, { status: 400 });
+    try {
+      const templateResponse = await base44.functions.invoke('getEmailTemplate', { eventType });
+      if (templateResponse.template) {
+        const rendered = renderTemplate(templateResponse.template, templateData);
+        emailSubject = rendered.subject;
+        emailBody = rendered.body;
+      }
+    } catch (templateError) {
+      console.error('Template fetch failed:', templateError.message);
+      // If template system fails, use generic fallback
+      emailSubject = `${module.replace(/_/g, ' ')} ${status.toUpperCase()} – ${templateData.requestId}`;
+      emailBody = `Dear ${templateData.employeeName},\n\nYour request has been ${status}.\n\nRequest ID: ${templateData.requestId}\nStatus: ${templateData.status}\nDate: ${templateData.date}\n\nBest regards,\nAdmin Portal Team`;
     }
 
     // Send email (non-blocking, fail-safe)
@@ -64,9 +132,11 @@ Deno.serve(async (req) => {
     try {
       const notificationData = {
         recipient_email: recipient,
-        [`${module.toLowerCase()}_id`]: requestId,
-        [`${module.toLowerCase()}_number`]: data.claim_number || data.booking_number || data.tar_number,
-        notification_type: `${module.toLowerCase()}_${status}`,
+        claim_id: module === 'CLAIM' ? requestId : undefined,
+        claim_number: module === 'CLAIM' ? (data.claim_number || requestId) : undefined,
+        booking_id: module === 'ROOM_BOOKING' ? requestId : undefined,
+        booking_number: module === 'ROOM_BOOKING' ? (data.booking_number || requestId) : undefined,
+        notification_type: eventType,
         title: emailSubject,
         message: emailBody,
         email_sent: true,
@@ -91,117 +161,4 @@ Deno.serve(async (req) => {
   }
 });
 
-function buildClaimEmail(data, status, remarks, approverName, approverRole) {
-  const statusText = status === 'approved' ? 'APPROVED' : status === 'rejected' ? 'REJECTED' : 'SENT BACK';
-  const actionText = status === 'approved' ? 'approved' : status === 'rejected' ? 'rejected' : 'sent back for corrections';
-
-  return `
-Dear ${data.employee_name},
-
-We are writing to inform you that your expense claim has been ${actionText}.
-
-═══════════════════════════════════════════════════════════
-
-CLAIM DETAILS
-─────────────────────────────────────────────────────────
-Claim ID: ${data.claim_number || 'N/A'}
-Employee: ${data.employee_name}
-Department: ${data.department}
-Amount: ₹${data.amount || 'N/A'}
-Category: ${data.head || 'N/A'} ${data.sub_head ? `/ ${data.sub_head}` : ''}
-
-STATUS: ${statusText}
-Reviewed By: ${approverName || 'Admin'} (${approverRole || 'N/A'})
-Date & Time: ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}
-
-${remarks ? `
-REMARKS:
-─────────────────────────────────────────────────────────
-${remarks}
-` : ''}
-
-═══════════════════════════════════════════════════════════
-
-${status === 'approved' ? 'Your claim has been approved and will be processed for payment shortly.' : status === 'rejected' ? 'Your claim has been rejected. Please review the remarks above and contact HR if you have any questions.' : 'Your claim has been sent back for corrections. Please review the remarks and resubmit with necessary changes.'}
-
-Best regards,
-Admin Portal Team
-`;
-}
-
-function buildRoomBookingEmail(data, status, remarks, approverName, approverRole) {
-  const statusText = status === 'approved' ? 'APPROVED' : status === 'rejected' ? 'REJECTED' : 'SENT BACK';
-  const actionText = status === 'approved' ? 'approved' : status === 'rejected' ? 'rejected' : 'sent back for corrections';
-
-  return `
-Dear ${data.employee_name},
-
-Your conference room booking has been ${actionText}.
-
-═══════════════════════════════════════════════════════════
-
-BOOKING DETAILS
-─────────────────────────────────────────────────────────
-Booking ID: ${data.booking_number || 'N/A'}
-Room: ${data.room_name}
-Date: ${data.booking_date}
-Time: ${data.start_time} - ${data.end_time}
-Title: ${data.meeting_title}
-Attendees: ${data.attendees_count}
-
-STATUS: ${statusText}
-Reviewed By: ${approverName || 'Admin'} (${approverRole || 'N/A'})
-Date & Time: ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}
-
-${remarks ? `
-REMARKS:
-─────────────────────────────────────────────────────────
-${remarks}
-` : ''}
-
-═══════════════════════════════════════════════════════════
-
-${status === 'approved' ? 'Your room booking has been confirmed. Please ensure all arrangements are in place.' : status === 'rejected' ? 'Your booking could not be accommodated. Please review the remarks and try another date/room.' : 'Your booking needs corrections. Please review the remarks and resubmit.'}
-
-Best regards,
-Admin Portal Team
-`;
-}
-
-function buildTransportEmail(data, status, remarks, approverName, approverRole) {
-  const statusText = status === 'approved' ? 'APPROVED' : status === 'rejected' ? 'REJECTED' : 'SENT BACK';
-  const actionText = status === 'approved' ? 'approved' : status === 'rejected' ? 'rejected' : 'sent back for corrections';
-
-  return `
-Dear ${data.employee_name},
-
-Your OLA/Uber transport request has been ${actionText}.
-
-═══════════════════════════════════════════════════════════
-
-REQUEST DETAILS
-─────────────────────────────────────────────────────────
-Request ID: ${data.tar_number || 'N/A'}
-Employee: ${data.employee_name}
-Department: ${data.department}
-Transport Type: ${data.transport_type}
-Effective Date: ${data.effective_date}
-
-STATUS: ${statusText}
-Reviewed By: ${approverName || 'Admin'} (${approverRole || 'N/A'})
-Date & Time: ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}
-
-${remarks ? `
-REMARKS:
-─────────────────────────────────────────────────────────
-${remarks}
-` : ''}
-
-═══════════════════════════════════════════════════════════
-
-${status === 'approved' ? 'Your transport request has been approved. You can now book OLA/Uber services.' : status === 'rejected' ? 'Your request has been rejected. Please contact your manager for details.' : 'Your request needs more information. Please review the remarks and resubmit.'}
-
-Best regards,
-Admin Portal Team
-`;
-}
+// Fallback functions kept for emergency use only
