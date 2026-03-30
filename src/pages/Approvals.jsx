@@ -28,8 +28,10 @@ const ROLE_STAGES = {
   junior_admin: { statuses: ['pending', 'submitted'], nextStatus: 'verified', stage: 'verification' },
   manager:      { statuses: ['verified', 'submitted'], nextStatus: 'manager_approved', stage: 'manager_approval' },
   admin_head:   { statuses: ['manager_approved'], nextStatus: 'admin_approved', stage: 'admin_approval' },
+  admin:        { statuses: ['pending', 'submitted', 'verified', 'manager_approved', 'cro_approved'], nextStatus: 'admin_approved', stage: 'admin_approval' },
   cro:          { statuses: ['manager_approved'], nextStatus: 'cro_approved', stage: 'cro_approval' },
   cfo:          { statuses: ['cro_approved'], nextStatus: 'approved', stage: 'cfo_approval' },
+  super_admin:  { statuses: ['pending', 'submitted', 'verified', 'manager_approved', 'cro_approved'], nextStatus: 'admin_approved', stage: 'admin_approval' },
 };
 
 const TRANSPORT_APPROVER_ROLES = ['manager', 'admin_head', 'admin'];

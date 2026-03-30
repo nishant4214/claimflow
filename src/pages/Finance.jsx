@@ -164,7 +164,7 @@ export default function Finance() {
   const totalQueueAmount = queueClaims.reduce((sum, c) => sum + (c.amount || 0), 0);
   const totalPaidAmount = paidClaims.reduce((sum, c) => sum + (c.amount || 0), 0);
 
-  const userRole = user?.portal_role;
+  const userRole = user?.portal_role || user?.role;
   if (user && !['finance', 'admin', 'super_admin'].includes(userRole)) return null;
 
   return (
