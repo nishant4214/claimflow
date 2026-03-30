@@ -281,52 +281,6 @@ function DocumentCard({ doc, onRemove, onUpdateField, onRetry, onMarkException, 
         </div>
       )}
 
-      {/* OCR Fields */}
-      {doc.status === 'done' && (
-        <div className="px-4 py-3">
-          {doc.extractedData && Object.keys(doc.extractedData).some(k => doc.extractedData[k]) && (
-            <div className="flex items-center gap-2 mb-2.5">
-              <Sparkles className="w-3.5 h-3.5 text-purple-600" />
-              <span className="text-xs font-semibold text-purple-700">Auto-filled from document — please verify</span>
-              {confScore !== undefined && (
-                <span className={`text-xs ml-auto ${getScoreColor(confScore)}`}>Confidence: {confScore}%</span>
-              )}
-            </div>
-          )}
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {[
-              { key: 'vendor_name', label: 'Vendor Name', ocr: doc.extractedData?.vendorName },
-              { key: 'bill_number', label: 'Bill / Invoice No.', ocr: doc.extractedData?.billNumber },
-              { key: 'bill_date', label: 'Date', type: 'date', ocr: doc.extractedData?.billDate },
-              { key: 'amount', label: 'Amount (₹)', type: 'number', ocr: doc.extractedData?.totalAmount },
-              { key: 'currency', label: 'Currency', ocr: doc.extractedData?.currency || 'INR' },
-              { key: 'purpose', label: 'Purpose' },
-            ].map(field => {
-              const isAutofilled = field.ocr && doc.formData?.[field.key] == field.ocr;
-              const isEmpty = !doc.formData?.[field.key];
-              const isMandatoryEmpty = isEmpty && (isHandwritten || field.key === 'amount' || field.key === 'bill_date');
-              return (
-                <div key={field.key} className="space-y-0.5">
-                  <Label className="text-[11px] text-gray-500">{field.label}</Label>
-                  <Input
-                    type={field.type || 'text'}
-                    value={doc.formData?.[field.key] || ''}
-                    onChange={e => onUpdateField(doc.id, field.key, e.target.value)}
-                    placeholder={field.ocr ? String(field.ocr) : ''}
-                    className={`h-8 text-xs ${
-                      isAutofilled ? 'border-purple-300 bg-purple-50' :
-                      isMandatoryEmpty ? 'border-red-300 bg-red-50' : ''
-                    }`}
-                  />
-                  {isMandatoryEmpty && (
-                    <p className="text-[10px] text-red-500">Required</p>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
