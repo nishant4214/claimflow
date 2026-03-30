@@ -165,10 +165,7 @@ export default function Finance() {
   const totalPaidAmount = paidClaims.reduce((sum, c) => sum + (c.amount || 0), 0);
 
   const userRole = user?.portal_role;
-  if (user && !['finance', 'admin', 'super_admin'].includes(userRole)) {
-    window.location.replace(createPageUrl('Dashboard'));
-    return null;
-  }
+  if (user && !['finance', 'admin', 'super_admin'].includes(userRole)) return null;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50">

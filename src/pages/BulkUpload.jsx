@@ -28,10 +28,7 @@ export default function BulkUpload() {
       const userData = await base44.auth.me();
       setUser(userData);
 
-      const userRole = userData?.portal_role || userData?.role;
-      if (!['admin_head', 'cro', 'admin', 'super_admin'].includes(userRole)) {
-        window.location.replace(createPageUrl('Dashboard'));
-      }
+      // Role guard handled in render below
     };
     loadUser();
   }, []);
@@ -151,13 +148,10 @@ export default function BulkUpload() {
   const approvedClaims = draftClaims.filter(c => c.excel_approval_status === 'Approved');
   const rejectedClaims = draftClaims.filter(c => c.excel_approval_status === 'Rejected');
 
-  if (!user) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
-      </div>
-    );
-  }
+  if (!user) return <div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" /></div>;
+
+  const userPortalRole = user?.portal_role || user?.role;
+  if (!['admin_head', 'cro', 'admin', 'super_admin'].includes(userPortalRole)) return null;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 p-6">

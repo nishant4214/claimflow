@@ -331,10 +331,7 @@ export default function Approvals() {
     setPendingAction(null);
   };
 
-  if (user && (!roleConfig || userRole === 'employee')) {
-    window.location.replace(createPageUrl('Dashboard'));
-    return null;
-  }
+  if (user && (!roleConfig || userRole === 'employee')) return null;
 
   const pendingGroupCount = buildGroups(pendingClaims).length + (canApproveTransport ? pendingTransportRequests.length : 0);
 

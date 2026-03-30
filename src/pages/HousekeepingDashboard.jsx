@@ -22,6 +22,9 @@ export default function HousekeepingDashboard() {
     loadUser();
   }, []);
 
+  const userRole = user?.portal_role;
+  if (user && !['junior_admin', 'admin_head', 'admin', 'super_admin'].includes(userRole)) return null;
+
   const { data: bookings = [], isLoading } = useQuery({
     queryKey: ['housekeeping-tasks'],
     queryFn: () => base44.entities.RoomBooking.filter({ status: 'approved' }, '-booking_date'),

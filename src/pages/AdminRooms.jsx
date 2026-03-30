@@ -27,6 +27,9 @@ export default function AdminRooms() {
     loadUser();
   }, []);
 
+  const userRole = user?.portal_role;
+  if (user && !['admin_head', 'admin', 'super_admin', 'junior_admin'].includes(userRole)) return null;
+
   const { data: rooms = [], isLoading } = useQuery({
     queryKey: ['conference-rooms-admin'],
     queryFn: () => base44.entities.ConferenceRoom.list('-created_date'),

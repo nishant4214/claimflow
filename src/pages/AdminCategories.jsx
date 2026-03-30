@@ -185,10 +185,7 @@ export default function AdminCategories() {
   };
 
   const userRole = user?.portal_role;
-  if (user && !['admin_head', 'admin', 'super_admin'].includes(userRole)) {
-    window.location.replace(createPageUrl('Dashboard'));
-    return null;
-  }
+  if (user && !['admin_head', 'admin', 'super_admin'].includes(userRole)) return null;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50">
