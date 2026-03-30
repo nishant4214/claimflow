@@ -6,6 +6,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, Lock } from "lucide-react";
 import RolePermissionManager from './admin/RolePermissionManager';
 import NotificationManager from './admin/NotificationManager';
+import BSetupGuide from './admin/BSetupGuide';
+import FSetupGuide from './admin/FSetupGuide';
 
 export default function SystemSettings() {
   const [user, setUser] = useState(null);
@@ -83,6 +85,18 @@ export default function SystemSettings() {
               >
                 Notifications
               </TabsTrigger>
+              <TabsTrigger 
+                value="b-setup"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent"
+              >
+                B Setup Guide
+              </TabsTrigger>
+              <TabsTrigger 
+                value="f-setup"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent"
+              >
+                F Setup Guide
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="roles" className="mt-0 p-6">
@@ -91,6 +105,14 @@ export default function SystemSettings() {
 
             <TabsContent value="notifications" className="mt-0 p-6">
               <NotificationManager />
+            </TabsContent>
+
+            <TabsContent value="b-setup" className="mt-0 p-6">
+              <BSetupGuide />
+            </TabsContent>
+
+            <TabsContent value="f-setup" className="mt-0 p-6">
+              <FSetupGuide />
             </TabsContent>
           </Tabs>
         </Card>
