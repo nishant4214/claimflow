@@ -53,6 +53,9 @@ const roleMenuConfig = {
   admin_head: [
     { name: 'Dashboard', icon: LayoutDashboard, page: 'Dashboard' },
     { name: 'Approvals', icon: CheckSquare, page: 'Approvals' },
+    { name: 'My Claims', icon: FileText, page: 'MyClaims' },
+    { name: 'Conference Rooms', icon: Calendar, page: 'ConferenceRooms' },
+    { name: 'OLA/Uber Request', icon: Car, page: 'TransportAccess' },
     { name: 'Notifications', icon: Bell, page: 'Notifications' },
   ],
   functional_lead: [
