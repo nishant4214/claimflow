@@ -3,7 +3,7 @@
 
 export const ALL_ROLES = [
   'employee', 'junior_admin', 'manager', 'admin_head',
-  'functional_lead', 'cro', 'cfo', 'finance', 'admin', 'super_admin'
+  'functional_lead', 'cro', 'cfo', 'finance', 'admin'
 ];
 
 export const ROLE_LABELS = {
@@ -16,7 +16,6 @@ export const ROLE_LABELS = {
   cfo: 'CFO',
   finance: 'Finance',
   admin: 'Admin',
-  super_admin: 'Super Admin',
 };
 
 // ─── ROUTE PERMISSIONS ────────────────────────────────────────────────────────
@@ -55,11 +54,7 @@ export const ROLE_PERMISSIONS = {
     actions: ['claim:process_payment', 'claim:view_all'],
   },
   admin: {
-    routes: ['Dashboard', 'TestCredentials', 'Approvals', 'Finance', 'ConferenceRooms', 'TransportAccess', 'RoomFeedbackDashboard', 'HousekeepingDashboard', 'AdminRooms', 'BulkUpload', 'AdminCategories', 'WorkflowConfig', 'Reports', 'UserManagement', 'Notifications', 'MyAccount'],
-    actions: ['*'],
-  },
-  super_admin: {
-    routes: ['*'],
+    routes: ['Dashboard', 'Approvals', 'Finance', 'ConferenceRooms', 'TransportAccess', 'RoomFeedbackDashboard', 'HousekeepingDashboard', 'AdminRooms', 'BulkUpload', 'AdminCategories', 'WorkflowConfig', 'Reports', 'AllUsers', 'RoleAccessManagement', 'UserManagement', 'Notifications', 'MyAccount'],
     actions: ['*'],
   },
 };
@@ -82,28 +77,14 @@ export function isSuperAdmin(role) {
 }
 
 export function canManageUsers(role) {
-  return ['admin', 'super_admin'].includes(role);
+  return role === 'admin';
 }
 
 export function canSwitchRoles(role) {
-  return role === 'super_admin';
+  return false;
 }
 
-// ─── ROLE SWITCH STORAGE ─────────────────────────────────────────────────────
-const ROLE_SWITCH_KEY = 'super_admin_view_as';
-
-export function getViewAsRole() {
-  return localStorage.getItem(ROLE_SWITCH_KEY) || null;
-}
-
-export function setViewAsRole(role) {
-  if (role) localStorage.setItem(ROLE_SWITCH_KEY, role);
-  else localStorage.removeItem(ROLE_SWITCH_KEY);
-}
-
-// Returns the effective UI role (super_admin can impersonate for UI only)
+// Returns the effective UI role
 export function getEffectiveUIRole(actualRole) {
-  if (actualRole !== 'super_admin') return actualRole;
-  const viewAs = getViewAsRole();
-  return viewAs || 'super_admin';
+  return actualRole;
 }
