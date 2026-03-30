@@ -23,7 +23,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-const ALLOWED_ROLES = ['employee', 'manager', 'admin_head', 'admin'];
+const ALLOWED_ROLES = ['employee', 'manager', 'functional_lead', 'admin_head', 'admin', 'super_admin'];
 
 export default function TransportAccess() {
   const [user, setUser] = useState(null);
@@ -38,12 +38,23 @@ export default function TransportAccess() {
 
   const userRole = user?.portal_role || user?.role || 'employee';
 
-  const { data: myRequests = [], isLoading, refetch: refetchRequests } = useQuery({
+  const { data: allRequests = [], isLoading: allLoading } = useQuery({
+    queryKey: ['all-transport-requests'],
+    queryFn: () => base44.entities.TransportRequest.list('-created_date'),
+    enabled: ['functional_lead', 'admin_head', 'admin', 'super_admin'].includes(userRole),
+    refetchInterval: 5000,
+  });
+
+  const { data: myRequests = [], isLoading: myLoading, refetch: refetchRequests } = useQuery({
     queryKey: ['transport-requests', user?.email],
     queryFn: () => base44.entities.TransportRequest.filter({ employee_email: user.email }, '-created_date'),
     enabled: !!user?.email,
     refetchInterval: 5000,
   });
+
+  const isApprover = ['functional_lead', 'manager', 'admin_head', 'admin', 'super_admin'].includes(userRole);
+  const displayRequests = isApprover ? allRequests : myRequests;
+  const isLoading = isApprover ? allLoading : myLoading;
 
   // Real-time subscription
   useEffect(() => {
@@ -55,10 +66,10 @@ export default function TransportAccess() {
   }, [user?.email]);
 
   const stats = {
-    total: myRequests.length,
-    pending: myRequests.filter(r => r.status === 'pending_manager' || r.status === 'pending_lead').length,
-    approved: myRequests.filter(r => r.status === 'approved').length,
-    rejected: myRequests.filter(r => r.status === 'rejected').length,
+    total: displayRequests.length,
+    pending: displayRequests.filter(r => r.status === 'pending_manager' || r.status === 'pending_lead').length,
+    approved: displayRequests.filter(r => r.status === 'approved').length,
+    rejected: displayRequests.filter(r => r.status === 'rejected').length,
   };
 
   if (!ALLOWED_ROLES.includes(userRole)) {
@@ -85,13 +96,15 @@ export default function TransportAccess() {
             </h1>
             <p className="text-gray-500 mt-1">Manage OLA / Uber transport access requests</p>
           </div>
-          <Button
-            onClick={() => setShowForm(!showForm)}
-            className="gap-2"
-          >
-            <Plus className="w-4 h-4" />
-            New Request
-          </Button>
+          {!isApprover && (
+           <Button
+             onClick={() => setShowForm(!showForm)}
+             className="gap-2"
+           >
+             <Plus className="w-4 h-4" />
+             New Request
+           </Button>
+          )}
         </div>
 
         {/* Stats */}
@@ -117,7 +130,7 @@ export default function TransportAccess() {
         </div>
 
         {/* Request Form */}
-        {showForm && (
+        {!isApprover && showForm && (
           <div className="mb-8">
             <TransportRequestForm
               user={user}
@@ -126,22 +139,35 @@ export default function TransportAccess() {
           </div>
         )}
 
-        {/* My Requests */}
+        {/* Approver View */}
+        {isApprover && (
+          <div className="mb-8">
+            <Card className="border-0 shadow-sm bg-blue-50 border-l-4 border-blue-500">
+              <CardContent className="p-4">
+                <p className="text-sm text-blue-900">
+                  <span className="font-semibold">Approval Dashboard:</span> Showing all pending transport requests for your approval.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Requests */}
         <Card className="border-0 shadow-sm">
           <CardHeader className="pb-2">
-            <CardTitle className="text-base">My Requests</CardTitle>
+            <CardTitle className="text-base">{isApprover ? 'All Requests' : 'My Requests'}</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             {isLoading ? (
               <div className="p-8 text-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto" />
               </div>
-            ) : myRequests.length === 0 ? (
-              <div className="p-12 text-center">
-                <Car className="w-16 h-16 mx-auto text-gray-200 mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No requests yet</h3>
-                <p className="text-gray-500">Submit a new transport access request to get started.</p>
-              </div>
+            ) : displayRequests.length === 0 ? (
+             <div className="p-12 text-center">
+               <Car className="w-16 h-16 mx-auto text-gray-200 mb-4" />
+               <h3 className="text-lg font-medium text-gray-900 mb-2">{isApprover ? 'No pending requests' : 'No requests yet'}</h3>
+               <p className="text-gray-500">{isApprover ? 'All transport requests have been processed.' : 'Submit a new transport access request to get started.'}</p>
+             </div>
             ) : (
               <Table>
                 <TableHeader>
@@ -155,7 +181,7 @@ export default function TransportAccess() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {myRequests.map(req => (
+                   {displayRequests.map(req => (
                     <TableRow key={req.id} className="hover:bg-gray-50">
                       <TableCell className="font-mono text-sm font-medium">
                         {req.tar_number}
@@ -178,7 +204,7 @@ export default function TransportAccess() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => navigate(createPageUrl(`TransportRequestDetails?id=${req.id}&from=TransportAccess`))}
+                          onClick={() => navigate(createPageUrl(`TransportRequestDetails?id=${req.id}&from=${isApprover ? 'ApprovalDashboard' : 'TransportAccess'}`))}
                           className="gap-1 text-gray-500 hover:text-blue-600"
                         >
                           <Eye className="w-4 h-4" />

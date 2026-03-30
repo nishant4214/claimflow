@@ -24,8 +24,9 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 
 const AVAILABLE_ROLES = [
-  { value: 'junior_admin', label: 'Junior Admin' },
   { value: 'manager', label: 'Manager/HOD' },
+  { value: 'functional_lead', label: 'Functional Lead' },
+  { value: 'junior_admin', label: 'Junior Admin' },
   { value: 'admin_head', label: 'Admin Head' },
   { value: 'cro', label: 'CRO' },
   { value: 'cfo', label: 'CFO' },
@@ -58,6 +59,18 @@ const DEFAULT_SALES_WORKFLOW = {
   is_active: true,
 };
 
+const DEFAULT_TRANSPORT_WORKFLOW = {
+  workflow_type: 'transport',
+  workflow_name: 'OLA/Uber Transport Workflow',
+  stages: [
+    { stage_order: 1, stage_name: 'Manager Approval', approver_role: 'manager', status_on_approve: 'manager_approved', is_active: true, can_skip_for_torch_bearer: false },
+    { stage_order: 2, stage_name: 'Functional Lead Approval', approver_role: 'functional_lead', status_on_approve: 'approved', is_active: true, can_skip_for_torch_bearer: false },
+  ],
+  sla_days: 7,
+  sla_warning_days: 1,
+  is_active: true,
+};
+
 export default function WorkflowConfigPage() {
   const [user, setUser] = useState(null);
   const [selectedWorkflow, setSelectedWorkflow] = useState('normal');
@@ -81,8 +94,12 @@ export default function WorkflowConfigPage() {
     const workflow = workflows.find(w => w.workflow_type === selectedWorkflow);
     if (workflow) {
       setWorkflowData(workflow);
+    } else if (selectedWorkflow === 'normal') {
+      setWorkflowData(DEFAULT_NORMAL_WORKFLOW);
+    } else if (selectedWorkflow === 'sales_promotion') {
+      setWorkflowData(DEFAULT_SALES_WORKFLOW);
     } else {
-      setWorkflowData(selectedWorkflow === 'normal' ? DEFAULT_NORMAL_WORKFLOW : DEFAULT_SALES_WORKFLOW);
+      setWorkflowData(DEFAULT_TRANSPORT_WORKFLOW);
     }
   }, [workflows, selectedWorkflow]);
 
@@ -182,8 +199,9 @@ export default function WorkflowConfigPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="normal">Normal Reimbursement</SelectItem>
-                  <SelectItem value="sales_promotion">Sales Promotion</SelectItem>
+                   <SelectItem value="normal">Normal Reimbursement</SelectItem>
+                   <SelectItem value="sales_promotion">Sales Promotion</SelectItem>
+                   <SelectItem value="transport">OLA/Uber Transport</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -296,7 +314,7 @@ export default function WorkflowConfigPage() {
                               <Label className="text-sm">Active</Label>
                             </div>
                             
-                            {selectedWorkflow === 'normal' && (
+                            {(selectedWorkflow === 'normal') && (
                               <div className="flex items-center gap-2">
                                 <Switch
                                   checked={stage.can_skip_for_torch_bearer}
@@ -338,7 +356,7 @@ export default function WorkflowConfigPage() {
                   </React.Fragment>
                 ))}
                 <ArrowRight className="w-4 h-4 text-gray-400" />
-                <Badge className="bg-emerald-100 text-emerald-700">Finance Payment</Badge>
+                <Badge className="bg-emerald-100 text-emerald-700">{selectedWorkflow === 'transport' ? 'Access Activated' : 'Finance Payment'}</Badge>
               </div>
             </div>
           </CardContent>

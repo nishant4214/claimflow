@@ -70,7 +70,8 @@ const roleMenuConfig = {
   functional_lead: [
     { name: 'Dashboard', icon: LayoutDashboard, page: 'Dashboard' },
     { name: 'Approvals', icon: CheckSquare, page: 'Approvals' },
-    { name: 'OLA/Uber Request', icon: Car, page: 'TransportAccess' },
+    { name: 'Transport Approvals', icon: Car, page: 'TransportAccess' },
+    { name: 'Conference Rooms', icon: Calendar, page: 'ConferenceRooms' },
     { name: 'Notifications', icon: Bell, page: 'Notifications' },
   ],
   cro: [
