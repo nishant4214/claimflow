@@ -59,12 +59,13 @@ export default function AllUsers() {
     designation: '',
   });
 
-  // Fetch users
+  // Fetch users using service role for admin access
   const { data: users = [], isLoading, error } = useQuery({
     queryKey: ['all-users-list'],
     queryFn: async () => {
       try {
-        const result = await base44.entities.User.list();
+        const result = await base44.asServiceRole.entities.User.list();
+        console.log('Fetched users:', result);
         return result || [];
       } catch (err) {
         console.error('Error fetching users:', err);
