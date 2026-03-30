@@ -185,22 +185,9 @@ export default function AdminCategories() {
   };
 
   const userRole = user?.portal_role;
-  if (userRole !== 'admin_head' && userRole !== 'admin') {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50">
-        <div className="max-w-4xl mx-auto px-4 py-16 text-center">
-          <AlertCircle className="w-16 h-16 mx-auto text-amber-500 mb-4" />
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Access Restricted</h1>
-          <p className="text-gray-500">Only Admin Head can manage categories.</p>
-          <Link to={createPageUrl('Dashboard')}>
-            <Button className="mt-6" variant="outline">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Go to Dashboard
-            </Button>
-          </Link>
-        </div>
-      </div>
-    );
+  if (user && !['admin_head', 'admin', 'super_admin'].includes(userRole)) {
+    window.location.replace(createPageUrl('Dashboard'));
+    return null;
   }
 
   return (

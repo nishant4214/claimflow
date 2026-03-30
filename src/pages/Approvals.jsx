@@ -331,19 +331,9 @@ export default function Approvals() {
     setPendingAction(null);
   };
 
-  if (!roleConfig || userRole === 'employee') {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <AlertCircle className="w-16 h-16 mx-auto text-amber-500 mb-4" />
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Access Restricted</h1>
-          <p className="text-gray-500">You don't have permission to access the approvals page.</p>
-          <Link to={createPageUrl('Dashboard')}>
-            <Button className="mt-6" variant="outline"><ArrowLeft className="w-4 h-4 mr-2" /> Dashboard</Button>
-          </Link>
-        </div>
-      </div>
-    );
+  if (user && (!roleConfig || userRole === 'employee')) {
+    window.location.replace(createPageUrl('Dashboard'));
+    return null;
   }
 
   const pendingGroupCount = buildGroups(pendingClaims).length + (canApproveTransport ? pendingTransportRequests.length : 0);

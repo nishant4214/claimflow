@@ -93,7 +93,6 @@ const roleMenuConfig = {
   ],
   admin: [
     { name: 'Dashboard', icon: LayoutDashboard, page: 'Dashboard' },
-    { name: 'Test Credentials', icon: Users, page: 'TestCredentials' },
     { name: 'Approvals', icon: CheckSquare, page: 'Approvals' },
     { name: 'Finance', icon: Wallet, page: 'Finance' },
     { name: 'Conference Rooms', icon: Calendar, page: 'ConferenceRooms' },
@@ -110,6 +109,7 @@ const roleMenuConfig = {
   ],
   super_admin: [
     { name: 'Dashboard', icon: LayoutDashboard, page: 'Dashboard' },
+    { name: 'Test Credentials', icon: Users, page: 'TestCredentials' },
     { name: 'Approvals', icon: CheckSquare, page: 'Approvals' },
     { name: 'My Claims', icon: FileText, page: 'MyClaims' },
     { name: 'Finance', icon: Wallet, page: 'Finance' },

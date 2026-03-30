@@ -29,11 +29,8 @@ export default function BulkUpload() {
       setUser(userData);
 
       const userRole = userData?.portal_role || userData?.role;
-      
-      // Restrict access
-      if (!['admin_head', 'cro', 'admin'].includes(userRole)) {
-        toast.error('Access Denied: Bulk Upload is only available for Admin Head and CRO');
-        window.location.href = createPageUrl('Dashboard');
+      if (!['admin_head', 'cro', 'admin', 'super_admin'].includes(userRole)) {
+        window.location.replace(createPageUrl('Dashboard'));
       }
     };
     loadUser();
