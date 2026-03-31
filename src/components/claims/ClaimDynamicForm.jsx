@@ -79,6 +79,10 @@ function AutoCalcDisplay({ label, value, color = 'blue' }) {
 function TravelModeForm({ formData, onChange, autoFill }) {
   return (
     <div className="grid grid-cols-2 gap-4">
+      <Field label="Travel Mode" required>
+        <SelectInput field="travel_mode" value={formData.travel_mode} onChange={onChange}
+          options={['Rail', 'Ola', 'Uber', 'Bus', 'Auto']} placeholder="Select travel mode" />
+      </Field>
       <Field label="Travel Date" required>
         <TextInput field="travel_date" value={formData.travel_date} onChange={onChange} type="date" autofilled={autoFill('travel_date')} />
       </Field>
@@ -94,6 +98,11 @@ function TravelModeForm({ formData, onChange, autoFill }) {
       <Field label="Amount (₹)" required>
         <TextInput field="amount" value={formData.amount} onChange={onChange} type="number" placeholder="0.00" autofilled={autoFill('amount')} />
       </Field>
+      <div className="col-span-2 space-y-1">
+        <Label className="text-xs">Remark</Label>
+        <Textarea value={formData.remark || ''} onChange={e => onChange('remark', e.target.value)}
+          placeholder="Additional notes (optional)" rows={2} className="text-sm" />
+      </div>
     </div>
   );
 }
@@ -130,6 +139,11 @@ function OwnVehicleForm({ formData, onChange }) {
       <div className="col-span-2">
         <AutoCalcDisplay label="Auto-Calculated Amount (₹)" value={`₹${formData.amount || '0.00'}`} color="green" />
       </div>
+      <div className="col-span-2 space-y-1">
+        <Label className="text-xs">Remark</Label>
+        <Textarea value={formData.remark || ''} onChange={e => onChange('remark', e.target.value)}
+          placeholder="Additional notes (optional)" rows={2} className="text-sm" />
+      </div>
     </div>
   );
 }
@@ -165,8 +179,7 @@ function IndividualMealForm({ formData, onChange, autoFill }) {
     <div className="grid grid-cols-2 gap-4">
       <Field label="Meal Type" required>
         <SelectInput field="meal_type" value={formData.meal_type} onChange={onChange}
-          placeholder="e.g. Lunch, Dinner..."
-          options={['Breakfast', 'Lunch', 'Dinner', 'Snacks', 'Tea / Coffee']} />
+          options={['Lunch/Dinner', 'Refreshment', 'Food During Travel']} />
       </Field>
       <Field label="Date" required>
         <TextInput field="expense_date" value={formData.expense_date} onChange={onChange} type="date" autofilled={autoFill('expense_date')} />
@@ -288,6 +301,11 @@ function HotelForm({ formData, onChange, autoFill }) {
       <Field label="Amount (₹)" required>
         <TextInput field="amount" value={formData.amount} onChange={onChange} type="number" placeholder="0.00" autofilled={autoFill('amount')} />
       </Field>
+      <div className="col-span-2 space-y-1">
+        <Label className="text-xs">Note <span className="text-red-500">*</span></Label>
+        <Textarea value={formData.note || ''} onChange={e => onChange('note', e.target.value)}
+          placeholder="Reason for claim (required)" rows={2} className="text-sm" />
+      </div>
     </div>
   );
 }
@@ -390,7 +408,7 @@ function SalesPromotionForm({ formData, onChange, autoFill, subType }) {
     <div className="grid grid-cols-2 gap-4">
       <Field label="Promotion Type" required>
         <SelectInput field="promo_type" value={formData.promo_type || subType} onChange={onChange}
-          options={['Gift', 'Liquor', 'Stay', 'Lunch/Dinner', 'Entertainment', 'Other']} />
+          options={['Gift', 'Liquor']} />
       </Field>
       <Field label="Date" required>
         <TextInput field="expense_date" value={formData.expense_date} onChange={onChange} type="date" autofilled={autoFill('expense_date')} />
