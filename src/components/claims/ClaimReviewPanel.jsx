@@ -1,4 +1,5 @@
 import React from 'react';
+import { computeClaimTotals, formatAmount, getCurrencySymbol } from '@/lib/currency';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle2, FileText, ImageIcon, AlertTriangle, CreditCard, User, Calendar, Hash } from 'lucide-react';
 
@@ -147,6 +148,8 @@ function getEntryAmount(entry) {
 
 export default function ClaimReviewPanel({ entries, paymentDetails, user }) {
   const totalAll = entries.reduce((sum, e) => sum + getEntryAmount(e), 0);
+  const currencyTotals = computeClaimTotals(entries);
+  const isMultiCurrency = currencyTotals.length > 1;
 
   const totalDocs = entries.reduce((sum, e) => sum + e.documents.length, 0);
   const hasWarnings = entries.some(e => e.documents.some(d => d.validation?.flags?.length > 0));
@@ -158,7 +161,15 @@ export default function ClaimReviewPanel({ entries, paymentDetails, user }) {
         <div className="flex items-start justify-between">
           <div>
             <p className="text-blue-100 text-sm mb-1">Expense Claim Summary</p>
-            <p className="text-3xl font-bold">₹{totalAll.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</p>
+            {isMultiCurrency ? (
+            <div className="space-y-1">
+              {currencyTotals.map(({ currency, total }) => (
+                <p key={currency} className="text-2xl font-bold">{formatAmount(total, currency)}</p>
+              ))}
+            </div>
+          ) : (
+            <p className="text-3xl font-bold">{formatAmount(totalAll, currencyTotals[0]?.currency || 'INR')}</p>
+          )}
             <p className="text-blue-200 text-sm mt-2">{entries.length} categor{entries.length === 1 ? 'y' : 'ies'} · {totalDocs} document{totalDocs !== 1 ? 's' : ''}</p>
           </div>
           <div className="text-right">
@@ -192,7 +203,7 @@ export default function ClaimReviewPanel({ entries, paymentDetails, user }) {
                 </div>
               </div>
               <div className="text-right">
-                <p className="text-lg font-bold text-gray-900">₹{entryAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</p>
+                <p className="text-lg font-bold text-gray-900">{formatAmount(entryAmount, entry.documents?.[0]?.extractedData?.currency || 'INR')}</p>
                 {entry.subHead?.policy_limit && (
                   <p className={`text-xs ${entryAmount > entry.subHead.policy_limit ? 'text-red-600' : 'text-green-600'}`}>
                     Limit: ₹{entry.subHead.policy_limit.toLocaleString('en-IN')}
@@ -280,12 +291,27 @@ export default function ClaimReviewPanel({ entries, paymentDetails, user }) {
       </div>
 
       {/* Grand Total */}
-      <div className="bg-blue-50 border border-blue-200 rounded-xl px-5 py-4 flex items-center justify-between">
-        <div>
-          <p className="text-sm text-blue-700 font-medium">Grand Total Claim Amount</p>
-          <p className="text-xs text-blue-500">{entries.length} categor{entries.length === 1 ? 'y' : 'ies'} · {totalDocs} document{totalDocs !== 1 ? 's' : ''}</p>
+      <div className="bg-blue-50 border border-blue-200 rounded-xl px-5 py-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm text-blue-700 font-medium">Grand Total Claim Amount</p>
+            <p className="text-xs text-blue-500">{entries.length} categor{entries.length === 1 ? 'y' : 'ies'} · {totalDocs} document{totalDocs !== 1 ? 's' : ''}</p>
+          </div>
+          {isMultiCurrency ? (
+            <div className="text-right space-y-1">
+              {currencyTotals.map(({ currency, total }) => (
+                <p key={currency} className="text-xl font-bold text-blue-800">{formatAmount(total, currency)}</p>
+              ))}
+            </div>
+          ) : (
+            <p className="text-2xl font-bold text-blue-800">{formatAmount(totalAll, currencyTotals[0]?.currency || 'INR')}</p>
+          )}
         </div>
-        <p className="text-2xl font-bold text-blue-800">₹{totalAll.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</p>
+        {isMultiCurrency && (
+          <div className="mt-3 bg-blue-100 border border-blue-200 rounded-lg px-3 py-2 text-xs text-blue-700">
+            ⚠️ This claim contains multiple currencies. Totals are shown separately per currency and will not be combined.
+          </div>
+        )}
       </div>
     </div>
   );

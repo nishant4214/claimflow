@@ -13,6 +13,7 @@ import ClaimCategorySidebar from '@/components/claims/ClaimCategorySidebar';
 import ClaimDynamicForm from '@/components/claims/ClaimDynamicForm';
 import ClaimDocumentOCR from '@/components/claims/ClaimDocumentOCR';
 import ClaimReviewPanel from '@/components/claims/ClaimReviewPanel';
+import { computeClaimTotals, formatAmount } from '@/lib/currency';
 
 // A single claim entry: { id, head, subHead, formData, documents } — v2
 function makeEntry(head, subHead) {
@@ -75,6 +76,8 @@ export default function NewClaim() {
     return sum + amt;
   }, 0);
 
+  const currencyTotals = computeClaimTotals(entries);
+
   const criticalFlags = entries.some(e => Array.isArray(e.documents) && e.documents.some(doc =>
     (doc.validation?.authenticityScore || 100) < 50 ||
     doc.validation?.flags?.includes('INVALID_STRUCTURE') ||
@@ -112,14 +115,14 @@ export default function NewClaim() {
 
   const handleSubmit = async () => {
     if (entries.length === 0) {
-      toast({ title: 'Please select at least one category', variant: 'destructive' }); return;
+      toast({ title: 'Please select at least one category', variant: 'destructive', duration: 4000 }); return;
     }
     const missingDocs = entries.find(e => e.documents.length === 0);
     if (missingDocs) {
-      toast({ title: `Please upload at least one bill for: ${missingDocs.head} — ${missingDocs.subHead?.title}`, variant: 'destructive' }); return;
+      toast({ title: `Please upload at least one bill for: ${missingDocs.head} — ${missingDocs.subHead?.title}`, variant: 'destructive', duration: 5000 }); return;
     }
     if (criticalFlags && !overrideWarnings) {
-      toast({ title: 'Critical document validation issues found. Please review or override.', variant: 'destructive' }); return;
+      toast({ title: 'Critical document validation issues found. Please review or override.', variant: 'destructive', duration: 5000 }); return;
     }
 
     setIsSubmitting(true);
@@ -181,7 +184,7 @@ export default function NewClaim() {
       });
     }
 
-    toast({ title: `Claim ${claimNumber} submitted with ${entries.length} categories!` });
+    toast({ title: `Claim ${claimNumber} submitted with ${entries.length} categories!`, duration: 4000 });
     setIsSubmitting(false);
     navigate('/MyClaims');
   };
@@ -217,11 +220,11 @@ export default function NewClaim() {
           </div>
 
           <div className="flex items-center gap-3">
-            {totalAmount > 0 && (
-              <Badge className="bg-blue-100 text-blue-800 border-blue-200 text-sm px-3 py-1">
-                Total: ₹{totalAmount.toLocaleString('en-IN')}
+            {currencyTotals.length > 0 && currencyTotals.map(({ currency, total }) => (
+              <Badge key={currency} className="bg-blue-100 text-blue-800 border-blue-200 text-sm px-3 py-1">
+                {formatAmount(total, currency)}
               </Badge>
-            )}
+            ))}
             {entries.length > 0 && (
               <>
                 {hasAnyWarnings && !overrideWarnings && !criticalFlags && (

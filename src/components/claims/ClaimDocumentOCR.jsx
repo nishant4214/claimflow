@@ -10,6 +10,10 @@ import {
   Loader2, ShieldAlert, ShieldCheck, FileText, Image,
   RotateCcw, AlertCircle, Info, PenLine, Receipt, CheckCircle2, ExternalLink
 } from 'lucide-react';
+import { detectCurrency } from '@/lib/currency';
+
+const MAX_FILE_SIZE_MB = 5;
+const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
 
 const FLAG_STYLES = {
   LOW_CONFIDENCE:    { label: 'Low Confidence',     color: 'bg-amber-100 text-amber-800 border-amber-300' },
@@ -37,7 +41,7 @@ Analyze this bill/receipt image carefully and return a JSON object:
     "billTime": "HH:MM or null",
     "totalAmount": "number or null",
     "taxAmount": "number or null",
-    "currency": "INR",
+    \"currency\": \"ISO currency code detected from symbols/text (e.g. INR, USD, EUR, GBP)\",
     "paymentMode": "Cash/Card/UPI or null",
     "transactionId": "string or null (UTR/UPI ref/txn ID if visible)",
     "location": "string or null",
@@ -340,14 +344,14 @@ function DropZone({ label, iconComponent: Icon, docType, onFiles, dragOverType, 
     >
       <Icon className={`w-6 h-6 mx-auto mb-1.5 ${isOver ? 'text-blue-500' : 'text-gray-400'}`} />
       <p className="text-sm font-medium text-gray-700">{label}</p>
-      <p className="text-xs text-gray-400 mt-0.5">JPG, PNG, PDF — max 10MB</p>
+      <p className="text-xs text-gray-400 mt-0.5">JPG, PNG, PDF — max {MAX_FILE_SIZE_MB}MB · 1 file per type</p>
       <input
         id={`file-input-${docType}`}
         type="file"
         multiple
         accept=".jpg,.jpeg,.png,.pdf"
         className="hidden"
-        onChange={e => onFiles(e.target.files, docType)}
+        onChange={e => { onFiles(e.target.files, docType); e.target.value = ''; }}
       />
     </div>
   );
@@ -364,30 +368,50 @@ export default function ClaimDocumentOCR({ category, headName, documents: docume
   };
 
   const processFiles = async (files, uploadType) => {
-    const newDocs = [];
-    for (const file of Array.from(files)) {
-      if (!['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'].includes(file.type)) continue;
-      if (file.size > 10 * 1024 * 1024) continue;
-      const id = `doc_${Date.now()}_${Math.random().toString(36).slice(2)}`;
-      newDocs.push({
-        id,
-        fileName: file.name,
-        fileSize: formatSize(file.size),
-        fileUrl: null,
-        fileType: file.type,
-        uploadType,
-        status: 'uploading',
-        extractedData: null,
-        validation: null,
-        formData: {}
-      });
+    const fileArray = Array.from(files);
+
+    // Size validation
+    const oversized = fileArray.find(f => f.size > MAX_FILE_SIZE_BYTES);
+    if (oversized) {
+      alert(`File "${oversized.name}" exceeds the maximum allowed size of ${MAX_FILE_SIZE_MB}MB. Please upload a smaller file.`);
+      return;
     }
 
-    onChange(prev => [...(Array.isArray(prev) ? prev : []), ...newDocs]);
+    // One-file-at-a-time: if a file of this type already exists, confirm replace
+    const existingOfType = documents.filter(d => d.uploadType === uploadType);
+    if (existingOfType.length > 0) {
+      const confirmed = window.confirm(
+        `A ${uploadType} is already uploaded. Do you want to replace it with the new file?`
+      );
+      if (!confirmed) return;
+      // Remove existing docs of this type first
+      onChange(prev => (Array.isArray(prev) ? prev : []).filter(d => d.uploadType !== uploadType));
+    }
+
+    // Only take the first file (one at a time)
+    const file = fileArray[0];
+    if (!file) return;
+    if (!['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'].includes(file.type)) return;
+
+    const newDocs = [];
+    const id = `doc_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+    newDocs.push({
+      id,
+      fileName: file.name,
+      fileSize: formatSize(file.size),
+      fileUrl: null,
+      fileType: file.type,
+      uploadType,
+      status: 'uploading',
+      extractedData: null,
+      validation: null,
+      formData: {}
+    });
+
+    onChange(prev => [...(Array.isArray(prev) ? prev : []).filter(d => d.uploadType !== uploadType), ...newDocs]);
 
     for (let i = 0; i < newDocs.length; i++) {
       const doc = newDocs[i];
-      const file = Array.from(files)[i];
       setAnalyzing(prev => ({ ...prev, [doc.id]: 'uploading' }));
 
       try {
@@ -405,13 +429,19 @@ export default function ClaimDocumentOCR({ category, headName, documents: docume
           validation = { flags: ['LOW_CONFIDENCE'], confidenceScore: 0, authenticityScore: 0, isValidStructure: false };
         }
 
+        // Detect currency from extracted text
+        const detectedCurrency = detectCurrency(
+          extractedData.currency || extractedData.rawText || ''
+        );
+        extractedData.currency = detectedCurrency;
+
         const formData = {
           vendor_name: extractedData.vendorName || '',
           restaurant_name: extractedData.restaurantName || extractedData.vendorName || '',
           bill_number: extractedData.billNumber || '',
           bill_date: extractedData.billDate || '',
           amount: extractedData.totalAmount || '',
-          currency: extractedData.currency || 'INR',
+          currency: detectedCurrency,
           purpose: extractedData.vendorName || category?.title || '',
           from_location: extractedData.from || '',
           to_location: extractedData.to || '',
@@ -450,7 +480,30 @@ export default function ClaimDocumentOCR({ category, headName, documents: docume
     }
   };
 
-  const removeDoc = (id) => onChange(prev => (Array.isArray(prev) ? prev : []).filter(d => d.id !== id));
+  const removeDoc = (id) => {
+    onChange(prev => {
+      const remaining = (Array.isArray(prev) ? prev : []).filter(d => d.id !== id);
+      // Clear payment reference ID if no docs left (or if the removed doc was the one providing it)
+      if (onPaymentData) {
+        const stillHasDocs = remaining.some(d => d.extractedData?.transactionId);
+        if (!stillHasDocs) {
+          onPaymentData({ payment_mode: '', reference_number: '', payment_date: '' });
+        } else {
+          // Re-derive from remaining docs
+          const best = remaining.find(d => d.uploadType === 'receipt' && d.extractedData) ||
+                        remaining.find(d => d.uploadType === 'bill' && d.extractedData);
+          if (best?.extractedData) {
+            onPaymentData({
+              payment_mode: best.extractedData.paymentMode || '',
+              reference_number: best.extractedData.transactionId || '',
+              payment_date: best.extractedData.billDate || '',
+            });
+          }
+        }
+      }
+      return remaining;
+    });
+  };
 
   const updateDocField = (docId, key, val) => {
     onChange(prev => (Array.isArray(prev) ? prev : []).map(d => d.id === docId ? { ...d, formData: { ...d.formData, [key]: val } } : d));
