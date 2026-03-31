@@ -11,8 +11,13 @@ const HEAD_ICONS = {
   'default': Folder
 };
 
+// Define categories that should be expanded by default
+const EXPANDED_BY_DEFAULT = ['Travel Expenses', 'Food Expenses', 'Torch Bearer'];
+
 export default function ClaimCategorySidebar({ headGroups, selectedHead, selectedSubHead, onSelect, travelType, onTravelTypeChange }) {
-  const [expandedHeads, setExpandedHeads] = useState({});
+  const [expandedHeads, setExpandedHeads] = useState(
+    Object.fromEntries(EXPANDED_BY_DEFAULT.map(h => [h, true]))
+  );
   const [width, setWidth] = useState(224);
   const isResizing = useRef(false);
 
@@ -79,16 +84,19 @@ export default function ClaimCategorySidebar({ headGroups, selectedHead, selecte
           const isExpanded = expandedHeads[head] !== false;
           const isActive = selectedHead === head;
           const IconComponent = HEAD_ICONS[head] || HEAD_ICONS['default'];
-          const subHeads = headGroups[head];
+          const subHeads = headGroups[head] || [];
+          const hasSubCategories = subHeads.length > 1;
 
           return (
             <div key={head}>
+              {/* Main Category Button */}
               <button
                 className={`w-full flex items-center justify-between px-4 py-2.5 text-left transition-colors text-sm font-medium ${
                   isActive ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-gray-50'
                 }`}
                 onClick={() => {
                   toggleHead(head);
+                  // If only one subcategory, auto-select it
                   if (subHeads.length === 1) {
                     onSelect(head, subHeads[0]);
                   }
@@ -98,33 +106,39 @@ export default function ClaimCategorySidebar({ headGroups, selectedHead, selecte
                   <IconComponent className="w-4 h-4 flex-shrink-0" />
                   <span className="leading-tight truncate">{head}</span>
                 </span>
-                {subHeads.length > 1 && (
+                {hasSubCategories && (
                   isExpanded
                     ? <ChevronDown className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
                     : <ChevronRight className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
                 )}
               </button>
 
-              <div
-                className="overflow-hidden transition-all duration-200"
-                style={{ maxHeight: isExpanded && subHeads.length > 1 ? `${subHeads.length * 40}px` : '0px', opacity: isExpanded && subHeads.length > 1 ? 1 : 0 }}
-              >
-                <div className="bg-gray-50">
-                  {subHeads.map(sub => (
-                    <button
-                      key={sub.id}
-                      className={`w-full text-left px-8 py-2 text-xs transition-colors border-l-2 ml-0 ${
-                        selectedSubHead?.id === sub.id
-                          ? 'border-l-blue-500 bg-blue-50 text-blue-800 font-semibold'
-                          : 'border-l-transparent text-gray-600 hover:bg-blue-50 hover:text-blue-700 hover:border-l-blue-300'
-                      }`}
-                      onClick={() => onSelect(head, sub)}
-                    >
-                      {sub.title}
-                    </button>
-                  ))}
+              {/* Subcategories List */}
+              {hasSubCategories && (
+                <div
+                  className="overflow-hidden transition-all duration-200"
+                  style={{ 
+                    maxHeight: isExpanded ? `${subHeads.length * 40}px` : '0px', 
+                    opacity: isExpanded ? 1 : 0 
+                  }}
+                >
+                  <div className="bg-gray-50">
+                    {subHeads.map(sub => (
+                      <button
+                        key={sub.id}
+                        className={`w-full text-left px-8 py-2 text-xs transition-colors border-l-2 ml-0 ${
+                          selectedSubHead?.id === sub.id
+                            ? 'border-l-blue-500 bg-blue-50 text-blue-800 font-semibold'
+                            : 'border-l-transparent text-gray-600 hover:bg-blue-50 hover:text-blue-700 hover:border-l-blue-300'
+                        }`}
+                        onClick={() => onSelect(head, sub)}
+                      >
+                        {sub.title}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           );
         })}
