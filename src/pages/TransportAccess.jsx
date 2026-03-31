@@ -173,7 +173,7 @@ export default function TransportAccess() {
                 <TableHeader>
                   <TableRow className="bg-gray-50">
                     <TableHead>Request #</TableHead>
-                    <TableHead>Transport</TableHead>
+                    <TableHead>Mode</TableHead>
                     <TableHead>Business Justification</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Created</TableHead>
