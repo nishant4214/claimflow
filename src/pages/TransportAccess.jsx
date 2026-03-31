@@ -5,9 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow 
-} from "@/components/ui/table";
+import {
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from
+"@/components/ui/table";
 import { format, parseISO } from 'date-fns';
 import { Car, Plus, FileText, CheckCircle, XCircle, Clock, Eye } from 'lucide-react';
 import { toast } from 'sonner';
@@ -20,8 +20,8 @@ import {
   Dialog,
   DialogContent,
   DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  DialogTitle } from
+"@/components/ui/dialog";
 
 const ALLOWED_ROLES = ['employee', 'manager', 'functional_lead', 'admin_head', 'admin', 'super_admin'];
 
@@ -42,14 +42,14 @@ export default function TransportAccess() {
     queryKey: ['all-transport-requests'],
     queryFn: () => base44.entities.TransportRequest.list('-created_date'),
     enabled: ['functional_lead', 'admin_head', 'admin', 'super_admin'].includes(userRole),
-    refetchInterval: 5000,
+    refetchInterval: 5000
   });
 
   const { data: myRequests = [], isLoading: myLoading, refetch: refetchRequests } = useQuery({
     queryKey: ['transport-requests', user?.email],
     queryFn: () => base44.entities.TransportRequest.filter({ employee_email: user.email }, '-created_date'),
     enabled: !!user?.email,
-    refetchInterval: 5000,
+    refetchInterval: 5000
   });
 
   const isApprover = ['functional_lead', 'manager', 'admin_head', 'admin', 'super_admin'].includes(userRole);
@@ -67,9 +67,9 @@ export default function TransportAccess() {
 
   const stats = {
     total: displayRequests.length,
-    pending: displayRequests.filter(r => r.status === 'pending_manager' || r.status === 'pending_lead').length,
-    approved: displayRequests.filter(r => r.status === 'approved').length,
-    rejected: displayRequests.filter(r => r.status === 'rejected').length,
+    pending: displayRequests.filter((r) => r.status === 'pending_manager' || r.status === 'pending_lead').length,
+    approved: displayRequests.filter((r) => r.status === 'approved').length,
+    rejected: displayRequests.filter((r) => r.status === 'rejected').length
   };
 
   if (!ALLOWED_ROLES.includes(userRole)) {
@@ -80,8 +80,8 @@ export default function TransportAccess() {
           <h2 className="text-xl font-semibold text-gray-700">Access Restricted</h2>
           <p className="text-gray-500 mt-2">You do not have permission to view this page.</p>
         </div>
-      </div>
-    );
+      </div>);
+
   }
 
   return (
@@ -94,28 +94,28 @@ export default function TransportAccess() {
               <Car className="w-8 h-8 text-blue-600" />
               OLA/Uber Request
             </h1>
-            <p className="text-gray-500 mt-1">Manage OLA / Uber transport access requests</p>
+            <p className="text-gray-500 mt-1">Manage OLA / Uber access requests</p>
           </div>
-          {(userRole !== 'functional_lead' && userRole !== 'manager') && (
-           <Button
-             onClick={() => setShowForm(!showForm)}
-             className="gap-2"
-           >
+          {userRole !== 'functional_lead' && userRole !== 'manager' &&
+          <Button
+            onClick={() => setShowForm(!showForm)}
+            className="gap-2">
+            
              <Plus className="w-4 h-4" />
              New Request
            </Button>
-          )}
+          }
         </div>
 
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
           {[
-            { label: 'Total Requests', value: stats.total, color: 'text-gray-900', icon: FileText },
-            { label: 'Pending', value: stats.pending, color: 'text-amber-600', icon: Clock },
-            { label: 'Approved', value: stats.approved, color: 'text-green-600', icon: CheckCircle },
-            { label: 'Rejected', value: stats.rejected, color: 'text-red-600', icon: XCircle },
-          ].map(stat => (
-            <Card key={stat.label} className="border-0 shadow-sm">
+          { label: 'Total Requests', value: stats.total, color: 'text-gray-900', icon: FileText },
+          { label: 'Pending', value: stats.pending, color: 'text-amber-600', icon: Clock },
+          { label: 'Approved', value: stats.approved, color: 'text-green-600', icon: CheckCircle },
+          { label: 'Rejected', value: stats.rejected, color: 'text-red-600', icon: XCircle }].
+          map((stat) =>
+          <Card key={stat.label} className="border-0 shadow-sm">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
@@ -126,22 +126,22 @@ export default function TransportAccess() {
                 </div>
               </CardContent>
             </Card>
-          ))}
+          )}
         </div>
 
         {/* Request Form */}
-         {(userRole !== 'functional_lead' && userRole !== 'manager') && showForm && (
-           <div className="mb-8">
+         {userRole !== 'functional_lead' && userRole !== 'manager' && showForm &&
+        <div className="mb-8">
              <TransportRequestForm
-               user={user}
-               onSuccess={() => setShowForm(false)}
-             />
+            user={user}
+            onSuccess={() => setShowForm(false)} />
+          
            </div>
-         )}
+        }
 
         {/* Approver View */}
-        {isApprover && (
-          <div className="mb-8">
+        {isApprover &&
+        <div className="mb-8">
             <Card className="border-0 shadow-sm bg-blue-50 border-l-4 border-blue-500">
               <CardContent className="p-4">
                 <p className="text-sm text-blue-900">
@@ -150,7 +150,7 @@ export default function TransportAccess() {
               </CardContent>
             </Card>
           </div>
-        )}
+        }
 
         {/* Requests */}
         <Card className="border-0 shadow-sm">
@@ -158,22 +158,22 @@ export default function TransportAccess() {
             <CardTitle className="text-base">{isApprover ? 'All Requests' : 'My Requests'}</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
-            {isLoading ? (
-              <div className="p-8 text-center">
+            {isLoading ?
+            <div className="p-8 text-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto" />
-              </div>
-            ) : displayRequests.length === 0 ? (
-             <div className="p-12 text-center">
+              </div> :
+            displayRequests.length === 0 ?
+            <div className="p-12 text-center">
                <Car className="w-16 h-16 mx-auto text-gray-200 mb-4" />
                <h3 className="text-lg font-medium text-gray-900 mb-2">{isApprover ? 'No pending requests' : 'No requests yet'}</h3>
                <p className="text-gray-500">{isApprover ? 'All transport requests have been processed.' : 'Submit a new transport access request to get started.'}</p>
-             </div>
-            ) : (
-              <Table>
+             </div> :
+
+            <Table>
                 <TableHeader>
                   <TableRow className="bg-gray-50">
                     <TableHead>Request #</TableHead>
-                    <TableHead>Mode</TableHead>
+                    <TableHead>Transport</TableHead>
                     <TableHead>Business Justification</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Created</TableHead>
@@ -181,8 +181,8 @@ export default function TransportAccess() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                   {displayRequests.map(req => (
-                    <TableRow key={req.id} className="hover:bg-gray-50">
+                   {displayRequests.map((req) =>
+                <TableRow key={req.id} className="hover:bg-gray-50">
                       <TableCell className="font-mono text-sm font-medium">
                         {req.tar_number}
                       </TableCell>
@@ -202,20 +202,20 @@ export default function TransportAccess() {
                       </TableCell>
                       <TableCell>
                         <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => navigate(createPageUrl(`TransportRequestDetails?id=${req.id}&from=${isApprover ? 'ApprovalDashboard' : 'TransportAccess'}`))}
-                          className="gap-1 text-gray-500 hover:text-blue-600"
-                        >
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => navigate(createPageUrl(`TransportRequestDetails?id=${req.id}&from=${isApprover ? 'ApprovalDashboard' : 'TransportAccess'}`))}
+                      className="gap-1 text-gray-500 hover:text-blue-600">
+                      
                           <Eye className="w-4 h-4" />
                           View
                         </Button>
                       </TableCell>
                     </TableRow>
-                  ))}
+                )}
                 </TableBody>
               </Table>
-            )}
+            }
           </CardContent>
         </Card>
       </div>
@@ -230,8 +230,8 @@ export default function TransportAccess() {
             </DialogTitle>
           </DialogHeader>
 
-          {selectedRequest && (
-            <div className="space-y-4">
+          {selectedRequest &&
+          <div className="space-y-4">
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div>
                   <p className="text-gray-500">Employee</p>
@@ -257,42 +257,42 @@ export default function TransportAccess() {
                   <p className="text-gray-500">Business Justification</p>
                   <p className="font-medium">{selectedRequest.business_justification}</p>
                 </div>
-                {selectedRequest.status === 'approved' && (
-                  <>
+                {selectedRequest.status === 'approved' &&
+              <>
                     <div className="col-span-2 p-3 bg-green-50 rounded-lg border border-green-200">
                       <p className="text-green-800 font-semibold text-sm mb-2">✅ Access Granted</p>
                       <div className="grid grid-cols-2 gap-2 text-xs text-green-700">
                         <div><span className="font-medium">Access Type:</span> {selectedRequest.transport_type}</div>
                         <div><span className="font-medium">Effective Date:</span> {selectedRequest.effective_date || format(new Date(), 'dd MMM yyyy')}</div>
-                        {selectedRequest.approved_by_manager && (
-                          <div><span className="font-medium">Approved by Manager:</span> {selectedRequest.approved_by_manager}</div>
-                        )}
-                        {selectedRequest.approved_by_lead && (
-                          <div><span className="font-medium">Approved by Admin Head:</span> {selectedRequest.approved_by_lead}</div>
-                        )}
+                        {selectedRequest.approved_by_manager &&
+                    <div><span className="font-medium">Approved by Manager:</span> {selectedRequest.approved_by_manager}</div>
+                    }
+                        {selectedRequest.approved_by_lead &&
+                    <div><span className="font-medium">Approved by Admin Head:</span> {selectedRequest.approved_by_lead}</div>
+                    }
                       </div>
                     </div>
                   </>
-                )}
-                {selectedRequest.status === 'rejected' && selectedRequest.rejection_reason && (
-                  <div className="col-span-2 p-3 bg-red-50 rounded-lg border border-red-200">
+              }
+                {selectedRequest.status === 'rejected' && selectedRequest.rejection_reason &&
+              <div className="col-span-2 p-3 bg-red-50 rounded-lg border border-red-200">
                     <p className="text-red-700 text-sm"><span className="font-medium">Rejection Reason:</span> {selectedRequest.rejection_reason}</p>
                   </div>
-                )}
-                {selectedRequest.status === 'sent_back' && selectedRequest.send_back_reason && (
-                  <div className="col-span-2 p-3 bg-amber-50 rounded-lg border border-amber-200">
+              }
+                {selectedRequest.status === 'sent_back' && selectedRequest.send_back_reason &&
+              <div className="col-span-2 p-3 bg-amber-50 rounded-lg border border-amber-200">
                     <p className="text-amber-700 text-sm"><span className="font-medium">Clarification Needed:</span> {selectedRequest.send_back_reason}</p>
                   </div>
-                )}
+              }
               </div>
 
               <div className="border-t pt-4">
                 <TransportTimeline request={selectedRequest} />
               </div>
             </div>
-          )}
+          }
         </DialogContent>
       </Dialog>
-    </div>
-  );
+    </div>);
+
 }
